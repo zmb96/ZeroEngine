@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.enchant;
+package cn.ZeroEngine.Engine.api.v2.feature.enchant;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,7 +10,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import server.sf.model.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.SF;
 
 import java.util.ArrayList;
 import java.util.List;

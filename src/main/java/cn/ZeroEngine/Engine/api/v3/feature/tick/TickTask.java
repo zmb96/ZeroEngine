@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.tick;
+package cn.ZeroEngine.Engine.api.v3.feature.tick;
 
 @FunctionalInterface
 public interface TickTask {

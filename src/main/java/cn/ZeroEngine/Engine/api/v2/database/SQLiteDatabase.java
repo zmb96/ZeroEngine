@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.database;
+package cn.ZeroEngine.Engine.api.v2.database;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,7 +37,7 @@ public final class SQLiteDatabase implements Database {
             }
             return true;
         } catch (Exception e) {
-            server.sf.model.api.v2.SF sf = server.sf.model.api.v2.SF.sf();
+            cn.ZeroEngine.Engine.api.v2.SF sf = cn.ZeroEngine.Engine.api.v2.SF.sf();
             sf.error("SQLite connect failed", e);
             return false;
         }
@@ -50,7 +50,7 @@ public final class SQLiteDatabase implements Database {
                 connection.close();
             }
         } catch (Exception e) {
-            server.sf.model.api.v2.SF sf = server.sf.model.api.v2.SF.sf();
+            cn.ZeroEngine.Engine.api.v2.SF sf = cn.ZeroEngine.Engine.api.v2.SF.sf();
             sf.error("SQLite disconnect failed", e);
         } finally {
             connection = null;
@@ -76,7 +76,7 @@ public final class SQLiteDatabase implements Database {
         try (PreparedStatement ps = stmt(connection, sql, params)) {
             return ps.executeUpdate();
         } catch (Exception e) {
-            server.sf.model.api.v2.SF sf = server.sf.model.api.v2.SF.sf();
+            cn.ZeroEngine.Engine.api.v2.SF sf = cn.ZeroEngine.Engine.api.v2.SF.sf();
             sf.error("SQL update failed: " + sql, e);
             return -1;
         }
@@ -88,7 +88,7 @@ public final class SQLiteDatabase implements Database {
              ResultSet rs = ps.executeQuery()) {
             return mapper.apply(rs);
         } catch (Exception e) {
-            server.sf.model.api.v2.SF sf = server.sf.model.api.v2.SF.sf();
+            cn.ZeroEngine.Engine.api.v2.SF sf = cn.ZeroEngine.Engine.api.v2.SF.sf();
             sf.error("SQL query failed: " + sql, e);
             return null;
         }

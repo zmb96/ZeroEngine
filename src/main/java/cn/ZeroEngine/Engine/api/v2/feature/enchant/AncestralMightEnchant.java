@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.enchant;
+package cn.ZeroEngine.Engine.api.v2.feature.enchant;
 
 import org.bukkit.Particle;
 import org.bukkit.Sound;

@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.enchant;
+package cn.ZeroEngine.Engine.api.v3.feature.enchant;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;

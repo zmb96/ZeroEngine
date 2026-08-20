@@ -1,10 +1,10 @@
-package server.sf.model.api.v2.feature.chat;
+package cn.ZeroEngine.Engine.api.v2.feature.chat;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import server.sf.model.api.v2.SF;
-import server.sf.model.api.v2.feature.tick.TickManager;
+import cn.ZeroEngine.Engine.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.feature.tick.TickManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

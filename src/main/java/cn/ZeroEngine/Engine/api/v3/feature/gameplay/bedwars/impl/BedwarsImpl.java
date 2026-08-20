@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.gameplay.bedwars.impl;
+package cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import server.sf.model.api.v3.feature.gameplay.bedwars.Bedwars;
+import cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars.Bedwars;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

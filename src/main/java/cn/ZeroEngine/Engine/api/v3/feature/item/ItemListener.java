@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.item;
+package cn.ZeroEngine.Engine.api.v3.feature.item;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
 

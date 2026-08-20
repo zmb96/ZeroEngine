@@ -1,4 +1,4 @@
-package server.sf.model.api.v1;
+package cn.ZeroEngine.Engine.api.v1;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,9 +42,9 @@ public class PlayerJoinOrQuitEvent implements Listener {
 
         FileConfiguration c1 = plugin.getConfig();
 
-        String jm = c1.getString("server.sf.model.api.v1.JoQMess.jm").replace("{player}",n);
+        String jm = c1.getString("cn.ZeroEngine.Engine.api.v1.JoQMess.jm").replace("{player}",n);
         if (jm == null) {
-            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.server.sf.model.api.v1.JoQMess.jm的地方为null！！！");
+            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.cn.ZeroEngine.Engine.api.v1.JoQMess.jm的地方为null！！！");
         }
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes(
                 '&', jm
@@ -60,7 +60,7 @@ public class PlayerJoinOrQuitEvent implements Listener {
             p.getInventory().addItem(i7);
             p.getInventory().addItem(i8);
             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes(
-                    '&', c1.getString("server.sf.model.api.v1.JoQMess.NewPlayerJoin").replace("{player}", n)
+                    '&', c1.getString("cn.ZeroEngine.Engine.api.v1.JoQMess.NewPlayerJoin").replace("{player}", n)
             ));
             c.set("giveit."+us, n);
             c.save(file);
@@ -73,9 +73,9 @@ public class PlayerJoinOrQuitEvent implements Listener {
 
         FileConfiguration c = plugin.getConfig();
 
-        String qm = c.getString("server.sf.model.api.v1.JoQMess.qm").replace("{player}",n);
+        String qm = c.getString("cn.ZeroEngine.Engine.api.v1.JoQMess.qm").replace("{player}",n);
         if (qm == null) {
-            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.server.sf.model.api.v1.JoQMess.qm的地方为null！！！");
+            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.cn.ZeroEngine.Engine.api.v1.JoQMess.qm的地方为null！！！");
         }
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes(
                 '&', qm

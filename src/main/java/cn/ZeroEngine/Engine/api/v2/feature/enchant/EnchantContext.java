@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.enchant;
+package cn.ZeroEngine.Engine.api.v2.feature.enchant;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.item;
+package cn.ZeroEngine.Engine.api.v3.feature.item;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.Material;
@@ -11,8 +11,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
-import server.sf.model.api.v3.SF;
-import server.sf.model.api.v3.feature.enchant.SFAttr;
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
 
 import java.util.*;
 

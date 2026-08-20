@@ -1,4 +1,4 @@
-package server.sf.model.api.v1;
+package cn.ZeroEngine.Engine.api.v1;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -124,7 +124,7 @@ public class BuyTagCommand implements CommandExecutor {
         plugin.saveConfig();
 
         // 显示标签
-        String tagDisplay = config.getString("server.sf.model.api.v1.PlayerChat.tags." + tagName, tagName);
+        String tagDisplay = config.getString("cn.ZeroEngine.Engine.api.v1.PlayerChat.tags." + tagName, tagName);
         String coloredTag = ChatColor.translateAlternateColorCodes('&', tagDisplay);
 
         player.sendMessage("");

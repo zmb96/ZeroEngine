@@ -1,26 +1,26 @@
-package server.sf.model.api.v1;
+package cn.ZeroEngine.Engine.api.v1;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import server.sf.model.api.v2.SF;
-import server.sf.model.api.v2.database.DatabaseManager;
-import server.sf.model.api.v2.feature.enchant.LifestealEnchant;
-import server.sf.model.api.v2.feature.enchant.AncestralMightEnchant;
-import server.sf.model.api.v2.feature.enchant.EnchantManager;
-import server.sf.model.api.v2.feature.enchant.SFEnchantCommand;
-import server.sf.model.api.v2.feature.item.ItemManager;
-import server.sf.model.api.v2.feature.item.MagicScepterItem;
-import server.sf.model.api.v2.feature.item.SFItemCommand;
-import server.sf.model.api.v2.feature.chat.ChatCommand;
-import server.sf.model.api.v2.feature.chat.ChatManager;
-import server.sf.model.api.v2.feature.main.ReachCommand;
-import server.sf.model.api.v2.feature.perf.PerformanceCommand;
-import server.sf.model.api.v2.feature.permission.PermissionCommand;
-import server.sf.model.api.v2.feature.permission.PermissionManager;
-import server.sf.model.api.v2.feature.world.WorldCommand;
-import server.sf.model.api.v2.feature.world.WorldManager;
-import server.sf.model.api.v2.feature.teleport.TeleportManager;
+import cn.ZeroEngine.Engine.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.database.DatabaseManager;
+import cn.ZeroEngine.Engine.api.v2.feature.enchant.LifestealEnchant;
+import cn.ZeroEngine.Engine.api.v2.feature.enchant.AncestralMightEnchant;
+import cn.ZeroEngine.Engine.api.v2.feature.enchant.EnchantManager;
+import cn.ZeroEngine.Engine.api.v2.feature.enchant.SFEnchantCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.item.ItemManager;
+import cn.ZeroEngine.Engine.api.v2.feature.item.MagicScepterItem;
+import cn.ZeroEngine.Engine.api.v2.feature.item.SFItemCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.chat.ChatCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.chat.ChatManager;
+import cn.ZeroEngine.Engine.api.v2.feature.main.ReachCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.perf.PerformanceCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.permission.PermissionCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.permission.PermissionManager;
+import cn.ZeroEngine.Engine.api.v2.feature.world.WorldCommand;
+import cn.ZeroEngine.Engine.api.v2.feature.world.WorldManager;
+import cn.ZeroEngine.Engine.api.v2.feature.teleport.TeleportManager;
 
 @Deprecated
 public final class main extends JavaPlugin {
@@ -32,7 +32,7 @@ public final class main extends JavaPlugin {
     public void onEnable() {
         SF.init(this);
         SF sf = SF.sf();
-        sf.info("Starting server.sf.model.api.v1 (v2 bridge enabled)");
+        sf.info("Starting cn.ZeroEngine.Engine.api.v1 (v2 bridge enabled)");
         saveDefaultConfig();
 
         boolean dbOk = DatabaseManager.init(this);
@@ -81,7 +81,7 @@ public final class main extends JavaPlugin {
     @Override
     public void onDisable() {
         SF sf = SF.sf();
-        sf.info("Unload server.sf.model.api.v1.main");
+        sf.info("Unload cn.ZeroEngine.Engine.api.v1.main");
         DatabaseManager.shutdown();
         SF.shutdown();
     }

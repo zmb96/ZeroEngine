@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.enchant;
+package cn.ZeroEngine.Engine.api.v2.feature.enchant;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -9,7 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
-import server.sf.model.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.SF;
 
 import java.lang.reflect.Field;
 import java.util.*;

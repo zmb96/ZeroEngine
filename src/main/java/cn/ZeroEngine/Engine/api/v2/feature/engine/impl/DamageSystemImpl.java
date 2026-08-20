@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.engine.impl;
+package cn.ZeroEngine.Engine.api.v2.feature.engine.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import server.sf.model.api.v2.feature.engine.DamageSystem;
+import cn.ZeroEngine.Engine.api.v2.feature.engine.DamageSystem;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

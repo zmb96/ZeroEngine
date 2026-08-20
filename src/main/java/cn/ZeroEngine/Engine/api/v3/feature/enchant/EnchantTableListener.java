@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.enchant;
+package cn.ZeroEngine.Engine.api.v3.feature.enchant;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
 

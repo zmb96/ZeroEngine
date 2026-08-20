@@ -1,11 +1,11 @@
-package server.sf.model.api.v3.feature.item;
+package cn.ZeroEngine.Engine.api.v3.feature.item;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
 

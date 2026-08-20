@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.chat;
+package cn.ZeroEngine.Engine.api.v2.feature.chat;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import server.sf.model.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.SF;
 
 public class ChatListener implements Listener {
 

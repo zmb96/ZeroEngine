@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.enchant;
+package cn.ZeroEngine.Engine.api.v3.feature.enchant;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -9,7 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
 

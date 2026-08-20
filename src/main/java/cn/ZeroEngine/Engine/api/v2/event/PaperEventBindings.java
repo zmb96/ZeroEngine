@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.event;
+package cn.ZeroEngine.Engine.api.v2.event;
 
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;

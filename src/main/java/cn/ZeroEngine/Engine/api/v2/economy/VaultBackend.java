@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.economy;
+package cn.ZeroEngine.Engine.api.v2.economy;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;

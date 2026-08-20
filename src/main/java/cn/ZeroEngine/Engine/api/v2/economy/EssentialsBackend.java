@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.economy;
+package cn.ZeroEngine.Engine.api.v2.economy;
 
 import com.earth2me.essentials.api.Economy;
 import com.earth2me.essentials.api.NoLoanPermittedException;

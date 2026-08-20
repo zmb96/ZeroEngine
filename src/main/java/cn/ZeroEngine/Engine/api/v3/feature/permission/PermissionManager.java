@@ -1,8 +1,8 @@
-package server.sf.model.api.v3.feature.permission;
+package cn.ZeroEngine.Engine.api.v3.feature.permission;
 
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

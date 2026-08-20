@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.text;
+package cn.ZeroEngine.Engine.api.v2.feature.text;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import server.sf.model.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.SF;
 
 import java.util.ArrayList;
 import java.util.List;

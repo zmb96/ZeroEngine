@@ -1,11 +1,11 @@
-package server.sf.model.api.v3.feature.engine.impl;
+package cn.ZeroEngine.Engine.api.v3.feature.engine.impl;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.java.JavaPlugin;
-import server.sf.model.api.v3.feature.engine.MonsterAttribute;
+import cn.ZeroEngine.Engine.api.v3.feature.engine.MonsterAttribute;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

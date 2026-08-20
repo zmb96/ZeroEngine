@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.chat;
+package cn.ZeroEngine.Engine.api.v3.feature.chat;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -6,7 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.ArrayList;
 import java.util.Arrays;

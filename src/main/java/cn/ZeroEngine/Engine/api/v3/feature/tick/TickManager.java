@@ -1,7 +1,7 @@
-package server.sf.model.api.v3.feature.tick;
+package cn.ZeroEngine.Engine.api.v3.feature.tick;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import server.sf.model.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

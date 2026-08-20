@@ -1,4 +1,4 @@
-package server.sf.model.api.v2.feature.engine.impl;
+package cn.ZeroEngine.Engine.api.v2.feature.engine.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,7 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import server.sf.model.api.v2.feature.engine.SpawnControl;
+import cn.ZeroEngine.Engine.api.v2.feature.engine.SpawnControl;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

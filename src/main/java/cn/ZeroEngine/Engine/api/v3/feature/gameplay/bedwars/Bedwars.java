@@ -1,4 +1,4 @@
-package server.sf.model.api.v3.feature.gameplay.bedwars;
+package cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars;
 
 import org.bukkit.Location;
 import org.bukkit.Material;

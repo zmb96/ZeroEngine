@@ -1,9 +1,9 @@
-package server.sf.model.api.v2.feature.world;
+package cn.ZeroEngine.Engine.api.v2.feature.world;
 
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import server.sf.model.api.v2.SF;
+import cn.ZeroEngine.Engine.api.v2.SF;
 
 import java.util.HashMap;
 import java.util.Map;

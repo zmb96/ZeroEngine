@@ -1,4 +1,4 @@
-package server.sf.model.api.v1;
+package cn.ZeroEngine.Engine.api.v1;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -24,7 +24,7 @@ public class PlayerChatEvent implements Listener {
         UUID u = p.getUniqueId();
         String us = u.toString();
         String n = p.getName();
-        String opu = plugin.getConfig().getString("server.sf.model.api.v1.PlayerChat.opsuuid");
+        String opu = plugin.getConfig().getString("cn.ZeroEngine.Engine.api.v1.PlayerChat.opsuuid");
 
         String id = " ";
 
@@ -37,13 +37,13 @@ public class PlayerChatEvent implements Listener {
             id = "&a玩家";
         }
         String ms = ChatColor.translateAlternateColorCodes(
-                '&', plugin.getConfig().getString("server.sf.model.api.v1.PlayerChat.message")
+                '&', plugin.getConfig().getString("cn.ZeroEngine.Engine.api.v1.PlayerChat.message")
                         .replace("{player}", n)
                         .replace("{id}", id)
                         .replace("{message}", e.getMessage())
         );
         if (ms == null) {
-            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.server.sf.model.api.v1.PlayerChat.message的地方为null！！！");
+            plugin.getLogger().warning("在~/SFServerPlugin/config.yml.cn.ZeroEngine.Engine.api.v1.PlayerChat.message的地方为null！！！");
         }
         e.setCancelled(true);
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes(

@@ -1,4 +1,4 @@
-package server.sf.model.api.v1;
+package cn.ZeroEngine.Engine.api.v1;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
