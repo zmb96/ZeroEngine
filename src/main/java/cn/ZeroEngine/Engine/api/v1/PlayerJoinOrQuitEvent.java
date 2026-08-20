@@ -32,10 +32,9 @@ public class PlayerJoinOrQuitEvent implements Listener {
         File file = new File(foter, "giveit.yml");
         FileConfiguration c = YamlConfiguration.loadConfiguration(file);
         ItemStack i1 = new ItemStack(Material.IRON_INGOT, 10);
-        ItemStack i2 = new ItemStack(Material.NETHERITE_SCRAP, 3);
-        ItemStack i3 = new ItemStack(Material.DIAMOND, 5);
+        ItemStack i3 = new ItemStack(Material.DIAMOND, 3);
         ItemStack i4 = new ItemStack(Material.LAPIS_LAZULI, 10);
-        ItemStack i5 = new ItemStack(Material.EMERALD, 10);
+        ItemStack i5 = new ItemStack(Material.EMERALD, 5);
         ItemStack i6 = new ItemStack(Material.LAVA_BUCKET, 1);
         ItemStack i7 = new ItemStack(Material.WATER_BUCKET, 1);
         ItemStack i8 = new ItemStack(Material.OAK_SAPLING, 5);
@@ -52,7 +51,6 @@ public class PlayerJoinOrQuitEvent implements Listener {
         if (c.contains("giveit."+us)) {
         } else {
             p.getInventory().addItem(i1);
-            p.getInventory().addItem(i2);
             p.getInventory().addItem(i3);
             p.getInventory().addItem(i4);
             p.getInventory().addItem(i5);

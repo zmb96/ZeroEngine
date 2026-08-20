@@ -1,7 +1,7 @@
 name: ZeroEngine
 version: '${version}'
 
-main: server.sf.model.api.v1.main
+main: cn.ZeroEngine.Engine.api.v1.main
 api-version: '1.21.5'
 load: POSTWORLD
 softdepend: [Vault, Essentials, EssentialsX]
