@@ -24,6 +24,17 @@ public class EnchantManager {
         return this;
     }
 
+    /** 若尚未注册则注册；已存在则静默跳过（不抛异常、不打日志）。用于懒加载里注册内置示例附魔，避免重复报错。 */
+    public boolean registerIfAbsent(SEnchantment enchant) {
+        if (enchants.containsKey(enchant.id())) return false;
+        try {
+            register(enchant);
+            return true;
+        } catch (IllegalStateException ignore) {
+            return false;
+        }
+    }
+
     public EnchantManager registerAll(SEnchantment... enchants) {
         for (SEnchantment e : enchants) register(e);
         return this;

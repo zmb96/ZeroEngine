@@ -108,8 +108,68 @@ public abstract class SItem {
         return UUID.nameUUIDFromBytes(("sf_item_" + id() + "_" + name).getBytes());
     }
 
+    // NamespacedKey 在 Paper 26.x 严格只允许 [a-z0-9_-.\/]（Bukkit NamespacedKey.lambda$checkError$0）
+    // 对中文/非 ASCII 的 id() 做安全 slug：合法字符保留 + 8 位 SHA-1 哈希兜底；前缀 "item_"。
+    // —— 兼容策略：
+    //    * 写入（create）：只用新 key（安全 slug 版）
+    //    * 读取（is/getLevel/getAttribute）：先查新 key，未命中再回退旧 key（"item_"+id()），防止已存在
+    //      玩家背包里的老 SItem（比如旧版中文 id 直接拼 NamespacedKey）突然识别不到。
     private NamespacedKey itemKey() {
-        return new NamespacedKey(plugin, "item_" + id());
+        String raw = id();
+        StringBuilder valid = new StringBuilder();
+        for (int i = 0; i < raw.length(); i++) {
+            char c = Character.toLowerCase(raw.charAt(i));
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+                    || c == '_' || c == '-' || c == '.' || c == '/') valid.append(c);
+        }
+        String slug = valid.toString().replaceAll("[/._-]+", "_")
+                .replaceAll("^_+", "").replaceAll("_+$", "");
+        String hash = toHex(unsha1(raw), 8);
+        String tail = slug.isEmpty() ? hash : (slug.length() > 40 ? slug.substring(0, 40) + "_" + hash : slug + "_" + hash);
+        return new NamespacedKey(plugin, "item_" + tail);
+    }
+
+    // 旧 key（Paper 26.x 之前直接拼 id()；如果 id 包含中文，在 Paper 26.x 会抛异常）
+    // 仅用于读取路径的回退；如果构造时会抛就返回 null，调用方会忽略这个回退。
+    private NamespacedKey itemKeyLegacyOrNull() {
+        try {
+            return new NamespacedKey(plugin, "item_" + id());
+        } catch (IllegalArgumentException paper26KeyReject) {
+            return null;
+        }
+    }
+
+    private static String readPdc(PersistentDataContainer pdc, NamespacedKey... keys) {
+        if (pdc == null) return null;
+        for (NamespacedKey k : keys) {
+            if (k == null) continue;
+            String v;
+            try { v = pdc.get(k, PersistentDataType.STRING); } catch (Throwable ignore) { continue; }
+            if (v != null) return v;
+        }
+        return null;
+    }
+
+    private static byte[] unsha1(String s) {
+        try {
+            return java.security.MessageDigest.getInstance("SHA-1").digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (java.security.NoSuchAlgorithmException impossible) {
+            long h = (long) s.hashCode() * 0x9E3779B97F4A7C15L;
+            byte[] out = new byte[8];
+            for (int i = 7; i >= 0; i--, h >>>= 8) out[i] = (byte) (h & 0xFF);
+            return out;
+        }
+    }
+
+    private static String toHex(byte[] b, int n) {
+        int len = Math.min(n, b.length);
+        StringBuilder sb = new StringBuilder(len * 2);
+        char[] hex = "0123456789abcdef".toCharArray();
+        for (int i = 0; i < len; i++) {
+            sb.append(hex[(b[i] >> 4) & 0xF]);
+            sb.append(hex[b[i] & 0xF]);
+        }
+        return sb.toString();
     }
 
     public boolean is(ItemStack item) {
@@ -117,7 +177,8 @@ public abstract class SItem {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        String val = pdc.get(itemKey(), PersistentDataType.STRING);
+        // 读：先新 key，再回退旧 key（兼容中文 id 的老玩家物品）
+        String val = readPdc(pdc, itemKey(), itemKeyLegacyOrNull());
         return id().equals(val);
     }
 

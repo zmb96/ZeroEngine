@@ -111,7 +111,15 @@ public final class SF implements SFApi {
 
     public static void init(JavaPlugin plugin) {
         if (instance != null) {
-            throw new IllegalStateException("SF already initialized");
+            // 允许多个插件重复 SF.init(theirPlugin) — 但始终用第一次调用时的 plugin 作为上下文。
+            // 原因：
+            //   如果 zmb96 作为第三方插件先 onEnable 并 SF.init(zmb96)，
+            //   而 ZeroEngine (v1 main) 稍后 onEnable，我们也不应该用 IllegalStateException 打断 ZeroEngine 的 onEnable。
+            //   同时 SFCommandOps.regCommand 会自动 fallback 到 SimpleCommandMap 里找其他插件（ZeroEngine）
+            //   声明的命令去覆盖执行器，所以"plugin=zmb96"也不会让命令注册失效。
+            plugin.getLogger().info("[SF] already initialized by " + instance.plugin.getName()
+                    + "; ignoring SF.init(" + plugin.getName() + ")");
+            return;
         }
         instance = new SF(plugin);
         plugin.getServer().getServicesManager().register(SFApi.class, instance, plugin, org.bukkit.plugin.ServicePriority.Normal);
@@ -166,8 +174,16 @@ public final class SF implements SFApi {
             regEvent(new cn.ZeroEngine.Engine.api.v3.feature.enchant.EnchantChestListener(enchantManager), plugin);
             regEvent(new cn.ZeroEngine.Engine.api.v3.feature.enchant.EnchantTableListener(enchantManager), plugin);
             enchantAttrListener.startTick(this, 40L);
+            enchantManager.registerIfAbsent(new cn.ZeroEngine.Engine.api.v3.feature.enchant.LifestealEnchant());
+            enchantManager.registerIfAbsent(new cn.ZeroEngine.Engine.api.v3.feature.enchant.AncestralMightEnchant());
+            // 绑定 /sfenchant 命令。
+            // SFCommandOps.regCommand 已自动处理 fallback：
+            //   - 如果 SF.init 先被 ZeroEngine 调 → plugin.getCommand("sfenchant") 直接命中 plugin.yml
+            //   - 如果 SF.init 先被第三方插件调（zmb96... 等）→ 反射 SimpleCommandMap 找到 ZeroEngine 声明的
+            //     sfenchant PluginCommand 并覆盖执行器为 v3 的命令
+            regCommand("sfenchant", new cn.ZeroEngine.Engine.api.v3.feature.enchant.SFEnchantCommand(enchantManager));
             SF sf = SF.sf();
-            sf.info("[Enchant] System initialized");
+            sf.info("[Enchant] System initialized (v3 /sfenchant command ready; " + enchantManager.all().size() + " enchants loaded)");
         }
         return enchantManager;
     }

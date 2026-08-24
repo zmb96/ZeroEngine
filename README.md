@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-3.2.5--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.2.6--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -4467,6 +4467,27 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.2.6-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+- **v3 EnchantManager.registerIfAbsent()**：不存在才注册，已存在静默返回 false；用于懒加载内置示例附魔时避免与第三方插件预注册冲突
+- **v3 SF.init() 允许多插件重复调用**：已初始化时不再抛 `IllegalStateException`，改为 info 日志并复用现有实例；避免加载顺序问题打断入口插件 onEnable
+- **v3 SFCommandOps.regCommand() 跨插件命令 fallback**：当 `plugin.getCommand(name)` 拿不到（SF.init 被第三方插件先初始化，plugin 字段不是 ZeroEngine）时，自动反射 `SimplePluginManager.commandMap.knownCommands` 查同名 `PluginCommand`（含 `namespace:name` 前缀）并覆盖 setExecutor / setTabCompleter
+
+#### 🔄 变更
+
+- **v3 SF.enchant() 懒加载**：新增 `/sfenchant` 命令绑定（v3 SFEnchantCommand）+ 自动 registerIfAbsent 内置 LifestealEnchant / AncestralMightEnchant；日志从 `System initialized` 改为 `System initialized (v3 /sfenchant command ready; N enchants loaded)`
+- **v1 main（Deprecated 入口）**：移除 v2 SFEnchantCommand 的 `/sfenchant` 注册；改为在 onEnable 末尾调用 `v3 SF.init(this).enchant()` 确保 v3 附魔命令一定会被落位
+- **v3 EnchantAnvilListener**：extraCost 写入优先走 `ItemMeta instanceof Repairable` 并做「追加」而非「覆盖」，避免干扰其他插件对经验消耗的写入；只有 extraCost>0 时才 setResult，避免误覆盖他插件/原版 result
+
+#### 🛠 修复
+
+- **跨插件附魔注册后 /sfenchant book 只显示内置 2 个**：v2 SF / v3 SF 是两套独立单例；v2 SFEnchantCommand 被 v1/main 先绑到 /sfenchant，第三方插件用 v3 SF.register 的附魔完全看不到 — 通过"v3.enchant() 懒加载用 SFCommandOps 新 fallback 强覆盖命令执行器 + v1/main 不再占坑"的组合修复，第三方插件注册的附魔、内置附魔现在都能在 `/sfenchant book` 中正确列出
+- **SItem.id() 为中文时在 Paper 26.x 抛 IllegalArgumentException**（NamespacedKey 新严格校验 `[a-z0-9_-.\/]`）：新增 itemKey() slug 化算法（合法字符保留 + 8 位 SHA-1 哈希后缀）；读路径做「新 key 优先、旧 key 回退」兼容，已存在玩家背包里的中文 id 老物品仍能被 is() / getLevel() 正确识别
+- **EnchantAnvilListener 可能覆盖其他插件 result/经验消耗**：Repairable meta 路径做追加写入
+- `pom.xml` 版本：`3.2.5-LTS` → `3.2.6-LTS`
 
 ### [3.2.5-LTS] - 2026-08-24
 
