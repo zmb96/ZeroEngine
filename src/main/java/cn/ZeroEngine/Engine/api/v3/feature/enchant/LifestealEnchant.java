@@ -23,8 +23,7 @@ public class LifestealEnchant extends SEnchantment {
 
     @Override
     public Set<String> applicableItems() {
-        return new HashSet<>(Arrays.asList("NETHERITE_SWORD", "DIAMOND_SWORD", "IRON_SWORD",
-                "GOLDEN_SWORD", "STONE_SWORD", "WOODEN_SWORD"));
+        return new HashSet<>(Arrays.asList("SWORD"));   // 简写：匹配所有以 _SWORD 结尾的材质（6 种剑）
     }
 
     @Override

@@ -29,17 +29,10 @@ public class AncestralMightEnchant extends SEnchantment {
         return "继承先祖之力，获得全方位属性强化";
     }
 
-    // 可附魔的物品类型 —— 所有盔甲部位（皮革/铁/金/钻石/下界合金）
+    // 可附魔的物品类型 —— 所有盔甲部位（简写：HELMET 匹配 *_HELMET 等，6 种材质全命中）
     @Override
     public Set<String> applicableItems() {
-        return new HashSet<>(Arrays.asList(
-                "NETHERITE_HELMET", "NETHERITE_CHESTPLATE", "NETHERITE_LEGGINGS", "NETHERITE_BOOTS",
-                "DIAMOND_HELMET", "DIAMOND_CHESTPLATE", "DIAMOND_LEGGINGS", "DIAMOND_BOOTS",
-                "IRON_HELMET", "IRON_CHESTPLATE", "IRON_LEGGINGS", "IRON_BOOTS",
-                "GOLDEN_HELMET", "GOLDEN_CHESTPLATE", "GOLDEN_LEGGINGS", "GOLDEN_BOOTS",
-                "CHAINMAIL_HELMET", "CHAINMAIL_CHESTPLATE", "CHAINMAIL_LEGGINGS", "CHAINMAIL_BOOTS",
-                "LEATHER_HELMET", "LEATHER_CHESTPLATE", "LEATHER_LEGGINGS", "LEATHER_BOOTS"
-        ));
+        return new HashSet<>(Arrays.asList("HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"));
     }
 
     // 冲突组 —— 同组的附魔互斥（防止玩家把多个同类型增益附魔叠在一件装备上）

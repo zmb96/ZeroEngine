@@ -106,13 +106,36 @@ public abstract class SEnchantment {
     public boolean canEnchantItem(ItemStack item) {
         if (item == null || item.getType().isAir()) return false;
         String typeName = item.getType().name();
-        for (String pattern : applicableItems()) {
+        for (String raw : applicableItems()) {
+            if (raw == null) continue;
+            String pattern = raw.trim();
+            if (pattern.isEmpty()) continue;
             if (pattern.equals("*")) return true;
-            if (pattern.endsWith("*")) {
-                if (typeName.startsWith(pattern.substring(0, pattern.length() - 1))) return true;
-            } else if (pattern.equalsIgnoreCase(typeName)) {
-                return true;
+
+            // 包含匹配：*WORD*
+            if (pattern.length() >= 4 && pattern.startsWith("*") && pattern.endsWith("*")) {
+                String mid = pattern.substring(1, pattern.length() - 1);
+                if (!mid.isEmpty() && typeName.contains(mid)) return true;
+                continue;
             }
+            // 后缀匹配：*_SWORD → 以 _SWORD 结尾
+            if (pattern.startsWith("*")) {
+                String suffix = pattern.substring(1);
+                if (!suffix.isEmpty() && typeName.endsWith(suffix)) return true;
+                continue;
+            }
+            // 前缀匹配：DIAMOND_* → 以 DIAMOND_ 开头
+            if (pattern.endsWith("*")) {
+                String prefix = pattern.substring(0, pattern.length() - 1);
+                if (!prefix.isEmpty() && typeName.startsWith(prefix)) return true;
+                continue;
+            }
+            // 完全相等：NETHERITE_SWORD
+            if (pattern.equalsIgnoreCase(typeName)) return true;
+
+            // 简写：无 * 且不相等命中时，尝试 _PATTERN 后缀
+            // 例：填 "SWORD" → 命中所有以 "_SWORD" 结尾的材质（DIAMOND_SWORD 等）
+            if (typeName.endsWith("_" + pattern.toUpperCase())) return true;
         }
         return false;
     }

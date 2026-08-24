@@ -50,11 +50,18 @@ public class EnchantAnvilListener implements Listener {
                 if (conflict) continue;
 
                 int current = enchant.getLevel(result);
-                int newLevel;
-                if (current == bookLevel) {
-                    newLevel = Math.min(current + 1, enchant.maxLevel());
+                final int newLevel;
+
+                if (current == 0) {
+                    // 装备上没有该附魔：首次附魔，直接写 bookLevel
+                    newLevel = Math.min(bookLevel, enchant.maxLevel());
+                } else if (current == bookLevel) {
+                    // 同等级合并：升级 +1，但最高等级不允许再合并
+                    if (bookLevel >= enchant.maxLevel()) continue;
+                    newLevel = bookLevel + 1;
                 } else {
-                    newLevel = Math.max(current, bookLevel);
+                    // 不同等级：不允许合并（也不允许取 max 覆盖）
+                    continue;
                 }
 
                 enchant.setLevel(result, newLevel);
