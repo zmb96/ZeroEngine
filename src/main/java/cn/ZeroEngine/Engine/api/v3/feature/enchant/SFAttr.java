@@ -40,9 +40,12 @@ public final class SFAttr {
     public static final String SCALE                         = "SCALE";
     public static final String STEP_HEIGHT                   = "STEP_HEIGHT";
     public static final String EXPLOSION_KNOCKBACK_REDUCTION = "EXPLOSION_KNOCKBACK_REDUCTION";
+    public static final String EXPLOSION_KNOCKBACK_RESISTANCE = "EXPLOSION_KNOCKBACK_RESISTANCE"; // 1.21+ 正确名（REDUCTION 为旧错名兼容保留）
+    public static final String BLOCK_BREAK_SPEED              = "BLOCK_BREAK_SPEED";
+    public static final String JUMP_STRENGTH                   = "JUMP_STRENGTH";
 
     // ===================== 生物专属属性 =====================
-    public static final String SPAWN_REINFORCEMENTS          = "SPAWN_REINFORCEMENTS";
+    public static final String SPAWN_REINFORCEMENTS           = "SPAWN_REINFORCEMENTS";
 
     // ===================== 旧版 GENERIC_ 兼容名 =====================
     public static final String GENERIC_MAX_HEALTH                    = "GENERIC_MAX_HEALTH";
@@ -75,6 +78,9 @@ public final class SFAttr {
     public static final String GENERIC_SCALE                         = "GENERIC_SCALE";
     public static final String GENERIC_STEP_HEIGHT                   = "GENERIC_STEP_HEIGHT";
     public static final String GENERIC_EXPLOSION_KNOCKBACK_REDUCTION = "GENERIC_EXPLOSION_KNOCKBACK_REDUCTION";
+    public static final String GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE = "GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE";
+    public static final String GENERIC_BLOCK_BREAK_SPEED              = "GENERIC_BLOCK_BREAK_SPEED";
+    public static final String GENERIC_JUMP_STRENGTH                   = "GENERIC_JUMP_STRENGTH";
     public static final String ZOMBIE_SPAWN_REINFORCEMENTS           = "ZOMBIE_SPAWN_REINFORCEMENTS";
 
     private static final Map<String, Attribute> REGISTRY = new ConcurrentHashMap<>();
@@ -113,6 +119,9 @@ public final class SFAttr {
         DISPLAY.put(SCALE,                         "实体缩放");
         DISPLAY.put(STEP_HEIGHT,                   "台阶高度");
         DISPLAY.put(EXPLOSION_KNOCKBACK_REDUCTION, "爆炸击退减免");
+        DISPLAY.put(EXPLOSION_KNOCKBACK_RESISTANCE, "爆炸击退抗性");
+        DISPLAY.put(BLOCK_BREAK_SPEED,              "方块破坏速度");
+        DISPLAY.put(JUMP_STRENGTH,                  "跳跃强度");
         DISPLAY.put(SPAWN_REINFORCEMENTS,          "僵尸增援率");
     }
 
@@ -268,6 +277,18 @@ public final class SFAttr {
     }
     public SEnchantment.AttributeBonus explosionKnockbackReduction(double base, double perLevel) {
         return add("爆炸击退减免", EXPLOSION_KNOCKBACK_REDUCTION, base, perLevel);
+    }
+    public SEnchantment.AttributeBonus explosionKnockbackResistance(double base, double perLevel) {
+        return add("爆炸击退抗性", EXPLOSION_KNOCKBACK_RESISTANCE, base, perLevel);
+    }
+    public SEnchantment.AttributeBonus blockBreakSpeed(double base, double perLevel) {
+        return add("方块破坏速度", BLOCK_BREAK_SPEED, base, perLevel);
+    }
+    public SEnchantment.AttributeBonus jumpStrength(double base, double perLevel) {
+        return add("跳跃强度", JUMP_STRENGTH, base, perLevel);
+    }
+    public SEnchantment.AttributeBonus spawnReinforcements(double base, double perLevel) {
+        return add("僵尸增援率", SPAWN_REINFORCEMENTS, base, perLevel);
     }
 
     private SFAttr() {}

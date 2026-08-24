@@ -34,6 +34,11 @@ commands:
     usage: /sfitem <list|give|info|hand|reload|help>
     aliases: [sfi]
     permission: sf.admin.item
+  sfentity:
+    description: SF 自定义生物系统
+    usage: /sfentity <list|spawn|info|count|cleanup|reload|help>
+    aliases: [sfe]
+    permission: sf.admin.entity
   sfchat:
     description: SF 聊天系统
     usage: /sfchat <channel|mute|unmute|muteinfo|block|unblock|blocklist|clear|help>
@@ -70,6 +75,9 @@ permissions:
     default: op
   sf.admin.item:
     description: SF 物品系统
+    default: op
+  sf.admin.entity:
+    description: SF 自定义生物系统
     default: op
   sf.admin.world:
     description: 世界管理

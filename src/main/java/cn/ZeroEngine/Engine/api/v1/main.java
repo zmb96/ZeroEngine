@@ -48,8 +48,6 @@ public final class main extends JavaPlugin {
                 .regCommand("ty", new tycon(this))
                 .regCommand("giveit", new giveit(this));
 
-        sf.regEvent(new PlayerJoinOrQuitEvent(this));
-
         EnchantManager em = sf.enchant();
         em.register(new LifestealEnchant());
         em.register(new AncestralMightEnchant());

@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-4.0.0-blue)
+![Version](https://img.shields.io/badge/Version-3.2.4--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -23,6 +23,7 @@
 - [🔮 自定义附魔系统](#-自定义附魔系统)
 - [🎯 SFAttr 属性常量库](#-sfattr-属性常量库)
 - [🎒 自定义物品系统](#-自定义物品系统)
+- [🧟 自定义生物系统](#-自定义生物系统)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
 - [💬 聊天事件优先级 API](#-聊天事件优先级-api)
 - [🚀 性能优化系统](#-性能优化系统)
@@ -65,6 +66,7 @@
 - 🔮 **附魔注册系统**：继承 `SEnchantment` 自定义附魔，铁砧附魔支持
 - 🎯 **SFAttr 属性常量库**：全部 Bukkit Attribute 枚举封装、中文名、快捷构造，自动兼容多版本
 - 🎒 **物品注册系统**：继承 `SItem` 自定义物品，属性加成、交互事件
+- 🧟 **生物注册系统**：继承 `SEntity` 自定义生物，血量/攻击/阵营/生成条件/装备掉落/SFTick 钩子
 - 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
 - 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
 - 🚀 **性能优化系统**：内存监控、区块卸载、实体清理、TPS 自适应视距
@@ -738,8 +740,11 @@ Attribute a = SFAttr.get(SFAttr.MAX_HEALTH);
 | `TEMPT_RANGE` | 吸引范围 | - |
 | `SCALE` | 实体缩放 | 1.0 |
 | `STEP_HEIGHT` | 台阶高度 | 0.6 |
-| `EXPLOSION_KNOCKBACK_REDUCTION` | 爆炸击退减免 | - |
+| `EXPLOSION_KNOCKBACK_REDUCTION` | 爆炸击退减免（兼容旧名，建议用 `EXPLOSION_KNOCKBACK_RESISTANCE`） | - |
 | `SPAWN_REINFORCEMENTS` | 僵尸增援率 | 0.0 |
+| `BLOCK_BREAK_SPEED` | 方块破坏速度 | 1.0 |
+| `JUMP_STRENGTH` | 跳跃强度 | 0.42 |
+| `EXPLOSION_KNOCKBACK_RESISTANCE` | 爆炸击退抗性（Bukkit 1.21+ 正确名） | 0.0 |
 
 ### 工具方法
 
@@ -992,6 +997,206 @@ new ItemAttributeBonus(
 ### 内置示例
 
 - **魔法权杖**（`magic_scepter`）：右键瞬移、左键粒子效果、速度加成
+
+---
+
+## 🧟 自定义生物系统
+
+继承 `SEntity` 抽象基类即可定义自定义生物，自动覆盖**血量/攻击/速度/护甲/阵营/生成条件/装备掉落/SFTick 钩子/攻击玩家监听**等全部行为。装配入口 `sf.entities()`（懒加载，自动注册监听器、调度 SFTick、绑定 `/sfentity` 命令）。
+
+### 注册与使用
+
+```java
+@Override
+public void onEnable() {
+    SF sf = SF.sf();
+    sf.entities().register(new ShadowStalkerEntity());   // 注册自定义生物
+}
+```
+
+三种生成方式：
+
+```java
+sf.entities().spawn("shadow_stalker", player.getLocation());   // 强生成（无视 SpawnCondition）
+sf.entities().trySpawn("shadow_stalker", loc);                  // 按条件尝试自然生成
+// 或在 SEntity 里设 spawnCondition().replaceVanillaSpawns = true
+// → 原版同 EntityType 生物出现时自动转换
+```
+
+### SEntity 抽象基类
+
+| 必须实现 | 说明 |
+|---------|------|
+| `id()` | 唯一 ID（PDC key = `sf_entity_id`）|
+| `displayName()` | 显示名（实体的 customName）|
+| `entityType()` | 基础材质：Bukkit `EntityType`（如 `ZOMBIE` / `HUSK` / `WITHER_SKELETON`）|
+
+**属性方法（带默认值，可重写）**：
+
+| 方法 | 默认值 | 说明 |
+|------|-------|------|
+| `maxHealth()` | 20.0 | 最大生命 |
+| `attackDamage()` | 2.0 | 攻击伤害 |
+| `attackSpeed()` | 4.0 | 攻击速度 |
+| `movementSpeed()` | 0.3 | 移动速度 |
+| `knockbackResistance()` | 0.0 | 击退抗性 |
+| `armor()` | 0.0 | 护甲 |
+| `armorToughness()` | 0.0 | 护甲韧性 |
+| `followRange()` | 16.0 | 追踪范围 |
+| `flyingSpeed()` | 0.4 | 飞行速度 |
+
+属性在 `applyAttributes(entity)` 里通过 `SFAttr` 写入 Bukkit `AttributeInstance`，自动兼容 `GENERIC_` / 无前缀命名。
+
+### 阵营（Hostility）
+
+```java
+public enum Hostility {
+    HOSTILE,    // 主动攻击玩家
+    NEUTRAL,    // 被攻击后才反击
+    PASSIVE     // 永不攻击玩家
+}
+```
+
+`EntityListener.onTarget` 会自动按阵营取消目标事件：
+- `PASSIVE`：永远取消追踪玩家
+- `NEUTRAL`：取消自然生成导致的追踪（CLOSEST_PLAYER / RANDOM_TARGET），仅在被攻击后才追
+- `HOSTILE`：放行原版逻辑
+
+### 生成条件（SpawnCondition）
+
+链式构造：
+
+```java
+@Override
+public SpawnCondition spawnCondition() {
+    return new SpawnCondition()
+            .chance(0.2)         // 20% 几率
+            .nightOnly()         // 仅夜晚（世界时间 >= 13000）
+            .burnInDay()         // 白天太阳下燃烧（怕光照）
+            .light(0, 7)         // 仅在光照 0~7 的位置生成
+            .world("world")      // 限定世界（可多次调用）
+            .biome(Biome.PLAINS); // 限定群系（可多次调用）
+}
+```
+
+| 字段 | 默认值 | 说明 |
+|------|-------|------|
+| `chance` | 1.0 | 生成几率 0.0~1.0 |
+| `worlds` | 空=所有 | 允许生成的世界名集合 |
+| `biomes` | 空=所有 | 允许的生物群系集合 |
+| `minY` / `maxY` | -64 / 320 | Y 坐标范围 |
+| `minLight` / `maxLight` | 0 / 15 | 光照范围（实际光照必须落在区间内才生成）|
+| `burnInDaylight` | false | 怕光照，白天太阳下燃烧 |
+| `onlyAtNight` | false | 只在夜晚生成 |
+| `replaceVanillaSpawns` | false | 是否替换原版同类型生物（true 时原版生物出现自动转换）|
+| `spawnLimitPerChunk` | 4 | 每区块最大数量 |
+
+### 装备与掉落
+
+**生成时穿装备**（按 `chance` 概率穿戴）：
+
+```java
+@Override
+public List<EquipmentEntry> equipment() {
+    return Arrays.asList(
+        new EquipmentEntry(new ItemStack(Material.IRON_SWORD), 0.5, EquipmentSlot.HAND, true, 0.05),
+        new EquipmentEntry(new ItemStack(Material.IRON_HELMET), 0.3, EquipmentSlot.HEAD, true, 0.10)
+    );
+    //              物品                  穿戴几率  装备槽      死亡掉  死亡掉率
+}
+```
+
+**死亡额外掉落**：
+
+```java
+@Override
+public List<ItemStack> deathDrops() {
+    return Collections.singletonList(new ItemStack(Material.WITHER_ROSE, 1));
+}
+```
+
+### 事件钩子
+
+| 钩子 | 触发时机 |
+|------|---------|
+| `onSpawn(entity, loc, reason)` | 生物生成后（PDC 标签 + 属性 + 装备应用完）|
+| `onDeath(entity, event)` | 死亡时（追加掉落已经加进 event.getDrops()）|
+| `onAttack(attacker, target, damage, event)` | 攻击玩家时（仅当 target 是 Player 才触发）|
+| `onDamaged(entity, event)` | 任何受伤时 |
+| `onTarget(event)` | EntityTargetEvent，可用于自定义 AI |
+| `onTick(entity, sfTick)` | 每 5 SFTick（= 1 Bukkit tick）调用一次 |
+| `onPerSecond(entity, sfTick)` | 每 100 SFTick（= 1 秒）调用一次 |
+
+> Bukkit 实体操作必须主线程，所以 `onTick` 通过 `runTaskTimer` 同步调度，每 5 SFTick 合批到 1 Bukkit tick 执行。
+
+### 内置示例
+
+**暗影猎手**（`shadow_stalker`）—— 完整演示所有特性：
+
+```java
+public class ShadowStalkerEntity extends SEntity {
+    @Override public String id() { return "shadow_stalker"; }
+    @Override public String displayName() { return "§5暗影猎手"; }
+    @Override public EntityType entityType() { return EntityType.HUSK; }
+
+    @Override public double maxHealth() { return 40.0; }
+    @Override public double attackDamage() { return 6.0; }
+    @Override public double armor() { return 4.0; }
+    @Override public double knockbackResistance() { return 0.5; }
+    @Override public Hostility hostility() { return Hostility.HOSTILE; }
+
+    @Override public SpawnCondition spawnCondition() {
+        return new SpawnCondition().chance(0.2).nightOnly().burnInDay().light(0, 7);
+    }
+
+    @Override public List<EquipmentEntry> equipment() {
+        return Arrays.asList(
+            new EquipmentEntry(new ItemStack(Material.IRON_SWORD), 0.5, EquipmentSlot.HAND, true, 0.05),
+            new EquipmentEntry(new ItemStack(Material.IRON_HELMET), 0.3, EquipmentSlot.HEAD, true, 0.10)
+        );
+    }
+
+    @Override public List<ItemStack> deathDrops() {
+        return Collections.singletonList(new ItemStack(Material.WITHER_ROSE, 1));
+    }
+
+    @Override public void onAttack(LivingEntity attacker, LivingEntity target, double damage, EntityDamageByEntityEvent e) {
+        if (target instanceof Player p) {
+            var pe = Registry.EFFECT.get(NamespacedKey.minecraft("poison"));
+            if (pe != null) p.addPotionEffect(new PotionEffect(pe, 80, 2, false, true, true));
+        }
+    }
+
+    @Override public void onTick(LivingEntity entity, long sfTick) {
+        if (sfTick % 20 != 0) return;  // 每 20 SFTick 拖一次粒子
+        entity.getWorld().spawnParticle(Particle.REDSTONE,
+                entity.getLocation().add(0, 1.2, 0), 5, 0.3, 0.5, 0.3, 0.01,
+                new Particle.DustOptions(Color.fromRGB(80, 0, 100), 1.2f));
+    }
+
+    @Override public void onPerSecond(LivingEntity entity, long sfTick) {
+        if (Math.random() > 0.01) return;  // 1% 几率回血
+        AttributeInstance inst = entity.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH));
+        if (inst != null && entity.getHealth() < inst.getValue()) {
+            entity.setHealth(Math.min(inst.getValue(), entity.getHealth() + 1.0));
+        }
+    }
+}
+```
+
+### `/sfentity` 命令（别名 `/sfe`）
+
+| 子命令 | 作用 |
+|--------|------|
+| `/sfentity list` | 列出所有已注册生物（id/名称/类型/阵营/HP/攻击/活动数）|
+| `/sfentity spawn <id> [数量]` | 在玩家脚下生成（最多 50）|
+| `/sfentity info <id>` | 查看属性 / 装备 / 生成条件 / 当前活动数 |
+| `/sfentity count [id]` | 查看活动实例数 |
+| `/sfentity cleanup` | 清理无效引用 |
+| `/sfentity reload` | 清空注册表（需代码重新注册）|
+| `/sfentity help` | 帮助 |
+
+权限：`sf.admin.entity`（默认 op）
 
 ---
 
@@ -4069,6 +4274,42 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.2.4-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+**自定义生物系统（v3/feature/entity/）**
+
+全新模块，继承 `SEntity` 抽象基类即可定义自定义生物，覆盖完整生命周期：
+
+- `SEntity` 抽象基类：`id()` / `displayName()` / `entityType()` 必须实现；属性方法（HP / 攻击 / 速度 / 护甲 / 韧性 / 击退抗性 / 追踪范围 / 飞行速度）带默认值可重写
+- `Hostility` 枚举：`HOSTILE`（主动攻击）/ `NEUTRAL`（被攻击反击）/ `PASSIVE`（永不攻击），`EntityListener.onTarget` 自动按阵营取消目标事件
+- `SpawnCondition`：链式构造生成条件 —— 几率 / 世界 / 群系 / Y 范围 / 光照范围 / 怕光照白天燃烧 / 仅夜晚 / 替换原版生物 / 每区块上限
+- `EquipmentEntry`：生成时按几率穿戴物品 / 盔甲，可配置死亡掉率
+- 7 个事件钩子：`onSpawn` / `onDeath` / `onAttack`（攻击玩家）/ `onDamaged` / `onTarget` / `onTick`（每 5 SFTick）/ `onPerSecond`（每秒）
+- `EntityManager`：注册 / 查询 / 强生成 `spawn(id, loc)` / 按条件生成 `trySpawn(id, loc)` / PDC 反查 `find(living)` / 活动实例追踪
+- `EntityListener`：监听 `CreatureSpawnEvent` / `EntityDamageByEntityEvent` / `EntityDamageEvent` / `EntityDeathEvent` / `EntityTargetEvent` / `EntityCombustEvent`，自动调度 SFTick 任务
+- `SFEntityCommand`（`/sfentity` 别名 `/sfe`，权限 `sf.admin.entity`）：`list` / `spawn` / `info` / `count` / `cleanup` / `reload` / `help`
+- `SF.java` 新增 `entities()` 懒加载装配方法，自动注册监听 + 启动 tick 调度 + 绑定命令
+- 内置示例 `ShadowStalkerEntity`（`shadow_stalker`）：HUSK 材质，40 HP / 6 攻击，夜晚生成 / 怕光照 / 光照 0~7，50% 铁剑 + 30% 铁头盔，攻击附毒 III，每 20 SFTick 拖紫色粒子，1% 几率每秒回 1 血
+
+**SFAttr 属性常量库扩展**
+
+- 新增 `BLOCK_BREAK_SPEED`（方块破坏速度，Bukkit 1.21+）
+- 新增 `JUMP_STRENGTH`（跳跃强度，Bukkit 1.21+）
+- 新增 `EXPLOSION_KNOCKBACK_RESISTANCE`（爆炸击退抗性，Bukkit 1.21+ 正确名）
+- 保留 `EXPLOSION_KNOCKBACK_REDUCTION` 作为兼容旧名（运行时仍可命中）
+- 新增同名 `GENERIC_BLOCK_BREAK_SPEED` / `GENERIC_JUMP_STRENGTH` / `GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE` 兼容前缀
+- DISPLAY 中文名表补全 3 项：方块破坏速度 / 跳跃强度 / 爆炸击退抗性
+- 新增快捷构造方法：`blockBreakSpeed(base, perLevel)` / `jumpStrength(base, perLevel)` / `explosionKnockbackResistance(base, perLevel)` / `spawnReinforcements(base, perLevel)`（修复 `SPAWN_REINFORCEMENTS` 唯一缺快捷构造的缺口）
+
+#### 🔄 变更
+
+- `pom.xml` 版本：`3.2.3-LTS` → `3.2.4-LTS`
+- `plugin.yml` 注册 `sfentity` 命令 + `sf.admin.entity` 权限
+- `SF.java` 添加 `entity()` 懒加载方法 + shutdown 清理逻辑
+- README 新增「🧟 自定义生物系统」章节、SFAttr 表格补充 3 个新属性、特性列表加入生物注册系统
 
 ### [3.2.1] - 2026-08-16
 
