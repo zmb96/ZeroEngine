@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-3.2.4--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.2.5--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -24,6 +24,7 @@
 - [🎯 SFAttr 属性常量库](#-sfattr-属性常量库)
 - [🎒 自定义物品系统](#-自定义物品系统)
 - [🧟 自定义生物系统](#-自定义生物系统)
+- [📜 自定义配方系统](#-自定义配方系统)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
 - [💬 聊天事件优先级 API](#-聊天事件优先级-api)
 - [🚀 性能优化系统](#-性能优化系统)
@@ -67,6 +68,7 @@
 - 🎯 **SFAttr 属性常量库**：全部 Bukkit Attribute 枚举封装、中文名、快捷构造，自动兼容多版本
 - 🎒 **物品注册系统**：继承 `SItem` 自定义物品，属性加成、交互事件
 - 🧟 **生物注册系统**：继承 `SEntity` 自定义生物，血量/攻击/阵营/生成条件/装备掉落/SFTick 钩子
+- 📜 **配方注册系统**：继承 `SRecipe` 自定义配方，原版工作台 + 有序/无序 + 原版物品/自定义物品混合材料
 - 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
 - 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
 - 🚀 **性能优化系统**：内存监控、区块卸载、实体清理、TPS 自适应视距
@@ -567,6 +569,36 @@ SF.sf().enchant().register(new MyEnchant());
 | `onUnequip(ctx)` | 卸下时触发 |
 | `onTick(ctx)` | 每刻触发（性能敏感） |
 
+### applicableItems 匹配规则（通配符支持）
+
+`applicableItems()` 返回 `Set<String>`，每个字符串可以使用以下写法，**同一 set 中可以混用**：
+
+| 写法 | 含义 | 命中示例 |
+|------|------|---------|
+| `"*"` | 匹配所有物品 | 任意 ItemStack |
+| `"SWORD"` | **简写匹配**：自动命中所有以 `_SWORD` 结尾的材质 | `DIAMOND_SWORD`, `IRON_SWORD`, `NETHERITE_SWORD`, `GOLDEN_SWORD`, `STONE_SWORD`, `WOODEN_SWORD` |
+| `"HELMET"` / `"CHESTPLATE"` / `"LEGGINGS"` / `"BOOTS"` | 简写匹配，命中全部盔甲位（6 种材质） | `NETHERITE_HELMET`, `LEATHER_BOOTS` ... |
+| `"*_SWORD"` | 显式后缀匹配（与简写 `SWORD` 等价） | 同上所有剑 |
+| `"DIAMOND_*"` | 前缀匹配：以 `DIAMOND_` 开头的所有材质 | `DIAMOND_SWORD`, `DIAMOND_PICKAXE`, `DIAMOND_AXE` ... |
+| `"*AXE*"` | 包含匹配：材质名里含 `AXE` | `IRON_AXE`, `GOLDEN_AXE`, `WOODEN_AXE` ... |
+| `"NETHERITE_SWORD"` | 完全相等：精确匹配单个材质 | 仅 `NETHERITE_SWORD` |
+
+**匹配优先级**：`"*"` > 包含匹配 > 前缀/后缀匹配 > 完全相等 > 简写匹配；只要任一规则命中就判定"可以附魔"。
+
+```java
+// 示例：一把"只要是剑就能附"的附魔
+@Override
+public Set<String> applicableItems() {
+    return Set.of("SWORD");
+}
+
+// 示例：所有盔甲 + 下界合金剑
+@Override
+public Set<String> applicableItems() {
+    return Set.of("HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS", "NETHERITE_SWORD");
+}
+```
+
 ### AttributeBonus
 
 ```java
@@ -686,11 +718,15 @@ tableListener.addBlacklistWorld("world_nether");    // 黑名单世界
 2. 将工具放在铁砧右侧
 3. 消耗经验即可附魔
 
-**附魔规则：**
-- 附魔书等级 < 物品现有等级：升级一级
-- 附魔书等级 ≥ 物品现有等级：取最高等级
-- 与现有附魔冲突时无法附魔
+**附魔（装备 + 附魔书）规则：**
+- 装备上**没有**该附魔（首次附魔）：直接写入附魔书的等级
+- 装备已有，且**同等级**未达 `maxLevel()`：升级到 `bookLevel + 1`（允许合并升级）
+- 装备已有，且**同等级已达 `maxLevel()`**：跳过（最高等级不允许再合并）
+- 装备已有，且**不同等级**：跳过（不再按原版取 max，避免覆盖/虚高）
+- 与现有附魔冲突（`conflictGroups()` 同组）时无法附魔
 - 消耗经验 = `anvilCost() × 最终等级`
+
+**（附魔书 + 附魔书在铁砧合并为一本更高等级书）的规则同上：仅同等级、未达上限时才会升级成下一级书。**
 
 ---
 
@@ -1197,6 +1233,163 @@ public class ShadowStalkerEntity extends SEntity {
 | `/sfentity help` | 帮助 |
 
 权限：`sf.admin.entity`（默认 op）
+
+---
+
+## 📜 自定义配方系统
+
+继承 `SRecipe` 抽象基类即可定义**原版工作台合成配方**，自动支持：
+
+- **两种配方模式**：`SHAPED`（有序，3×3 形状）/ `SHAPELESS`（无序，任意摆放）
+- **原版物品 + 自定义物品混合材料**：`ingredients()` / `result()` 既可传 `Material` 枚举，也可传 `SItem` 实例
+- **精确匹配自定义物品**：当 ingredient 是 `SItem` 时，底层使用 Bukkit `RecipeChoice.ExactChoice(sItem.create(1))`，要求输入物品的 **displayName + lore + PDC（自定义物品标签）完全一致**，防止普通同名原版物品冒充
+- **注册即生效**：`RecipeManager.register(SRecipe)` 内部调用 `Bukkit.addRecipe()`，玩家在原版 3×3 工作台直接合成；取出结果后，原版自动消耗对应槽位材料
+
+装配入口 `sf.recipes()`（懒加载，自动注册 `/sfrecipe` 命令、shutdown 时自动 `unregisterAll()`）。
+
+### 快速开始
+
+```java
+@Override
+public void onEnable() {
+    SF sf = SF.sf();
+
+    // 注册配方（也可以写 sf.recipes().registerAll(new A(), new B(), ...)）
+    sf.recipes().register(new MagicScepterRecipe());
+}
+```
+
+之后玩家直接打开原版工作台：
+
+```
+ E     （上排中 = 末影之眼）
+GBG    （中排 = 金锭 + 烈焰棒 + 金锭）
+ D     （下排中 = 钻石）
+→ 合成产物：魔法权杖（MagicScepterItem）× 1
+```
+
+### SRecipe 抽象基类
+
+| 必须实现 | 返回类型 | 说明 |
+|---------|---------|------|
+| `id()` | `String` | 配方唯一标识（用于 Bukkit `NamespacedKey(plugin, "sf_" + id)`） |
+| `mode()` | `RecipeMode` | `SHAPED`（有序配方，必须再写 `shape()`）或 `SHAPELESS`（无序，只看 ingredients，不读 shape）|
+| `ingredients()` | `Map<Character, Object>` | 字符 → 材料。value 两种写法：① `Material` 原版物品 ② `SItem` 实例自定义物品 |
+| `result()` | `Object` | 合成产物：① `Material` 原版物品枚举 ② `SItem` 实例自定义物品 |
+
+| 可选重写 | 默认 | 说明 |
+|---------|------|------|
+| `shape()` | 空 | SHAPED 才用：`List<String>` 1~3 行，每行 1~3 个字符；`' '`=空槽 |
+| `resultAmount()` | `1` | 产物数量（SItem 会自动传给 `sItem.create(amount)`）|
+| `unlockedByDefault()` | `true` | 配方是否在玩家配方书里默认解锁（`Bukkit.addRecipe(recipe, <this>)`）|
+
+### 有序配方示例（SHAPED）—— MagicScepterRecipe
+
+```java
+public class MagicScepterRecipe extends SRecipe {
+    @Override public String id() { return "magic_scepter"; }
+    @Override public RecipeMode mode() { return RecipeMode.SHAPED; }
+
+    @Override public List<String> shape() {
+        // 3×3 形状；字母与 ingredients 一一对应，空格代表空槽
+        return Arrays.asList(
+            " E ",
+            "GBG",
+            " D "
+        );
+    }
+
+    @Override public Map<Character, Object> ingredients() {
+        // 用 LinkedHashMap 保证展示顺序与 info 命令一致
+        Map<Character, Object> map = new LinkedHashMap<>();
+        map.put('E', Material.ENDER_EYE);                // 原版物品
+        map.put('G', Material.GOLD_INGOT);
+        map.put('B', Material.BLAZE_ROD);
+        map.put('D', Material.DIAMOND);
+        return map;
+    }
+
+    @Override public Object result() { return new MagicScepterItem(); } // 自定义物品作产物
+    @Override public int resultAmount() { return 1; }
+}
+```
+
+### 无序配方示例（SHAPELESS）—— 简易金苹果
+
+```java
+public class ShinyAppleRecipe extends SRecipe {
+    @Override public String id() { return "shiny_apple"; }
+    @Override public RecipeMode mode() { return RecipeMode.SHAPELESS; }
+
+    @Override public Map<Character, Object> ingredients() {
+        // SHAPELESS 场景下，字符 key 可以任意写，实际只统计"每种材料各 1 份"
+        // 如果想要"两份金锭"，把 SHAPED 模式的 shape 写两个同字母即可
+        return Map.of(
+            'A', Material.APPLE,
+            'G', Material.GOLD_INGOT,   // 只写一份金锭
+            'C', new CustomShardItem()  // 把自定义物品"神秘碎片"作为 ingredient（要求完全一致，含 PDC）
+        );
+    }
+
+    @Override public Object result() { return Material.GOLDEN_APPLE; }  // 原版物品作产物
+    @Override public int resultAmount() { return 1; }
+}
+```
+
+### 材料与产物的类型对照
+
+| 目标 | 在 `ingredients()` / `result()` 里写什么 | 底层匹配/生成方式 |
+|------|------------------------------------------|------------------|
+| 原版钻石剑作材料 | `Material.DIAMOND_SWORD` | `RecipeChoice.MaterialChoice(DIAMOND_SWORD)`：任意同 Material 物品都能当材料 |
+| 自定义物品"神秘碎片"作材料 | `new CustomShardItem()` | `RecipeChoice.ExactChoice(sItem.create(1))`：**要求物品 PDC/显示名/lore 完全一致**，防止普通烈焰棒伪装成自定义烈焰棒 |
+| 原版钻石作产物 | `Material.DIAMOND` | 返回 `new ItemStack(DIAMOND, resultAmount())` |
+| 自定义魔法权杖作产物 | `new MagicScepterItem()` | 返回 `magicScepter.create(resultAmount())`，带完整 PDC、属性、音效 |
+
+> **关键安全提示**：自定义物品作材料时，必须使用"已注册的同一个 SItem"的 create() 产物；否则玩家随便写 `displayName` 相同、但 PDC 不同的物品是无法通过 `ExactChoice` 校验的，杜绝配方材料伪造刷物漏洞。
+
+### 多份同类型材料怎么表达？
+
+有序配方（SHAPED）：在 shape 里**重复同一个字母**。例：合成一把钻石剑需要 2 颗钻石 + 1 根木棍：
+
+```java
+@Override public List<String> shape() {
+    return Arrays.asList("D", "D", "S");   // 3 行 1 列竖排
+}
+@Override public Map<Character, Object> ingredients() {
+    return Map.of('D', Material.DIAMOND, 'S', Material.STICK);
+}
+// shape 中 D 出现 2 次 → 消耗 2 颗钻石；S 出现 1 次 → 消耗 1 根木棍
+```
+
+无序配方（SHAPELESS）：把同一个 `Material` / `SItem` 放进 map **多个不同 key**，或直接把 `List.of(Material.X, Material.X)` 包成集合（但我们的签名是 Map<Char,Object> —— 所以推荐用"多个不同 key 放同 value"）。
+
+### RecipeManager API
+
+```java
+RecipeManager recipes = sf.recipes();
+
+recipes.register(new MagicScepterRecipe());   // 注册一个配方
+recipes.registerAll(new A(), new B());        // 批量注册
+
+SRecipe r = recipes.get("magic_scepter");     // 按 id 查找
+Collection<SRecipe> all = recipes.all();      // 全部已注册
+
+boolean ok = recipes.remove("magic_scepter"); // 从 Bukkit 移除 + 清注册表
+recipes.unregisterAll();                      // 清空全部
+```
+
+### `/sfrecipe` 命令（别名 `/sfr`）
+
+| 子命令 | 作用 |
+|--------|------|
+| `/sfrecipe list` | 列出所有已注册配方（id / 模式 / 产物）|
+| `/sfrecipe info <id>` | 查看形状（有序配方逐行显示字母与材料）/ 材料映射 / 产物 |
+| `/sfrecipe give <id> [玩家]` | 给玩家发放一份"配方产物"（相当于手动合成一次）|
+| `/sfrecipe remove <id>` | 移除一个配方（工作台不再显示该合成）|
+| `/sfrecipe reload` | 清空所有已注册配方（**需要在代码中重新 `register`**）|
+| `/sfrecipe help` | 帮助 |
+
+权限：`sf.admin.recipe`（默认 op）
 
 ---
 
@@ -4274,6 +4467,42 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.2.5-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+**自定义配方系统（v3/feature/recipe/）**
+
+- `SRecipe` 抽象基类：继承实现 `id()` / `mode()`（SHAPED / SHAPELESS）/ `ingredients()` / `result()`；可选 `shape()`（有序）/ `resultAmount()` / `unlockedByDefault()`
+- `ingredients()` 与 `result()` 同时支持两种返回：`org.bukkit.Material` 枚举（原版物品）或 `cn.ZeroEngine.Engine.api.v3.feature.item.SItem` 实例（自定义物品）
+- 自动选择匹配策略：Material → `RecipeChoice.MaterialChoice`；SItem → `RecipeChoice.ExactChoice(sItem.create(1))`，精确匹配 PDC / displayName / lore，防止伪造材料
+- 注册到原版工作台：`RecipeManager.register(SRecipe)` 内部调用 `Bukkit.addRecipe()`，玩家在原版 3×3 合成台可直接合成
+- `SFRecipeCommand`（`/sfrecipe` 别名 `/sfr`，权限 `sf.admin.recipe`）：`list` / `info <id>` / `give <id> [玩家]` / `remove <id>` / `reload` / `help`
+- 幂等：shutdown 自动 `unregisterAll()`；重复 key 拒绝注册并 warn；按 tag 名自动生成 `NamespacedKey(plugin, "sf_" + id)`
+- 内置示例 `MagicScepterRecipe`：END_EYE + 2×GOLD_INGOT + BLAZE_ROD + DIAMOND → `MagicScepterItem` × 1
+
+#### 🔄 变更
+
+**附魔通配符增强（v3 SEnchantment.canEnchantItem）**
+
+- 新增后缀匹配：`"*_SWORD"` 匹配所有以 `_SWORD` 结尾的材质
+- 新增包含匹配：`"*AXE*"` 匹配包含 `AXE` 的材质
+- 新增简写匹配：无 `*` 且完全相等不命中时，自动尝试 `"_" + pattern` 后缀匹配 —— 填 `"SWORD"` 即命中所有剑（DIAMOND_SWORD / IRON_SWORD / NETHERITE_SWORD 等）
+- 前缀匹配 `DIAMOND_*`、完全相等、`*` 全部匹配（原有）保留不变
+- 示例 `LifestealEnchant.applicableItems()` 从 6 种剑长列表改为 `Set.of("SWORD")`；`AncestralMightEnchant` 从 24 种盔甲长列表改为 `Set.of("HELMET","CHESTPLATE","LEGGINGS","BOOTS")`，语义不变
+
+**铁砧合并严格化（v3 EnchantAnvilListener）**
+
+- 首次附魔（装备无该附魔，current==0）：写入 `bookLevel`（正常）
+- 同等级合并：升级到 `bookLevel + 1`，但 `bookLevel >= maxLevel` 时跳过（最高等级禁止合并）
+- 不同等级合并：严格跳过（不再像原版那样取 max）
+
+#### 🛠 修复
+
+- `SFEntityCommand` 别名 `sfe` 与 `SFEnchantCommand` 的 `sfe` 冲突 → 改为 `sfee`
+- `Plugin.yml` 新增 `sfrecipe` 命令与 `sf.admin.recipe` 权限
+- `pom.xml` 版本：`3.2.4-LTS` → `3.2.5-LTS`
 
 ### [3.2.4-LTS] - 2026-08-24
 
