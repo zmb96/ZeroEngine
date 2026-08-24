@@ -1169,7 +1169,7 @@ public class ShadowStalkerEntity extends SEntity {
 
     @Override public void onTick(LivingEntity entity, long sfTick) {
         if (sfTick % 20 != 0) return;  // 每 20 SFTick 拖一次粒子
-        entity.getWorld().spawnParticle(Particle.REDSTONE,
+        entity.getWorld().spawnParticle(Particle.DUST,
                 entity.getLocation().add(0, 1.2, 0), 5, 0.3, 0.5, 0.3, 0.01,
                 new Particle.DustOptions(Color.fromRGB(80, 0, 100), 1.2f));
     }

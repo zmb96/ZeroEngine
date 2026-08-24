@@ -141,7 +141,7 @@ public class EntityListener implements Listener {
                     e.setCancelled(true);
                 }
             }
-            case HOSTIVE -> { /* 敌对：让原版逻辑跑 */ }
+            case HOSTILE -> { /* 敌对：让原版逻辑跑 */ }
             default -> {}
         }
 

@@ -137,7 +137,7 @@ public class ShadowStalkerEntity extends SEntity {
             if (pe != null) {
                 p.addPotionEffect(new PotionEffect(pe, 80, 2, false, true, true));
             }
-            p.getWorld().spawnParticle(Particle.SPELL_MOB,
+            p.getWorld().spawnParticle(Particle.DRAGON_BREATH,
                     p.getLocation().add(0, 1, 0), 15, 0.3, 0.6, 0.3, 0.05);
         } catch (Throwable t) {
             // Registry 取不到时静默
@@ -147,7 +147,7 @@ public class ShadowStalkerEntity extends SEntity {
     /** 受伤时：黑色粒子溅射 */
     @Override
     public void onDamaged(LivingEntity entity, EntityDamageEvent event) {
-        entity.getWorld().spawnParticle(Particle.SMOKE_NORMAL,
+        entity.getWorld().spawnParticle(Particle.LARGE_SMOKE,
                 entity.getLocation().add(0, 1, 0), 8, 0.3, 0.6, 0.3, 0.05);
     }
 
@@ -174,7 +174,7 @@ public class ShadowStalkerEntity extends SEntity {
     public void onTick(LivingEntity entity, long sfTick) {
         if (sfTick % 20 != 0) return;
         Location loc = entity.getLocation().add(0, 1.2, 0);
-        entity.getWorld().spawnParticle(Particle.REDSTONE,
+        entity.getWorld().spawnParticle(Particle.DUST,
                 loc, 5, 0.3, 0.5, 0.3, 0.01,
                 new Particle.DustOptions(Color.fromRGB(80, 0, 100), 1.2f));
     }
