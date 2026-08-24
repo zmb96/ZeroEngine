@@ -37,8 +37,13 @@ commands:
   sfentity:
     description: SF 自定义生物系统
     usage: /sfentity <list|spawn|info|count|cleanup|reload|help>
-    aliases: [sfe]
+    aliases: [sfee]
     permission: sf.admin.entity
+  sfrecipe:
+    description: SF 自定义配方系统
+    usage: /sfrecipe <list|info|give|remove|reload|help>
+    aliases: [sfr]
+    permission: sf.admin.recipe
   sfchat:
     description: SF 聊天系统
     usage: /sfchat <channel|mute|unmute|muteinfo|block|unblock|blocklist|clear|help>
@@ -78,6 +83,9 @@ permissions:
     default: op
   sf.admin.entity:
     description: SF 自定义生物系统
+    default: op
+  sf.admin.recipe:
+    description: SF 自定义配方系统
     default: op
   sf.admin.world:
     description: 世界管理

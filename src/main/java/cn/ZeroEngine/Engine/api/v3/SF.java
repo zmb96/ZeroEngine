@@ -37,6 +37,8 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
 import cn.ZeroEngine.Engine.api.v3.feature.entity.EntityManager;
 import cn.ZeroEngine.Engine.api.v3.feature.entity.EntityListener;
 import cn.ZeroEngine.Engine.api.v3.feature.entity.SEntity;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.RecipeManager;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.SRecipe;
 import cn.ZeroEngine.Engine.api.v3.feature.teleport.TeleportManager;
 import cn.ZeroEngine.Engine.api.v3.feature.tick.TickManager;
 import cn.ZeroEngine.Engine.api.v3.feature.chat.ChatManager;
@@ -72,6 +74,7 @@ public final class SF implements SFApi {
     private ItemListener itemListener;
     private EntityManager entityManager;
     private EntityListener entityListener;
+    private RecipeManager recipeManager;
     private ChatManager chatManager;
     private WorldManager worldManager;
     private PermissionManager permissionManager;
@@ -123,6 +126,7 @@ public final class SF implements SFApi {
             if (instance.itemManager != null) instance.itemManager.unregisterAll();
             if (instance.entityListener != null) instance.entityListener.shutdown();
             if (instance.entityManager != null) instance.entityManager.unregisterAll();
+            if (instance.recipeManager != null) instance.recipeManager.unregisterAll();
             if (instance.perfManager != null) instance.perfManager.shutdown();
             if (instance.bedwarsImpl != null) instance.bedwarsImpl.shutdown();
             if (instance.pvpImpl != null) instance.pvpImpl.shutdown();
@@ -193,6 +197,17 @@ public final class SF implements SFApi {
             sf.info("[Entity] Custom mob system initialized");
         }
         return entityManager;
+    }
+
+    public RecipeManager recipes() {
+        if (recipeManager == null) {
+            SRecipe.init(plugin);
+            recipeManager = new RecipeManager();
+            regCommand("sfrecipe", new cn.ZeroEngine.Engine.api.v3.feature.recipe.SFRecipeCommand(recipeManager));
+            SF sf = SF.sf();
+            sf.info("[Recipe] Custom recipe system initialized");
+        }
+        return recipeManager;
     }
 
     public ChatManager chat() {
