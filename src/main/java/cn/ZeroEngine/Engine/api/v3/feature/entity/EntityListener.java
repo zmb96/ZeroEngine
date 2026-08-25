@@ -178,32 +178,39 @@ public class EntityListener implements Listener {
         long bukkitSecond = Math.max(1, perSecondTicks / 5);
 
         // onTick —— 每 bukkitTick 个 Bukkit tick 跑一次
+        // 用 keySet 副本迭代，避免 UnmodifiableMap 不支持 iterator.remove()
+        // 移除已死亡实体走 manager.removeActive(uuid) 显式调用
         tickTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            Iterator<Map.Entry<UUID, SEntity>> it = manager.activeMap().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<UUID, SEntity> en = it.next();
-                Entity ent = sf.bukkit().getEntity(en.getKey());
+            for (UUID id : new java.util.ArrayList<>(manager.activeMap().keySet())) {
+                Entity ent = sf.bukkit().getEntity(id);
                 if (ent == null || ent.isDead() || !ent.isValid() || !(ent instanceof LivingEntity living)) {
-                    it.remove();
+                    manager.removeActive(id);
                     continue;
                 }
+                SEntity def = manager.activeMap().get(id);
+                if (def == null) continue;
                 try {
-                    en.getValue().onTick(living, sf.tick().now());
+                    def.onTick(living, sf.tick().now());
                 } catch (Throwable t) {
-                    sf.error("[Entity] onTick error: " + en.getValue().id(), t);
+                    sf.error("[Entity] onTick error: " + def.id(), t);
                 }
             }
         }, 1L, bukkitTick);
 
         // onPerSecond —— 每 bukkitSecond 个 Bukkit tick 跑一次
         perSecondTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            for (Map.Entry<UUID, SEntity> en : manager.activeMap().entrySet()) {
-                Entity ent = sf.bukkit().getEntity(en.getKey());
-                if (ent == null || ent.isDead() || !ent.isValid() || !(ent instanceof LivingEntity living)) continue;
+            for (UUID id : new java.util.ArrayList<>(manager.activeMap().keySet())) {
+                Entity ent = sf.bukkit().getEntity(id);
+                if (ent == null || ent.isDead() || !ent.isValid() || !(ent instanceof LivingEntity living)) {
+                    manager.removeActive(id);
+                    continue;
+                }
+                SEntity def = manager.activeMap().get(id);
+                if (def == null) continue;
                 try {
-                    en.getValue().onPerSecond(living, sf.tick().now());
+                    def.onPerSecond(living, sf.tick().now());
                 } catch (Throwable t) {
-                    sf.error("[Entity] onPerSecond error: " + en.getValue().id(), t);
+                    sf.error("[Entity] onPerSecond error: " + def.id(), t);
                 }
             }
         }, 20L, bukkitSecond);
