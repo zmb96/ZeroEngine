@@ -87,6 +87,22 @@ public class EntityManager {
     }
 
     /**
+     * 从活动实例追踪表移除指定实体（用于 EntityListener 在 tick 调度中清理已死亡实体）
+     * 必须通过此方法移除，因为 activeMap() 返回的是 UnmodifiableMap，不支持迭代器 remove。
+     * @return 被移除的 SEntity 定义，或 null（不存在）
+     */
+    public SEntity removeActive(UUID entityId) {
+        return active.remove(entityId);
+    }
+
+    /**
+     * 清空所有活动实例追踪（用于 shutdown）
+     */
+    public void clearActive() {
+        active.clear();
+    }
+
+    /**
      * 在指定位置生成自定义生物（不校验 SpawnCondition.matches，强制生成）
      * @return 生成的实体，失败返回 null
      */
