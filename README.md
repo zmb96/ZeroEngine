@@ -728,6 +728,207 @@ tableListener.addBlacklistWorld("world_nether");    // 黑名单世界
 
 **（附魔书 + 附魔书在铁砧合并为一本更高等级书）的规则同上：仅同等级、未达上限时才会升级成下一级书。**
 
+### 📝 完整实战示例 —— 雷霆之怒附魔
+
+下面这个示例**可直接 copy 到你插件里运行**，覆盖所有常用方法：属性加成、攻击钩子、被攻击钩子、装备/卸下钩子、Tick 钩子、附魔冲突组、铁砧经验消耗、附魔书材质限定。
+
+```java
+package my.plugin.enchant;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SEnchantment;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.AttributeBonus;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * 雷霆之怒 —— 演示一个完整附魔的所有重写点
+ *
+ * 行为：
+ *   - 可附魔在所有剑、所有斧（简写 SWORD + 简写 AXE）
+ *   - 最大 5 级；每级 +1.0 攻击伤害 +3% 攻击速度
+ *   - 攻击时有概率召唤雷电（等级越高概率越大、伤害越高）
+ *   - 被攻击时按等级反弹一定伤害
+ *   - 装备时给玩家雷击粒子提示，卸下时给低沉音效
+ *   - 每 20 SFTick 在持有者脚下生成微小烟雾粒子（动态特效）
+ *   - 铁砧附魔消耗 = 4 经验/级
+ *   - 与"吸血"附魔冲突（conflictGroups 含 "vampiric"）
+ */
+public class ThunderFuryEnchant extends SEnchantment {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "thunder_fury";
+    }
+
+    @Override
+    public String displayName() {
+        return "§b雷霆之怒";
+    }
+
+    @Override
+    public int maxLevel() {
+        return 5;
+    }
+
+    @Override
+    public Set<String> applicableItems() {
+        // 简写：SWORD 自动命中 *_SWORD 全部 6 种剑
+        // 简写：AXE   自动命中 *_AXE 全部 6 种斧（含挖木斧）
+        return new HashSet<>(Arrays.asList("SWORD", "AXE"));
+    }
+
+    @Override
+    public int anvilCost() {
+        return 4;   // 铁砧消耗 = 4 经验 × 附魔等级
+    }
+
+    @Override
+    public Set<String> conflictGroups() {
+        // 与同组（"vampiric"）的附魔互斥，铁砧拒绝同时附上
+        return new HashSet<>(Collections.singletonList("vampiric"));
+    }
+
+    // ==================== 属性加成 ====================
+
+    @Override
+    public List<AttributeBonus> attributes() {
+        // 用 SFAttr 静态常量，自动兼容 GENERIC_ 前缀 + 无前缀命名（v3.2.6+ 推荐写法）
+        return Arrays.asList(
+            // 每级 +1.0 攻击伤害（ADD_NUMBER 模式：基础值 + level * perLevel）
+            AttributeBonus.add("thunder_dmg", SFAttr.ATTACK_DAMAGE, 1.0, 1.0),
+            // 每级 +3% 攻击速度（MULTIPLY_SCALAR_1 模式：基础值 × (1 + level*0.03)）
+            AttributeBonus.mult("thunder_spd", SFAttr.ATTACK_SPEED, 0.0, 0.03)
+        );
+    }
+
+    // ==================== 事件钩子 ====================
+
+    /**
+     * 持有者攻击别人时触发
+     *   - level 1-5：15% × level 几率召唤雷电劈中目标
+     *   - 雷电额外造成 2 × level 真实伤害（绕过护甲）
+     */
+    @Override
+    public void onAttack(LivingEntity attacker, LivingEntity target,
+                         double damage, EntityDamageByEntityEvent event) {
+        int level = event.getEntity() instanceof Player ? 0 :
+                    getLevel(attacker.getEquipment() != null
+                             ? attacker.getEquipment().getItemInMainHand()
+                             : null);
+        if (level <= 0) return;
+
+        // 概率判定：5% × level → level 5 时 25%
+        if (Math.random() > 0.05 * level) return;
+
+        // 召唤雷电（不点燃、不破坏方块）
+        target.getWorld().strikeLightning(target.getLocation());
+
+        // 额外真实伤害（绕过护甲）
+        target.damage(2.0 * level, attacker);
+
+        // 玩家攻击者播放声效
+        if (attacker instanceof Player p) {
+            p.playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1.0f, 1.5f);
+        }
+    }
+
+    /**
+     * 持有者被攻击时触发
+     *   - 反弹 (level × 0.5) 伤害给攻击者
+     */
+    @Override
+    public void onDamaged(LivingEntity victim, EntityDamageEvent event) {
+        if (!(event instanceof EntityDamageByEntityEvent edee)) return;
+        if (!(edee.getDamager() instanceof LivingEntity attacker)) return;
+
+        int level = getLevel(victim.getEquipment() != null
+                             ? victim.getEquipment().getItemInMainHand()
+                             : null);
+        if (level <= 0) return;
+
+        // 反弹伤害（不触发递归 onAttack，否则会无限套娃）
+        attacker.damage(level * 0.5, victim);
+        // 反弹粒子
+        attacker.getWorld().spawnParticle(Particle.ELECTRIC_SPARK,
+                attacker.getLocation().add(0, 1, 0), 8, 0.3, 0.5, 0.3, 0.05);
+    }
+
+    /**
+     * 装备时触发（切到主手即触发）
+     */
+    @Override
+    public void onEquip(Player player, ItemStack item) {
+        int level = getLevel(item);
+        player.sendMessage("§b⚡ 雷霆之怒 §r已激活 §eLv." + level);
+        player.getWorld().spawnParticle(Particle.FIREWORK,
+                player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
+    }
+
+    /**
+     * 卸下时触发（切走主手物品时）
+     */
+    @Override
+    public void onUnequip(Player player, ItemStack item) {
+        player.sendMessage("§7⚡ 雷霆之怒 §r已沉睡");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 0.7f, 0.8f);
+    }
+
+    /**
+     * 每 SFTick 调用一次（性能敏感，避免重逻辑）
+     *   - 这里每 20 SFTick（= 1 Bukkit tick × 4）放个烟雾粒子做动态特效
+     */
+    @Override
+    public void onTick(LivingEntity holder, long sfTick) {
+        if (sfTick % 20 != 0) return;  // 节流：每 20 SFTick 才执行
+        holder.getWorld().spawnParticle(Particle.SMOKE,
+                holder.getLocation().add(0, 0.2, 0), 2, 0.2, 0.3, 0.2, 0.01);
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);                  // 初始化 SF（仅第一次有效，重复调用会被静默跳过）
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().enchant()
+     *        .register(new ThunderFuryEnchant());
+     * </pre>
+     *
+     * 之后玩家即可：
+     *   /sfenchant book thunder_fury 1    —— 拿到 I 级附魔书
+     *   /sfenchant book thunder_fury 5    —— 拿到 V 级附魔书（极限级）
+     *   把附魔书放铁砧 + 把剑放铁砧 → 消耗经验附魔上去
+     */
+}
+```
+
+> **要点速查**：
+> - 简写匹配 `"SWORD"` / `"AXE"` 一次命中所有材质，比写 `DIAMOND_SWORD, IRON_SWORD, ...` 简洁 10 倍
+> - `AttributeBonus.add()` 是 ADD_NUMBER 模式（数值相加），`.mult()` 是 MULTIPLY_SCALAR_1（百分比相乘）
+> - `onAttack` / `onDamaged` 都是 LivingEntity 通用版，既能处理玩家也能处理怪物
+> - `getLevel(ItemStack)` 是基类提供的工具方法，传入物品返回该附魔的等级（0 表示没有）
+> - 铁砧消耗 = `anvilCost() × 最终等级`，所以雷霆之怒 5 级一次附魔要 4×5=20 经验
+> - 注册前必须 `SF.init(this)` 一次，否则 `SF.sf()` 返回 null
+
 ---
 
 ## 🎯 SFAttr 属性常量库
@@ -1034,6 +1235,214 @@ new ItemAttributeBonus(
 
 - **魔法权杖**（`magic_scepter`）：右键瞬移、左键粒子效果、速度加成
 
+### 📝 完整实战示例 —— 神圣守护盾
+
+下面这个示例可直接 copy 到你插件运行，覆盖所有常用方法：lore 描述、不可破坏、自定义标签、装备加成、右键交互、左键交互、装备/卸下钩子、CustomModelData。
+
+```java
+package my.plugin.item;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
+import cn.ZeroEngine.Engine.api.v3.feature.item.ItemAttributeBonus;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemFlag;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * 神圣守护盾 —— 演示一个完整自定义物品的所有重写点
+ *
+ * 行为：
+ *   - 材质为盾牌（SHIELD），不可破坏
+ *   - 显示名 "§e神圣守护盾"，lore 显示属性与传说
+ *   - 标签 [传说, 守护]
+ *   - 装备（切到主手或副手）时：
+ *       +5 最大生命、+2 护甲、+0.2 击退抗性
+ *       + 播放贝斯之歌音效
+ *   - 卸下时播放低沉音效
+ *   - 右键空气：给周围 5 格内所有友方玩家（含自己）上抗性提升 I 30 秒
+ *   - 右键方块：在方块上方召唤一片光柱粒子（装饰用）
+ *   - 左键：广播"盾之意志！"消息给附近玩家
+ *   - CustomModelData = 7700（用于资源包贴图）
+ */
+public class HolyShieldItem extends SItem {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "holy_shield";  // PDC key 内部会用 SHA-1 哈希做 slug 化，中文 id 也安全（v3.2.6+）
+    }
+
+    @Override
+    public String displayName() {
+        return "§e§l神圣守护盾";
+    }
+
+    @Override
+    public Material material() {
+        return Material.SHIELD;
+    }
+
+    @Override
+    public boolean isUnbreakable() {
+        return true;   // 不可破坏，耐久条不显示也不消耗
+    }
+
+    @Override
+    public int maxStackSize() {
+        return 1;      // 不可堆叠
+    }
+
+    @Override
+    public int customModelData() {
+        return 7700;   // 用于资源包贴图覆盖
+    }
+
+    // ==================== Lore 与标签 ====================
+
+    @Override
+    public List<String> lore() {
+        return Arrays.asList(
+            "§7据说由远古守护者所铸，",
+            "§7持盾者将获得神圣庇佑。",
+            "",
+            "§b► +5 §7最大生命",
+            "§b► +2 §7护甲",
+            "§b► +20% §7击退抗性",
+            "",
+            "§e[传说] §6[守护]"
+        );
+    }
+
+    @Override
+    public List<String> tags() {
+        return Arrays.asList("传说", "守护");
+    }
+
+    // ==================== 属性加成 ====================
+
+    @Override
+    public List<ItemAttributeBonus> attributes() {
+        return Arrays.asList(
+            // 用 SFAttr 常量保证多版本兼容（v3.2.6+ 推荐写法）
+            new ItemAttributeBonus("holy_hp", SFAttr.MAX_HEALTH, 5.0, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND),
+            new ItemAttributeBonus("holy_armor", SFAttr.ARMOR, 2.0, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND),
+            new ItemAttributeBonus("holy_kr", SFAttr.KNOCKBACK_RESISTANCE, 0.2, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
+        );
+    }
+
+    // ==================== 交互钩子 ====================
+
+    /**
+     * 右键事件：
+     *   - 右键空气 → 给附近 5 格内所有玩家上抗性提升 30 秒
+     *   - 右键方块 → 在方块上方召一道光柱粒子
+     */
+    @Override
+    public boolean onRightClick(PlayerInteractEvent event) {
+        Player p = event.getPlayer();
+        switch (event.getAction()) {
+            case RIGHT_CLICK_AIR -> {
+                // 给周围 5 格内所有玩家上抗性提升 I 30 秒
+                var effect = org.bukkit.Registry.EFFECT.get(
+                        org.bukkit.NamespacedKey.minecraft("resistance"));
+                if (effect != null) {
+                    p.getNearbyEntities(5, 5, 5).stream()
+                     .filter(e -> e instanceof Player)
+                     .map(e -> (Player) e)
+                     .forEach(target -> target.addPotionEffect(
+                             new org.bukkit.potion.PotionEffect(effect, 600, 0, false, true, true)));
+                }
+                // 播放金盾音效
+                p.getWorld().playSound(p.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.8f);
+                p.sendMessage("§e✨ 神圣庇佑已展开！");
+            }
+            case RIGHT_CLICK_BLOCK -> {
+                // 在方块上方召一道光柱粒子（装饰用）
+                var loc = event.getClickedBlock().getLocation().add(0.5, 1, 0.5);
+                for (int i = 0; i < 30; i++) {
+                    loc.getWorld().spawnParticle(Particle.END_ROD,
+                            loc.clone().add(0, i * 0.3, 0), 1, 0, 0, 0, 0);
+                }
+            }
+            default -> { /* 忽略其他动作 */ }
+        }
+        return true;   // 取消原版右键行为（盾牌举起来挡伤害的动画也取消）
+    }
+
+    /**
+     * 左键事件：广播消息给附近 10 格内所有玩家
+     */
+    @Override
+    public boolean onLeftClick(PlayerInteractEvent event) {
+        Player p = event.getPlayer();
+        p.getNearbyEntities(10, 10, 10).stream()
+         .filter(e -> e instanceof Player)
+         .map(e -> (Player) e)
+         .forEach(near -> near.sendMessage("§6⚔ " + p.getName() + " 的盾之意志震荡大地！"));
+        // 给附近所有实体施加小幅击退
+        p.getNearbyEntities(3, 3, 3).forEach(e ->
+                e.setVelocity(e.getLocation().toVector()
+                        .subtract(p.getLocation().toVector()).normalize().multiply(0.6)));
+        return true;
+    }
+
+    // ==================== 装备钩子 ====================
+
+    @Override
+    public void onEquip(Player player, ItemStack item) {
+        player.sendMessage("§a✨ 神圣守护盾已激活");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.5f);
+    }
+
+    @Override
+    public void onUnequip(Player player, ItemStack item) {
+        player.sendMessage("§7✨ 神圣守护盾已沉睡");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 0.8f);
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item()
+     *        .register(new HolyShieldItem());
+     * </pre>
+     *
+     * 之后玩家即可：
+     *   /sfitem give holy_shield          —— 自己拿一个
+     *   /sfitem give holy_shield 1 Notch  —— 给 Notch 一个
+     *   /sfitem info holy_shield          —— 查看属性
+     *   /sfitem hand                      —— 看主手是不是这个
+     */
+}
+```
+
+> **要点速查**：
+> - `isUnbreakable() = true` + `maxStackSize() = 1` 是装备类自定义物品的标准配置
+> - `attributes()` 的 `EquipmentSlot` 决定属性在哪个槽位生效（OFF_HAND 表示副手）
+> - 物品的 `id()` 会写入 PDC，玩家手里的"神圣守护盾"才能被 `SItem.is()` 识别为同一个
+> - `onRightClick` 返回 `true` 会取消原版右键行为（如盾牌格挡动画）
+> - `attributes()` 里如果只填 `baseValue`、`perLevel = 0` —— 物品级属性实际不分级，所以物品用 base 即可（v3.2.6+）
+
 ---
 
 ## 🧟 自定义生物系统
@@ -1220,6 +1629,241 @@ public class ShadowStalkerEntity extends SEntity {
 }
 ```
 
+### 📝 完整实战示例 —— 铁傀儡守卫（中立阵营对照版）
+
+下面这个示例演示一个 **NEUTRAL 阵营**生物 —— **不被攻击时不主动追玩家，被攻击后才反击**。与上面 HOSTILE 阵营的暗影猎手对照学习，可以快速掌握阵营行为差异。
+
+```java
+package my.plugin.entity;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.SEntity;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.Hostility;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.SpawnCondition;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.EquipmentEntry;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.EquipmentSlot;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * 铁傀儡守卫 —— 中立阵营，演示完整 SEntity 用法
+ *
+ * 行为：
+ *   - 基础材质：铁傀儡（IRON_GOLEM），不会被动攻击玩家
+ *   - 血量 100，攻击 15，护甲 8，击退抗性 1.0（免疫击退）
+ *   - 仅在村庄群系（VILLAGE）白天生成，几率 5%
+ *   - 不怕光（不燃烧）
+ *   - 生成时自动手持铁剑（5% 死亡掉落）
+ *   - 死亡必掉 3 个铁锭 + 1 个罂粟
+ *   - 仅在被玩家攻击后才会反击（NEUTRAL 阵营自动行为）
+ *   - 被动技能：每秒给周围 5 格内所有非敌对实体回 1 血
+ *   - 死亡时全图播放 iron_golem_death 音效
+ */
+public class IronGuardEntity extends SEntity {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "iron_guard";
+    }
+
+    @Override
+    public String displayName() {
+        return "§f§l铁傀儡守卫";
+    }
+
+    @Override
+    public org.bukkit.entity.EntityType entityType() {
+        return org.bukkit.entity.EntityType.IRON_GOLEM;
+    }
+
+    // ==================== 属性 ====================
+
+    @Override
+    public double maxHealth() { return 100.0; }
+    @Override
+    public double attackDamage() { return 15.0; }
+    @Override
+    public double armor() { return 8.0; }
+    @Override
+    public double knockbackResistance() { return 1.0; }   // 免疫击退
+    @Override
+    public double followRange() { return 32.0; }            // 被攻击后追很远的距离
+
+    // ==================== 阵营 ====================
+
+    @Override
+    public Hostility hostility() {
+        // NEUTRAL：
+        //   - EntityListener.onTarget 会自动取消 CLOSEST_PLAYER / RANDOM_TARGET 类的目标事件
+        //   - 只有 EntityDamageByEntityEvent 触发后（被攻击），才会保留 RETALIATING_PLAYER 目标
+        //   - 即"你不打我，我不打你；你打我，我追杀到底"
+        return Hostility.NEUTRAL;
+    }
+
+    // ==================== 生成条件 ====================
+
+    @Override
+    public SpawnCondition spawnCondition() {
+        return new SpawnCondition()
+                .chance(0.05)                 // 5% 几率
+                .light(8, 15)                 // 仅光照 8 以上（白天）
+                // .nightOnly() 不调用 → 不限定夜晚
+                // .burnInDay() 不调用 → 不怕光
+                .world("world")              // 仅主世界
+                .biome(org.bukkit.block.Biome.PLAINS)   // 仅平原
+                .biome(org.bukkit.block.Biome.MEADOW)  // 或草甸
+                .spawnLimitPerChunk(2);       // 每区块最多 2 只
+        // 注意：replaceVanillaSpawns 默认 false → 不替换原版铁傀儡
+        //      要让原版铁傀儡出现时自动变身为 IronGuard，加 .replaceVanillaSpawns(true)
+    }
+
+    // ==================== 装备 ====================
+
+    @Override
+    public List<EquipmentEntry> equipment() {
+        return Collections.singletonList(
+            // 100% 持铁剑（仅生成时持有，不死亡掉落 → dropOnDeath=false）
+            // 改成 dropOnDeath=true, dropChance=0.05 → 5% 几率死亡掉铁剑
+            new EquipmentEntry(new ItemStack(Material.IRON_SWORD),
+                    1.0,                       // 100% 穿戴
+                    EquipmentSlot.HAND,
+                    true,                       // 死亡时参与掉落判定
+                    0.05)                       // 5% 几率掉落
+        );
+    }
+
+    // ==================== 死亡掉落 ====================
+
+    @Override
+    public List<ItemStack> deathDrops() {
+        return Arrays.asList(
+            new ItemStack(Material.IRON_INGOT, 3),    // 必掉 3 个铁锭
+            new ItemStack(Material.POPPY, 1)          // 必掉 1 朵罂粟（铁傀儡传统）
+        );
+    }
+
+    // ==================== 事件钩子 ====================
+
+    @Override
+    public void onSpawn(LivingEntity entity, Location loc, CreatureSpawnEvent.SpawnReason reason) {
+        // 生成时播放铁傀儡出生音效 + 7 个铁傀儡粒子
+        loc.getWorld().playSound(loc, Sound.ENTITY_IRON_GOLEM_REPAIR, 1.5f, 1.0f);
+        loc.getWorld().spawnParticle(Particle.IRON_DAMAGE, loc.clone().add(0, 1, 0), 7);
+    }
+
+    @Override
+    public void onAttack(LivingEntity attacker, LivingEntity target,
+                         double damage, EntityDamageByEntityEvent event) {
+        // 由于是 NEUTRAL，此方法只在被攻击后反击时才会触发
+        // 给被攻击者施加大幅击退效果
+        target.setVelocity(target.getLocation().toVector()
+                .subtract(attacker.getLocation().toVector()).normalize().multiply(1.5));
+        target.getWorld().spawnParticle(Particle.IRON_DAMAGE,
+                target.getLocation().add(0, 1, 0), 5, 0.3, 0.5, 0.3, 0.0);
+    }
+
+    @Override
+    public void onDamaged(LivingEntity victim, EntityDamageEvent event) {
+        // 受伤冒火花粒子
+        victim.getWorld().spawnParticle(Particle.IRON_DAMAGE,
+                victim.getLocation().add(0, 1, 0), 3, 0.3, 0.5, 0.3, 0.0);
+    }
+
+    @Override
+    public void onDeath(LivingEntity entity, EntityDeathEvent event) {
+        // 全图范围内 32 格播放铁傀儡死亡音效
+        entity.getWorld().playSound(entity.getLocation(),
+                Sound.ENTITY_IRON_GOLEM_DEATH, 2.0f, 1.0f);
+    }
+
+    @Override
+    public void onTarget(EntityTargetEvent event) {
+        // NEUTRAL 阵营已经由 EntityListener 自动处理"被动取消目标"
+        // 这里可加自定义逻辑，例如：
+        //   - 如果 target 不是玩家 → 放行
+        //   - 如果 target 是玩家但距离 > 16 → 取消（不追太远）
+        if (event.getTarget() instanceof Player p) {
+            if (event.getEntity().getLocation().distanceSquared(p.getLocation()) > 256) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @Override
+    public void onTick(LivingEntity entity, long sfTick) {
+        // 每 5 SFTick 调一次（默认节流）
+        // 这里不做节流，因为下方逻辑只检查距离、不写世界
+    }
+
+    @Override
+    public void onPerSecond(LivingEntity entity, long sfTick) {
+        // 每秒一次：给周围 5 格内所有非敌对实体回 1 血
+        var attr = entity.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH));
+        if (attr == null) return;
+
+        entity.getNearbyEntities(5, 5, 5).stream()
+              .filter(e -> e instanceof LivingEntity le && le.isValid())
+              .map(e -> (LivingEntity) e)
+              .forEach(target -> {
+                  double max = target.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH)) != null
+                          ? target.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH)).getValue() : 20.0;
+                  if (target.getHealth() < max) {
+                      target.setHealth(Math.min(max, target.getHealth() + 1.0));
+                  }
+              });
+        // 自己也回 1 血
+        double maxHp = attr.getValue();
+        if (entity.getHealth() < maxHp) {
+            entity.setHealth(Math.min(maxHp, entity.getHealth() + 1.0));
+        }
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().entities()
+     *        .register(new IronGuardEntity());
+     * </pre>
+     *
+     * 之后即可：
+     *   /sfentity list                  —— 看到列表里有 iron_guard
+     *   /sfentity spawn iron_guard      —— 在脚下强制生成一只
+     *   /sfentity info iron_guard       —— 查看属性 / 装备 / 生成条件
+     *   或让玩家在平原白天闲晃，5% 几率自然遇到
+     */
+}
+```
+
+> **要点速查**：
+> - **阵营对照**：HOSTILE（暗影猎手）= 主动追玩家；NEUTRAL（铁傀儡守卫）= 被打才追；PASSIVE = 永不追玩家
+> - **怕光控制**：调 `.burnInDay()` 白天燃烧（怕光怪物）；不调就不燃烧（铁傀儡、村民等友好生物）
+> - **生成控制**：`.light(min, max)` 限定光照；`.nightOnly()` 限定夜晚；二者独立
+> - **装备掉落**：`EquipmentEntry(item, 穿戴率, 槽位, 是否参与掉落, 掉落率)` —— 4 个参数完整覆盖"穿多少几率 + 死了掉多少几率"
+> - **`onTick` vs `onPerSecond`**：`onTick` 每 5 SFTick（高频，仅做轻逻辑）；`onPerSecond` 每秒（适合 AI 决策、回血、范围扫描）
+> - **`replaceVanillaSpawns=true`** 时原版同 EntityType 生物出现会被转换为本 SEntity，否则不会影响原版生成
+
 ### `/sfentity` 命令（别名 `/sfe`）
 
 | 子命令 | 作用 |
@@ -1362,6 +2006,123 @@ public class ShinyAppleRecipe extends SRecipe {
 ```
 
 无序配方（SHAPELESS）：把同一个 `Material` / `SItem` 放进 map **多个不同 key**，或直接把 `List.of(Material.X, Material.X)` 包成集合（但我们的签名是 Map<Char,Object> —— 所以推荐用"多个不同 key 放同 value"）。
+
+### 📝 完整实战示例 —— 自定义物品升级链（混合材料 + 多份材料 + 自定义产物）
+
+下面演示一条**自定义物品升级链**：用原版钻石 × 2 + 自定义物品"魔法权杖"（带 PDC，要求**必须是真的 MagicScepter，伪造名不行**）→ 合成升级版"圣光权杖"。
+
+```java
+package my.plugin.recipe;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.SRecipe;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.RecipeMode;
+import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
+import cn.ZeroEngine.Engine.api.v3.feature.item.MagicScepterItem;
+import org.bukkit.Material;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 圣光权杖合成配方 —— 演示完整 SRecipe 用法
+ *
+ * 形状（3×3 有序）：
+ *     D          （上排中 = 钻石）
+ *     M          （中排中 = 魔法权杖，必须是已注册的 MagicScepterItem）
+ *     D          （下排中 = 钻石）
+ *
+ * 产物：圣光权杖 × 1（自定义物品 HolyLightScepter，必须先注册为 SItem）
+ *
+ * 要点：
+ *   - 自定义物品做材料 → 用 RecipeChoice.ExactChoice，必须 PDC/displayName/lore 完全一致
+ *   - 多份同材料 → SHAPED 写 shape 重复字母；SHAPELESS 写多个 key 放同 value
+ *   - 自定义物品做产物 → 用 sItem.create(resultAmount())
+ */
+public class HolyLightScepterRecipe extends SRecipe {
+
+    @Override
+    public String id() {
+        return "holy_light_scepter";
+    }
+
+    @Override
+    public RecipeMode mode() {
+        return RecipeMode.SHAPED;
+    }
+
+    @Override
+    public List<String> shape() {
+        // D 在 shape 中出现 2 次 → 消耗 2 颗钻石
+        // M 在 shape 中出现 1 次 → 消耗 1 根魔法权杖
+        return Arrays.asList(
+            " D ",
+            " M ",
+            " D "
+        );
+    }
+
+    @Override
+    public Map<Character, Object> ingredients() {
+        // 用 LinkedHashMap 保证 key 的迭代顺序稳定（info 命令展示更整齐）
+        Map<Character, Object> map = new LinkedHashMap<>();
+        map.put('D', Material.DIAMOND);                  // 原版物品：MaterialChoice
+        map.put('M', new MagicScepterItem());            // 自定义物品：ExactChoice，必须是真的 MagicScepter
+        // 注意：这里直接 new MagicScepterItem() 即可，SRecipe.choiceOf() 内部
+        //       会调用 sItem.create(1) 拿到一个带 PDC 的样本，跟玩家合成台里放的
+        //       物品逐字段比较 —— 普通 BLAZE_ROD 即使改了 displayName 也无法冒充
+        return map;
+    }
+
+    @Override
+    public Object result() {
+        // 自定义物品作产物：返回一个已注册的 SItem 实例
+        // SRecipe.toBukkitRecipe() 会调用 sItem.create(resultAmount()) 生成带 PDC 的 ItemStack
+        return new HolyLightScepterItem();   // 你的另一个 SItem 子类（须先 register）
+    }
+
+    @Override
+    public int resultAmount() {
+        return 1;
+    }
+
+    @Override
+    public boolean unlockedByDefault() {
+        // false → 玩家不会在配方书自动看到这个配方（需要"解锁"，例如通过冒险获得）
+        // true  → 默认配方书里就有
+        return false;
+    }
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *
+     *   // 先注册 SItem（材料 + 产物）
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item().register(new MagicScepterItem());
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item().register(new HolyLightScepterItem());
+     *
+     *   // 再注册配方
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().recipes()
+     *        .register(new HolyLightScepterRecipe());
+     * </pre>
+     *
+     * 之后玩家直接打开原版工作台，按形状摆好：
+     *     D
+     *     M  → 产物：圣光权杖 ×1（M 必须是 MagicScepterItem 真品，普通烈焰棒无效）
+     *     D
+     */
+}
+```
+
+> **关键安全点**：
+> - 自定义物品做材料时，**必须先注册**对应的 `SItem`（`sf.item().register(new MagicScepterItem())`），否则 `sItem.create(1)` 拿不到带 PDC 的样本
+> - `MagicScepterItem` 是 ZeroEngine 自带的示例 SItem；你自己的升级链里，把 `MagicScepterItem` 换成你注册过的 SItem 子类即可
+> - 同样的 SItem，玩家**手工 lore 伪造**也无效：`RecipeChoice.ExactChoice` 内部会比对 PDC 字符串标签，普通 BLAZE_ROD 即使 `displayName` 改成"魔法权杖"也通不过
+> - `unlockedByDefault=false` 时玩家需要在配方书外**手动摆放**才合成；如果你想配方书里直接显示，改 `true`
 
 ### RecipeManager API
 
