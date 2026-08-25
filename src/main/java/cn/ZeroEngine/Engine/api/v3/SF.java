@@ -75,6 +75,8 @@ public final class SF implements SFApi {
     private EntityManager entityManager;
     private EntityListener entityListener;
     private RecipeManager recipeManager;
+    private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomeManager;
+    private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeListener biomeListener;
     private ChatManager chatManager;
     private WorldManager worldManager;
     private PermissionManager permissionManager;
@@ -135,6 +137,8 @@ public final class SF implements SFApi {
             if (instance.entityListener != null) instance.entityListener.shutdown();
             if (instance.entityManager != null) instance.entityManager.unregisterAll();
             if (instance.recipeManager != null) instance.recipeManager.unregisterAll();
+            if (instance.biomeListener != null) instance.biomeListener.shutdown();
+            if (instance.biomeManager != null) instance.biomeManager.unregisterAll();
             if (instance.perfManager != null) instance.perfManager.shutdown();
             if (instance.bedwarsImpl != null) instance.bedwarsImpl.shutdown();
             if (instance.pvpImpl != null) instance.pvpImpl.shutdown();
@@ -224,6 +228,18 @@ public final class SF implements SFApi {
             sf.info("[Recipe] Custom recipe system initialized");
         }
         return recipeManager;
+    }
+
+    public cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomes() {
+        if (biomeManager == null) {
+            biomeManager = new cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager(this);
+            biomeListener = new cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeListener(plugin, this, biomeManager);
+            regEvent(biomeListener, plugin);
+            biomeListener.startTick(plugin, this);
+            SF sf = SF.sf();
+            sf.info("[Biome] Custom biome system initialized (ChunkPopulateEvent hook ready)");
+        }
+        return biomeManager;
     }
 
     public ChatManager chat() {

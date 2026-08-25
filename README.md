@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-3.2.6--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.2.7--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -25,6 +25,7 @@
 - [🎒 自定义物品系统](#-自定义物品系统)
 - [🧟 自定义生物系统](#-自定义生物系统)
 - [📜 自定义配方系统](#-自定义配方系统)
+- [🌲 自定义生物群系系统](#-自定义生物群系系统)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
 - [💬 聊天事件优先级 API](#-聊天事件优先级-api)
 - [🚀 性能优化系统](#-性能优化系统)
@@ -5228,6 +5229,41 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.2.7-LTS] - 2026-08-24
+
+> 写在前面：这次主要补完「自定义生物群系」模块。之前群里有人问我「能不能让玩家走出已探索区域时遇到一片全新的群系」，搞了一晚上总算跑通了。
+
+#### ✨ 新增
+
+- **全新的自定义生物群系模块（`sf.biomes()`）** —— 监听 `ChunkPopulateEvent`，只对**第一次生成的 chunk** 触发，刚好对应「存档已经存在但还没被玩家探索到的区块」。玩家靠近、服务端生成新 chunk 时就会插一片你定义的群系进去。
+  - `SBiome` 抽象基类：基础元信息（id/displayName/targetBiome）+ 分布条件（worlds/replaces/weight/yRange）+ 内容钩子（onChunkPopulate/onPlayerEnter/onPlayerLeave/onPerSecond）
+  - `BiomeManager`：注册中心 + chunk 应用逻辑 + 用 PDC 标记已处理 chunk 防重复
+  - `BiomeListener`：监听 chunk 生成 + 玩家跨 chunk 移动 + 每秒持续效果
+  - 用 `world.setBiome(x, y, z, targetBiome)` 覆盖原版 biome，客户端草色/水色按底子走
+- **独立的 `PerlinNoise` 工具类**（放在 `v3/main/`） —— 玩了几种噪声实现，最后还是回到了 Ken Perlin 原版算法 + Fisher-Yates 洗牌置换表这套老配方
+  - 支持 2D/3D 单层采样
+  - 支持 fbm 多 octave 叠加（1-8 层可调），让噪声有层次更自然
+  - 可调参数：seed / scale / octaves / persistence / lacunarity
+  - 线程安全（无状态实例）
+- **SBiome 升级用 PerlinNoise**：新增 5 个可重写方法（`noiseOctaves` / `noisePersistence` / `noiseLacunarity` / `createNoise` / `sampleNoiseAt` / `sampleNoise3D`）
+- **示例 1：`MysticForestBiome` 神秘森林** —— 用 DARK_FOREST 做底子，地表撒发光浆果+凋零玫瑰，1% 概率宝箱，进入上发光效果，每秒 +1 饱食度
+- **示例 2：`EmberWastesBiome` 炽焰荒原** —— 这次的重点示例。用 PerlinNoise 在 chunk 生成时**大量改造地表方块**（下界岩/黑石/岩浆池混搭），撒玄武岩尖刺+营火祭坛，进入上火抗+速度 II+雷鸣音效，每秒脚下冒岩浆滴+头顶冒烟雾，让玩家几乎认不出原版的「平原」底子。试了半天才搞定地表方块的判断 —— 不能直接看最顶层是 AIR 就跳过，得往下找实心块（不然屋顶下方空间会被错过）
+
+#### 🛠 修复
+
+- `EntityListener` 的 tick 调度对 `Collections.unmodifiableMap()` 调 `iterator.remove()` 抛 `UnsupportedOperationException` —— 这个 bug 上个版本就有，今天开服测试才发现日志一直被刷屏。改成显式调 `manager.removeActive(uuid)` 移除，并给 `EntityManager` 加了 `removeActive(UUID)` + `clearActive()` 两个方法。
+
+#### 📚 文档
+
+- README 新增「🌲 自定义生物群系系统」完整章节（约 400 行）：注册用法 / SBiome 抽象基类 / 分布条件表 / 内容钩子说明 / PerlinNoise 工具类 / 两个完整示例 / 调试建议
+- 版本徽章 `3.2.6-LTS` → `3.2.7-LTS`
+
+#### 📦 版本
+
+- `pom.xml` 版本：`3.2.6-LTS` → `3.2.7-LTS`
+
+---
 
 ### [3.2.6-LTS] - 2026-08-24
 
