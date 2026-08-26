@@ -21,6 +21,16 @@ public class ItemManager {
         return this;
     }
 
+    public boolean registerIfAbsent(SItem item) {
+        if (items.containsKey(item.id())) return false;
+        try {
+            register(item);
+            return true;
+        } catch (IllegalStateException ignore) {
+            return false;
+        }
+    }
+
     public ItemManager registerAll(SItem... items) {
         for (SItem i : items) register(i);
         return this;
