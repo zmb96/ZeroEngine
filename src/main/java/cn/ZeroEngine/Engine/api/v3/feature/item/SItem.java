@@ -55,6 +55,8 @@ public abstract class SItem {
 
     public List<ItemAttributeBonus> attributes() { return Collections.emptyList(); }
 
+    public List<DropSource> dropSources() { return Collections.emptyList(); }
+
     public boolean onRightClick(PlayerInteractEvent e) { return false; }
 
     public boolean onLeftClick(PlayerInteractEvent e) { return false; }
