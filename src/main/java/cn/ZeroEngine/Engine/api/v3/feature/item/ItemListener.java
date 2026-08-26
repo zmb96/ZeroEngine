@@ -1,12 +1,20 @@
 package cn.ZeroEngine.Engine.api.v3.feature.item;
 
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import cn.ZeroEngine.Engine.api.v3.SF;
@@ -17,6 +25,7 @@ public class ItemListener implements Listener {
 
     private final ItemManager manager;
     private final Map<UUID, Set<String>> activeItems = new HashMap<>();
+    private final Random random = new Random();
 
     public ItemListener(ItemManager manager) {
         this.manager = manager;
@@ -45,6 +54,78 @@ public class ItemListener implements Listener {
         }
 
         custom.onInteract(p, action, item);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent e) {
+        Block b = e.getBlock();
+        Material broken = b.getType();
+        if (broken == null || broken.isAir()) return;
+        Player p = e.getPlayer();
+        if (p.getGameMode().toString().contains("CREATIVE")) return;
+        World w = b.getWorld();
+        for (SItem item : manager.all()) {
+            for (DropSource src : item.dropSources()) {
+                if (src.type != DropSource.Type.BLOCK_BREAK) continue;
+                if (!(src.target instanceof Material)) continue;
+                if (src.target != broken) continue;
+                if (!src.roll(random)) continue;
+                int amt = src.rollAmount(random);
+                w.dropItemNaturally(b.getLocation().add(0.5, 0.5, 0.5), item.create(amt));
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDeath(EntityDeathEvent e) {
+        LivingEntity ent = e.getEntity();
+        org.bukkit.entity.EntityType et = ent.getType();
+        World w = ent.getWorld();
+        for (SItem item : manager.all()) {
+            for (DropSource src : item.dropSources()) {
+                if (src.type != DropSource.Type.ENTITY_DEATH) continue;
+                if (src.target != null && src.target != et) continue;
+                if (!src.roll(random)) continue;
+                int amt = src.rollAmount(random);
+                w.dropItemNaturally(ent.getLocation(), item.create(amt));
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFish(PlayerFishEvent e) {
+        if (e.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
+        org.bukkit.entity.Entity caught = e.getCaught();
+        if (!(caught instanceof org.bukkit.entity.Item)) return;
+        org.bukkit.entity.Item drop = (org.bukkit.entity.Item) caught;
+        for (SItem item : manager.all()) {
+            for (DropSource src : item.dropSources()) {
+                if (src.type != DropSource.Type.FISHING) continue;
+                if (!src.roll(random)) continue;
+                int amt = src.rollAmount(random);
+                drop.setItemStack(item.create(amt));
+                return;
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLootGenerate(LootGenerateEvent e) {
+        List<ItemStack> generated = e.getLoot();
+        if (generated == null) return;
+        List<ItemStack> extra = new ArrayList<>();
+        for (SItem item : manager.all()) {
+            for (DropSource src : item.dropSources()) {
+                if (src.type != DropSource.Type.CHEST_LOOT) continue;
+                if (!src.roll(random)) continue;
+                int amt = src.rollAmount(random);
+                extra.add(item.create(amt));
+            }
+        }
+        if (extra.isEmpty()) return;
+        List<ItemStack> merged = new ArrayList<>(generated);
+        merged.addAll(extra);
+        e.setLoot(merged);
     }
 
     @EventHandler
