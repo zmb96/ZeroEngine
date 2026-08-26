@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-3.2.7--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.2.8--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -5229,6 +5229,35 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.2.8-LTS] - 2026-08-26
+
+#### ✨ 新增
+
+- **自定义物品「获取来源」系统** —— `SItem.dropSources()` 方法返回 `List<DropSource>`，ItemListener 自动监听对应事件触发掉落
+  - 新增 `DropSource` 独立类，支持 4 种获取途径：
+    - `BLOCK_BREAK` —— 监听 `BlockBreakEvent`，挖掉指定 Material 方块按几率掉落（创造模式跳过避免刷物品）
+    - `ENTITY_DEATH` —— 监听 `EntityDeathEvent`，杀指定 EntityType 怪物按几率掉落
+    - `FISHING` —— 监听 `PlayerFishEvent` (CAUGHT_FISH)，钓鱼按几率替换钓上来的物品
+    - `CHEST_LOOT` —— 监听 `LootGenerateEvent`，自然生成的战利品箱子按几率塞入
+  - `DropSource` 静态工厂方法：`block(Material, chance)` / `block(Material, chance, min, max)` / `mob(EntityType, chance)` / `mob(EntityType, chance, min, max)` / `fishing(chance)` / `fishing(chance, min, max)` / `chest(chance)` / `chest(chance, min, max)`
+  - 支持数量范围 `minAmount ~ maxAmount`，自动 `rollAmount()` 随机
+  - `chance` 自动 clamp 到 [0, 1]
+- **示例物品 `AncientRelicItem` 远古遗物** —— 演示全部 4 种获取途径
+  - 挖石头 0.5%、挖深板岩 1%、挖远古残骸 50%、凋零骷髅 20%、末影龙 100%、远古守卫者 80%、钓鱼 5%、战利品箱子 15%
+  - 右键：抗性 III + 力量 II + 急迫 I 共 10 秒
+  - 左键：速度 IV + 跳跃提升 IV 共 10 秒
+
+#### 📚 文档
+
+- README 新增「获取来源（DropSource）」章节
+- 版本徽章 `3.2.7-LTS` → `3.2.8-LTS`
+
+#### 📦 版本
+
+- `pom.xml` 版本：`3.2.7-LTS` → `3.2.8-LTS`
+
+---
 
 ### [3.2.7-LTS] - 2026-08-24
 
