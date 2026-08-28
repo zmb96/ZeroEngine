@@ -6,7 +6,7 @@
 
     <groupId>io.github.zmb96</groupId>
     <artifactId>ZeroEngine</artifactId>
-    <version>3.2.7-LTS</version>
+    <version>3.3.0-LTS</version>
     <packaging>jar</packaging>
 
     <name>ZeroEngine</name>
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>1.21.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

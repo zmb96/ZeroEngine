@@ -36,6 +36,16 @@ public class EntityManager {
         return this;
     }
 
+    public boolean registerIfAbsent(SEntity entity) {
+        if (registry.containsKey(entity.id())) return false;
+        try {
+            register(entity);
+            return true;
+        } catch (IllegalStateException ignore) {
+            return false;
+        }
+    }
+
     public EntityManager registerAll(SEntity... entities) {
         for (SEntity e : entities) register(e);
         return this;

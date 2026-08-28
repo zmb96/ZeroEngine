@@ -8,9 +8,6 @@ import cn.ZeroEngine.Engine.api.v2.database.DatabaseManager;
 import cn.ZeroEngine.Engine.api.v2.feature.enchant.LifestealEnchant;
 import cn.ZeroEngine.Engine.api.v2.feature.enchant.AncestralMightEnchant;
 import cn.ZeroEngine.Engine.api.v2.feature.enchant.EnchantManager;
-import cn.ZeroEngine.Engine.api.v2.feature.item.ItemManager;
-import cn.ZeroEngine.Engine.api.v2.feature.item.MagicScepterItem;
-import cn.ZeroEngine.Engine.api.v2.feature.item.SFItemCommand;
 import cn.ZeroEngine.Engine.api.v2.feature.chat.ChatCommand;
 import cn.ZeroEngine.Engine.api.v2.feature.chat.ChatManager;
 import cn.ZeroEngine.Engine.api.v2.feature.main.ReachCommand;
@@ -54,10 +51,6 @@ public final class main extends JavaPlugin {
         // 任何第三方插件用 "import cn.ZeroEngine.Engine.api.v3.SF" 的 sf.enchant() 注册的附魔，
         // 都能立刻被 /sfenchant book/list 看到。
 
-        ItemManager itemManager = sf.item();
-        itemManager.register(new MagicScepterItem());
-        sf.regCommand("sfitem", new SFItemCommand(itemManager));
-
         ChatManager chatManager = sf.chat();
         sf.regCommand("sfchat", new ChatCommand(chatManager));
 
@@ -81,6 +74,7 @@ public final class main extends JavaPlugin {
         cn.ZeroEngine.Engine.api.v3.SF.init(this);
         cn.ZeroEngine.Engine.api.v3.SF v3sf = cn.ZeroEngine.Engine.api.v3.SF.sf();
         v3sf.enchant();
+        v3sf.item();
 
         sf.info("插件已加载");
         sf.info("Economy ready: " + sf.eco().ready() + " (Essentials=" + sf.eco().hasEssentials() + ", Vault=" + sf.eco().hasVault() + ")");

@@ -153,8 +153,8 @@ public class DamageSystemImpl implements DamageSystem, Listener {
         double result = calculateDamage(attacker, victim, raw, e.getCause());
 
         if (armorPenetration > 0 && victim.getType() != org.bukkit.entity.EntityType.PLAYER) {
-            double armor = victim.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ARMOR) != null
-                    ? victim.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ARMOR).getValue() : 0;
+            double armor = victim.getAttribute(org.bukkit.attribute.Attribute.ARMOR) != null
+                    ? victim.getAttribute(org.bukkit.attribute.Attribute.ARMOR).getValue() : 0;
             double reduction = armor * 0.04 * (1 - armorPenetration);
             result = result / (1 + reduction) + result * reduction * armorPenetration / (1 + reduction);
         }

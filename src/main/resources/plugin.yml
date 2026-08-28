@@ -44,6 +44,11 @@ commands:
     usage: /sfrecipe <list|info|give|remove|reload|help>
     aliases: [sfr]
     permission: sf.admin.recipe
+  sfblock:
+    description: SF 自定义方块系统
+    usage: /sfblock <list|give|info|hand|look|reload|help>
+    aliases: [sfb]
+    permission: sf.admin.block
   sfchat:
     description: SF 聊天系统
     usage: /sfchat <channel|mute|unmute|muteinfo|block|unblock|blocklist|clear|help>
@@ -86,6 +91,9 @@ permissions:
     default: op
   sf.admin.recipe:
     description: SF 自定义配方系统
+    default: op
+  sf.admin.block:
+    description: SF 自定义方块系统
     default: op
   sf.admin.world:
     description: 世界管理

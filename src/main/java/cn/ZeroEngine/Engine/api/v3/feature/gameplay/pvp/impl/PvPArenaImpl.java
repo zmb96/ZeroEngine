@@ -94,7 +94,7 @@ public class PvPArenaImpl implements PvPArena, Listener {
             } catch (Exception ignored) {}
         }
         if (k.healthScale > 0) {
-            p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(k.healthScale);
+            p.getAttribute(Attribute.MAX_HEALTH).setBaseValue(k.healthScale);
             p.setHealth(k.healthScale);
         }
         if (k.walkSpeed > 0) p.setWalkSpeed((float) k.walkSpeed);

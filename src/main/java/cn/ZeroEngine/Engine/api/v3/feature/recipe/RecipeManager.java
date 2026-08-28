@@ -2,9 +2,12 @@ package cn.ZeroEngine.Engine.api.v3.feature.recipe;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.Plugin;
 import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.item.ItemManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +26,7 @@ public class RecipeManager {
 
     private final Map<String, SRecipe> registry = new HashMap<>();
     private final Map<String, NamespacedKey> registeredKeys = new ConcurrentHashMap<>();
+    private ItemManager itemManager;
 
     /** 注册一个配方（立即调用 Bukkit.addRecipe），成功 true，失败（重复 id 或 Bukkit 拒绝）false */
     public boolean register(SRecipe r) {
@@ -55,6 +59,9 @@ public class RecipeManager {
         return this;
     }
 
+    public void setItemManager(ItemManager im) { this.itemManager = im; }
+    public ItemManager itemManager() { return itemManager; }
+
     public SRecipe get(String id) { return registry.get(id); }
 
     public Collection<SRecipe> all() { return Collections.unmodifiableCollection(registry.values()); }
@@ -70,6 +77,52 @@ public class RecipeManager {
         registry.remove(id);
         SF.sf().info("[Recipe] removed: " + id);
         return true;
+    }
+
+    public SRecipe.MatchResult tryCraftAtGrid(ItemStack[] grid) {
+        if (grid == null || grid.length < 9) return SRecipe.MatchResult.FAIL;
+        ItemManager im = itemManager;
+        if (im == null) {
+            try { im = SF.sf().item(); } catch (Throwable ignore) { im = null; }
+        }
+        for (SRecipe r : registry.values()) {
+            SRecipe.MatchResult mr = r.matchesGrid(grid, im);
+            if (mr.matched) return mr;
+        }
+        return SRecipe.MatchResult.FAIL;
+    }
+
+    public SRecipe craftAtInventory(Inventory inv) {
+        if (inv == null) return null;
+        ItemStack[] contents = inv.getContents();
+        if (contents == null || contents.length < 9) return null;
+        ItemStack[] grid = new ItemStack[9];
+        for (int i = 0; i < 9; i++) grid[i] = contents[i];
+
+        SRecipe.MatchResult mr = tryCraftAtGrid(grid);
+        if (!mr.matched || mr.recipe == null) return null;
+
+        for (int slot : mr.consumeSlots) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack == null) continue;
+            if (stack.getAmount() <= 1) {
+                inv.setItem(slot, null);
+            } else {
+                ItemStack copy = stack.clone();
+                copy.setAmount(copy.getAmount() - 1);
+                inv.setItem(slot, copy);
+            }
+        }
+
+        int firstEmpty = -1;
+        for (int i = 0; i < 9; i++) {
+            ItemStack cur = inv.getItem(i);
+            if (cur == null || cur.getType().isAir()) { firstEmpty = i; break; }
+        }
+        int targetSlot = firstEmpty >= 0 ? firstEmpty : 0;
+        inv.setItem(targetSlot, mr.result);
+        SF.sf().info("[Recipe] Advanced Craft Table: crafted '" + mr.recipe.id() + "' -> slot " + targetSlot);
+        return mr.recipe;
     }
 
     /** 清空所有已注册配方（Bukkit 层一并移除） */

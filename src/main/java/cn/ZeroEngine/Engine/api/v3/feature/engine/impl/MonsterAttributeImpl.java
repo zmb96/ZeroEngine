@@ -21,47 +21,47 @@ public class MonsterAttributeImpl implements MonsterAttribute {
 
     @Override
     public void setBaseDamage(LivingEntity entity, double damage) {
-        set(Attribute.GENERIC_ATTACK_DAMAGE, entity, damage);
+        set(Attribute.ATTACK_DAMAGE, entity, damage);
     }
 
     @Override
     public void setBaseHealth(LivingEntity entity, double health) {
-        set(Attribute.GENERIC_MAX_HEALTH, entity, health);
+        set(Attribute.MAX_HEALTH, entity, health);
         entity.setHealth(Math.min(entity.getHealth(), health));
     }
 
     @Override
     public void setBaseSpeed(LivingEntity entity, double speed) {
-        set(Attribute.GENERIC_MOVEMENT_SPEED, entity, speed);
+        set(Attribute.MOVEMENT_SPEED, entity, speed);
     }
 
     @Override
     public void setBaseKnockbackResistance(LivingEntity entity, double resistance) {
-        set(Attribute.GENERIC_KNOCKBACK_RESISTANCE, entity, resistance);
+        set(Attribute.KNOCKBACK_RESISTANCE, entity, resistance);
     }
 
     @Override
     public void setBaseArmor(LivingEntity entity, double armor) {
-        set(Attribute.GENERIC_ARMOR, entity, armor);
+        set(Attribute.ARMOR, entity, armor);
     }
 
     @Override
     public void setBaseArmorToughness(LivingEntity entity, double toughness) {
-        set(Attribute.GENERIC_ARMOR_TOUGHNESS, entity, toughness);
+        set(Attribute.ARMOR_TOUGHNESS, entity, toughness);
     }
 
     @Override
     public void scale(LivingEntity entity, double healthMul, double damageMul, double speedMul) {
-        AttributeInstance health = getInstance(entity, Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance health = getInstance(entity, Attribute.MAX_HEALTH);
         if (health != null) {
             health.setBaseValue(health.getBaseValue() * healthMul);
             entity.setHealth(Math.min(entity.getHealth(), health.getBaseValue()));
         }
-        AttributeInstance damage = getInstance(entity, Attribute.GENERIC_ATTACK_DAMAGE);
+        AttributeInstance damage = getInstance(entity, Attribute.ATTACK_DAMAGE);
         if (damage != null) {
             damage.setBaseValue(damage.getBaseValue() * damageMul);
         }
-        AttributeInstance speed = getInstance(entity, Attribute.GENERIC_MOVEMENT_SPEED);
+        AttributeInstance speed = getInstance(entity, Attribute.MOVEMENT_SPEED);
         if (speed != null) {
             speed.setBaseValue(speed.getBaseValue() * speedMul);
         }

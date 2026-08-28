@@ -3,8 +3,8 @@
 > 一款现代化、模块化的 Minecraft 服务器引擎，提供完整的服务器管理工具、原版操控能力和简洁的 API 供其他插件调用。
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
-![Bukkit](https://img.shields.io/badge/Bukkit-1.21.5-green)
-![Version](https://img.shields.io/badge/Version-3.2.7--LTS-blue)
+![Bukkit](https://img.shields.io/badge/Bukkit-1.21.8-green)
+![Version](https://img.shields.io/badge/Version-3.3.0--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -26,6 +26,10 @@
 - [🧟 自定义生物系统](#-自定义生物系统)
 - [📜 自定义配方系统](#-自定义配方系统)
 - [🌲 自定义生物群系系统](#-自定义生物群系系统)
+- [🧱 自定义方块系统](#-自定义方块系统)
+- [🖥️ 自定义屏幕系统（Dialog API）](#️-自定义屏幕系统dialog-api)
+- [🔧 高级工作台](#-高级工作台)
+- [💎 物品获取来源](#-物品获取来源)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
 - [💬 聊天事件优先级 API](#-聊天事件优先级-api)
 - [🚀 性能优化系统](#-性能优化系统)
@@ -70,6 +74,10 @@
 - 🎒 **物品注册系统**：继承 `SItem` 自定义物品，属性加成、交互事件
 - 🧟 **生物注册系统**：继承 `SEntity` 自定义生物，血量/攻击/阵营/生成条件/装备掉落/SFTick 钩子
 - 📜 **配方注册系统**：继承 `SRecipe` 自定义配方，原版工作台 + 有序/无序 + 原版物品/自定义物品混合材料
+- 🧱 **方块注册系统**：继承 `SBlock` 自定义方块，右键/左键监听、红石通电响应、掉落物、放置限制、20+ Bukkit 方块事件钩子，物品形式自动注册到 `/sfitem`
+- 🖥️ **屏幕注册系统**：继承 `SScreen` 基于 Paper 1.21.8 Dialog API，玩家进服配置阶段弹窗，阻塞直到同意/拒绝/超时踢出
+- 🔧 **高级工作台**：工作台 + 发射器多方块结构，右击工作台触发发射器内材料按配方合成
+- 💎 **物品获取来源**：`SItem.dropSources()` 声明方块破坏/实体死亡/钓鱼/宝箱 4 种掉落途径
 - 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
 - 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
 - 🚀 **性能优化系统**：内存监控、区块卸载、实体清理、TPS 自适应视距
@@ -2155,6 +2163,181 @@ recipes.unregisterAll();                      // 清空全部
 
 ---
 
+## 🧱 自定义方块系统
+
+`SBlock` 是自定义方块的抽象基类（继承 `SItem`，物品形式自动注册到 `/sfitem`）。放下后用 chunk PDC 持久化，重启不丢失；提供 Bukkit 方块的全部能力钩子。
+
+### 创建自定义方块
+
+```java
+public class MagicCoreBlock extends SBlock {
+    @Override public String id() { return "magic_core"; }
+    @Override public String displayName() { return "§b魔力核心"; }
+    @Override public Material material() { return Material.LODESTONE; }
+    @Override public String description() { return "红石激活后发光"; }
+
+    @Override public int lightLevel() { return 0; }
+    @Override public int redstoneRadius() { return 2; }
+    @Override public void onRedstonePowered(Block b, int power) {
+        b.getWorld().spawnParticle(Particle.WAX_ON, b.getLocation().add(0.5,1,0.5), 10);
+    }
+
+    @Override public DropMode dropMode() { return DropMode.CUSTOM; }
+    @Override public List<ItemStack> drops() { return List.of(new ItemStack(Material.EMERALD, 2)); }
+
+    @Override public boolean onBlockRightClick(PlayerInteractEvent e) {
+        e.getPlayer().sendMessage("§a你激活了魔力核心");
+        return true;
+    }
+}
+
+sf.blocks().register(new MagicCoreBlock());
+sf.items().give(player, "magic_core");
+```
+
+### SBlock 可重写方法
+
+| 方法 | 说明 |
+|---|---|
+| `material()` | 必须是方块 Material（继承自 SItem） |
+| `lightLevel()` / `isOpaque()` / `isSolid()` / `isFlammable()` / `hardness()` / `blastResistance()` | 方块属性 |
+| `onBlockRightClick(e)` / `onBlockLeftClick(e)` | 右键/左键监听，返回 true 取消原版交互 |
+| `dropMode()` | `VANILLA`（原版掉落）/ `CUSTOM`（掉 `drops()`）/ `NONE`（不掉落） |
+| `drops()` / `expDrop()` | 自定义掉落物与经验 |
+| `redstoneRadius()` | 监听半径内红石通电，状态变化触发 `onRedstonePowered/Unpowered` |
+| `emitsRedstone()` / `redstonePower()` | 自身红石输出 |
+| `canPlaceAt(block, face)` | 放置限制 |
+| `onPlace/onBreak/onBlockDamage/onBurn/onIgnite/onPhysics/onFade/onForm/onSpread/onFromTo/onGrow/onPistonExtend/onPistonRetract/onDispense/onExplode/onLeavesDecay/onMoistureChange/onFluidLevelChange/onEntityChangeBlock/onSignChange/onNotePlay/onExpDrop` | 全部 Bukkit 方块事件钩子 |
+
+### `/sfblock` 命令（别名 `/sfb`）
+
+| 命令 | 说明 |
+|---|---|
+| `/sfblock list` | 列出所有已注册方块 |
+| `/sfblock give <id> [玩家]` | 给予方块物品形式 |
+| `/sfblock look` | 看向已放置方块查询身份 |
+| `/sfblock info <id>` | 查看方块详情 |
+
+---
+
+## 🖥️ 自定义屏幕系统（Dialog API）
+
+`SScreen` 是基于 Paper 1.21.8 Dialog API 的自定义屏幕基类。玩家进服处于 configuration phase（尚未进入世界）时弹出 Dialog，用 `CompletableFuture` 阻塞直到玩家点击按钮或超时——`accept()` 放行，`deny()` 踢出。
+
+> 需 Paper 1.21.7+（原版 1.21.6 引入 Dialog，Paper 1.21.7 提供 API）。
+
+### 创建自定义屏幕
+
+```java
+public class RulesScreen extends SScreen {
+    @Override public String id() { return "server_rules"; }
+    @Override public Component title() {
+        return Component.text("服务器规则").color(NamedTextColor.GOLD);
+    }
+    @Override public List<DialogBody> body() {
+        return List.of(DialogBody.plainMessage(
+            Component.text("1. 禁止作弊\n2. 友好交流\n\n同意后方可进入")));
+    }
+    @Override public DialogType type() {
+        return DialogType.confirmation(
+            button(Component.text("同意").color(NamedTextColor.GREEN), "agree"),
+            button(Component.text("拒绝").color(NamedTextColor.RED), "deny")
+        );
+    }
+    @Override public int timeoutSeconds() { return 120; }
+    @Override public void onClick(ClickContext ctx) {
+        if (ctx.action().equals("agree")) ctx.accept();
+        else ctx.deny(Component.text("你拒绝了规则"));
+    }
+}
+
+sf.screens().register(new RulesScreen());
+```
+
+### SScreen 可重写方法
+
+| 方法 | 说明 |
+|---|---|
+| `id()` / `title()` | 唯一标识与标题 |
+| `body()` | `DialogBody.plainMessage(...)` / `item(...)` 正文列表 |
+| `inputs()` | `DialogInput.bool/singleOption/text/numberRange` 输入控件 |
+| `type()` | `DialogType.confirmation/notice/multiAction/...` |
+| `canCloseWithEscape()` | 是否允许 ESC 关闭（默认 false） |
+| `shouldShow(conn)` | 条件展示 |
+| `timeoutSeconds()` | 超时自动 deny 踢出（默认 60） |
+| `priority()` | 多屏顺序（小→大依次弹出） |
+| `onClick(ctx)` | 按钮点击钩子，`ctx.accept()` 放行 / `ctx.deny(msg)` 踢出 |
+| `button(label, action)` | 辅助构造 ActionButton，自动生成 Key = `namespace:screenId/action` |
+
+### 运行流程
+
+1. 玩家进服触发 `AsyncPlayerConnectionConfigureEvent`（配置阶段，进世界前）
+2. 按 `priority` 顺序对每个 `shouldShow` 的 SScreen 构建 Dialog → `showDialog`
+3. `future.join()` 阻塞，玩家点击触发 `PlayerCustomClickEvent` → 分发到 `onClick`
+4. `accept()` 完成 future=true → 进入下一屏；全部通过则进世界
+5. `deny(msg)` 或超时 → `disconnect` 踢出
+
+---
+
+## 🔧 高级工作台
+
+多方块结构：工作台在上，发射器在下。玩家右击工作台时，检测下方发射器，对其 9 格按已注册 `SRecipe` 匹配——命中则消耗材料、产物放入空槽。
+
+### 搭建与使用
+
+```
+[w]  工作台
+[d]  发射器（放材料）
+```
+
+1. 在发射器内按配方 shape 摆放材料（与原版工作台一致的 3x3 网格）
+2. 右击上方工作台
+3. 发射器内材料被消耗，产物自动放入空槽，播放 `ANVIL_USE` 音效
+
+配方仍用 `sf.recipes().register(new MyRecipe())` 注册——同一配方即可在原版工作台和高级工作台生效。匹配逻辑由 `SRecipe.matchesGrid()` + `RecipeManager.craftAtInventory()` 完成，支持有序/无序、`Material` 与 `SItem` 混合材料。
+
+---
+
+## 💎 物品获取来源
+
+`SItem.dropSources()` 声明物品的天然获取途径，`ItemListener` 自动监听对应事件触发掉落，无需手写监听器。
+
+### DropSource 四种来源
+
+| 类型 | 触发事件 | 工厂方法 |
+|---|---|---|
+| `BLOCK_BREAK` | `BlockBreakEvent` | `DropSource.block(Material, chance[, min, max])` |
+| `ENTITY_DEATH` | `EntityDeathEvent` | `DropSource.mob(EntityType, chance[, min, max])` |
+| `FISHING` | `PlayerFishEvent`（CAUGHT_FISH） | `DropSource.fishing(chance[, min, max])` |
+| `CHEST_LOOT` | `LootGenerateEvent` | `DropSource.chest(chance[, min, max])` |
+
+- `chance` 自动 clamp 到 [0, 1]
+- `minAmount ~ maxAmount` 数量范围，`rollAmount()` 随机
+- 创造模式挖方块跳过，避免刷物品
+
+### 示例
+
+```java
+public class AncientRelicItem extends SItem {
+    @Override public String id() { return "ancient_relic"; }
+    @Override public String displayName() { return "§6远古遗物"; }
+    @Override public Material material() { return Material.AMETHYST_SHARD; }
+
+    @Override public List<DropSource> dropSources() {
+        return List.of(
+            DropSource.block(Material.STONE, 0.005),
+            DropSource.block(Material.ANCIENT_DEBRIS, 0.5),
+            DropSource.mob(EntityType.WITHER_SKELETON, 0.2),
+            DropSource.mob(EntityType.ENDER_DRAGON, 1.0),
+            DropSource.fishing(0.05),
+            DropSource.chest(0.15)
+        );
+    }
+}
+```
+
+---
+
 ## 📝 SFText 文本组件 API
 
 `SFText` 是基于 Adventure Component 的富文本工具类，支持物品精灵图、玩家头颅、交互组件等，全部静态方法调用。
@@ -2580,7 +2763,7 @@ ma.scale(zombie, 2.0, 1.5, 1.2);
 
 // 添加自定义修饰器
 ma.addModifier(
-    Attribute.GENERIC_ATTACK_SPEED,
+    Attribute.ATTACK_SPEED,
     zombie,
     "fast_attack",
     2.0,
@@ -5229,6 +5412,64 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.3.0-LTS] - 2026-08-28
+
+#### ⚠️ 破坏性变更
+
+- **Paper API 升级 1.21.1 → 1.21.8** —— 最低运行环境提升至 Paper 1.21.7+（Dialog API 要求）
+  - 1.21.8 将 `org.bukkit.attribute.Attribute` 从枚举改为接口，移除所有 `GENERIC_*` 常量
+  - 引擎内 7 个文件 34 处 `Attribute.GENERIC_ARMOR` 等已改为去前缀的 `Attribute.ARMOR`
+
+#### ✨ 新增
+
+- **自定义方块系统（SBlock）** —— 继承 `SBlock` 基类（继承自 `SItem`，物品形式自动注册到 `/sfitem`）
+  - 用 chunk PersistentDataContainer 持久化，重启不丢失
+  - 覆盖 Bukkit 方块全部能力：基础材质、右键/左键监听、掉落物（VANILLA/CUSTOM/NONE）、红石通电响应（`redstoneRadius`）、放置限制、20+ 方块事件钩子（onPlace/onBreak/onBurn/onPhysics/onPistonExtend/onExplode/...）
+  - `BlockManager` 位置映射 + `BlockListener` 事件分发 + `/sfblock` 命令（list/give/info/look）
+- **自定义屏幕系统（SScreen）** —— 基于 Paper 1.21.8 Dialog API 的进服弹窗基类
+  - 玩家进服 configuration phase（未进入世界）时弹 Dialog，`CompletableFuture` 阻塞直到响应
+  - `accept()` 放行进世界，`deny(msg)` 踢出，超时自动 deny
+  - 支持 `DialogType.confirmation/notice/multiAction`、`DialogBody.plainMessage/item`、`DialogInput.bool/singleOption/text/numberRange`
+  - 多屏按 `priority` 顺序依次弹出，按钮 Key 自动生成 `namespace:screenId/action`
+- **高级工作台** —— 工作台 + 发射器多方块结构
+  - 右击工作台检测下方发射器，对 9 格按已注册 `SRecipe` 匹配（`SRecipe.matchesGrid` + `RecipeManager.craftAtInventory`）
+  - 消耗材料、产物放入空槽，支持有序/无序、Material 与 SItem 混合材料
+
+#### 🛠️ 修复
+
+- **SFAttr 属性字符串解析兼容 1.21.8** —— `ensureLoaded()` 改用 `Registry.ATTRIBUTE` 遍历 + 对每个 Attribute 注册三种别名（原样 + 去前缀 + `GENERIC_` 前缀）
+  - 修复第三方插件（如 zmb96）传 `"GENERIC_ARMOR"` 字符串在 1.21.8 因 `Attribute.name()` 返回去前缀名导致解析为 null 的问题
+  - 第三方插件无需改代码即可兼容
+
+### [3.2.8-LTS] - 2026-08-26
+
+#### ✨ 新增
+
+- **自定义物品「获取来源」系统** —— `SItem.dropSources()` 方法返回 `List<DropSource>`，ItemListener 自动监听对应事件触发掉落
+  - 新增 `DropSource` 独立类，支持 4 种获取途径：
+    - `BLOCK_BREAK` —— 监听 `BlockBreakEvent`，挖掉指定 Material 方块按几率掉落（创造模式跳过避免刷物品）
+    - `ENTITY_DEATH` —— 监听 `EntityDeathEvent`，杀指定 EntityType 怪物按几率掉落
+    - `FISHING` —— 监听 `PlayerFishEvent` (CAUGHT_FISH)，钓鱼按几率替换钓上来的物品
+    - `CHEST_LOOT` —— 监听 `LootGenerateEvent`，自然生成的战利品箱子按几率塞入
+  - `DropSource` 静态工厂方法：`block(Material, chance)` / `block(Material, chance, min, max)` / `mob(EntityType, chance)` / `mob(EntityType, chance, min, max)` / `fishing(chance)` / `fishing(chance, min, max)` / `chest(chance)` / `chest(chance, min, max)`
+  - 支持数量范围 `minAmount ~ maxAmount`，自动 `rollAmount()` 随机
+  - `chance` 自动 clamp 到 [0, 1]
+- **示例物品 `AncientRelicItem` 远古遗物** —— 演示全部 4 种获取途径
+  - 挖石头 0.5%、挖深板岩 1%、挖远古残骸 50%、凋零骷髅 20%、末影龙 100%、远古守卫者 80%、钓鱼 5%、战利品箱子 15%
+  - 右键：抗性 III + 力量 II + 急迫 I 共 10 秒
+  - 左键：速度 IV + 跳跃提升 IV 共 10 秒
+
+#### 📚 文档
+
+- README 新增「获取来源（DropSource）」章节
+- 版本徽章 `3.2.7-LTS` → `3.2.8-LTS`
+
+#### 📦 版本
+
+- `pom.xml` 版本：`3.2.7-LTS` → `3.2.8-LTS`
+
+---
 
 ### [3.2.7-LTS] - 2026-08-24
 

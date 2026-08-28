@@ -128,16 +128,44 @@ public final class SFAttr {
     public static synchronized void ensureLoaded() {
         if (init) return;
         try {
-            Attribute[] values = Attribute.values();
-            for (Attribute a : values) REGISTRY.put(a.name(), a);
+            try {
+                @SuppressWarnings("unchecked")
+                org.bukkit.Registry<Attribute> reg = org.bukkit.Registry.ATTRIBUTE;
+                if (reg != null) {
+                    for (Attribute a : reg) registerAliases(a);
+                }
+            } catch (Throwable ignore) {}
+            if (REGISTRY.isEmpty()) {
+                Attribute[] values = Attribute.values();
+                for (Attribute a : values) registerAliases(a);
+            }
             SF sf = SF.sf();
             if (sf != null) {
-                sf.info("[SFAttr] Loaded " + REGISTRY.size() + " Bukkit attributes");
+                sf.info("[SFAttr] Loaded " + REGISTRY.size() + " Bukkit attribute keys");
             }
         } catch (Throwable t) {
             t.printStackTrace();
         }
         init = true;
+    }
+
+    private static void registerAliases(Attribute a) {
+        if (a == null) return;
+        String[] sources = new String[2];
+        try { sources[0] = a.name(); } catch (Throwable ignore) { sources[0] = null; }
+        try { sources[1] = ((org.bukkit.Keyed) a).getKey().value(); } catch (Throwable ignore) { sources[1] = null; }
+        for (String s : sources) {
+            if (s == null || s.isEmpty()) continue;
+            String up = s.toUpperCase();
+            REGISTRY.put(up, a);
+            String core = up.replaceAll("^(GENERIC_|PLAYER_|ZOMBIE_)", "");
+            if (!core.equals(up) && !core.isEmpty()) {
+                REGISTRY.put(core, a);
+                REGISTRY.put("GENERIC_" + core, a);
+            } else {
+                REGISTRY.put("GENERIC_" + core, a);
+            }
+        }
     }
 
     public static Attribute get(String name) {

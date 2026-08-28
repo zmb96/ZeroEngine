@@ -221,7 +221,7 @@ public class HordeImpl implements Horde, Listener {
             SurvivorImpl rs = g.survivors.get(reviver.getUniqueId());
             if (rs != null) rs.score += 50;
         }
-        dead.setHealth(Objects.requireNonNull(dead.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() * 0.5);
+        dead.setHealth(Objects.requireNonNull(dead.getAttribute(Attribute.MAX_HEALTH)).getValue() * 0.5);
         fire(new HordeEventImpl(HordeEvent.Type.PLAYER_REVIVE, g, dead, reviver));
     }
 
@@ -285,17 +285,17 @@ public class HordeImpl implements Horde, Listener {
 
     private void applyMobStats(LivingEntity e, MobRuleImpl rule, double hMul, double dMul, double sMul) {
         try {
-            Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_MAX_HEALTH))
-                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getDefaultValue() * rule.healthMul * hMul);
-            e.setHealth(Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
+            Objects.requireNonNull(e.getAttribute(Attribute.MAX_HEALTH))
+                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.MAX_HEALTH)).getDefaultValue() * rule.healthMul * hMul);
+            e.setHealth(Objects.requireNonNull(e.getAttribute(Attribute.MAX_HEALTH)).getValue());
         } catch (Exception ignored) {}
         try {
-            Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE))
-                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getDefaultValue() * rule.damageMul * dMul);
+            Objects.requireNonNull(e.getAttribute(Attribute.ATTACK_DAMAGE))
+                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.ATTACK_DAMAGE)).getDefaultValue() * rule.damageMul * dMul);
         } catch (Exception ignored) {}
         try {
-            Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED))
-                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).getDefaultValue() * rule.speedMul * sMul);
+            Objects.requireNonNull(e.getAttribute(Attribute.MOVEMENT_SPEED))
+                    .setBaseValue(Objects.requireNonNull(e.getAttribute(Attribute.MOVEMENT_SPEED)).getDefaultValue() * rule.speedMul * sMul);
         } catch (Exception ignored) {}
         if (rule.effects != null) {
             for (String effStr : rule.effects) {

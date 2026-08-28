@@ -39,6 +39,11 @@ import cn.ZeroEngine.Engine.api.v3.feature.entity.EntityListener;
 import cn.ZeroEngine.Engine.api.v3.feature.entity.SEntity;
 import cn.ZeroEngine.Engine.api.v3.feature.recipe.RecipeManager;
 import cn.ZeroEngine.Engine.api.v3.feature.recipe.SRecipe;
+import cn.ZeroEngine.Engine.api.v3.feature.block.BlockManager;
+import cn.ZeroEngine.Engine.api.v3.feature.block.BlockListener;
+import cn.ZeroEngine.Engine.api.v3.feature.block.SFBlockCommand;
+import cn.ZeroEngine.Engine.api.v3.feature.screen.ScreenManager;
+import cn.ZeroEngine.Engine.api.v3.feature.screen.SScreen;
 import cn.ZeroEngine.Engine.api.v3.feature.teleport.TeleportManager;
 import cn.ZeroEngine.Engine.api.v3.feature.tick.TickManager;
 import cn.ZeroEngine.Engine.api.v3.feature.chat.ChatManager;
@@ -75,6 +80,9 @@ public final class SF implements SFApi {
     private EntityManager entityManager;
     private EntityListener entityListener;
     private RecipeManager recipeManager;
+    private BlockManager blockManager;
+    private BlockListener blockListener;
+    private ScreenManager screenManager;
     private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomeManager;
     private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeListener biomeListener;
     private ChatManager chatManager;
@@ -137,6 +145,9 @@ public final class SF implements SFApi {
             if (instance.entityListener != null) instance.entityListener.shutdown();
             if (instance.entityManager != null) instance.entityManager.unregisterAll();
             if (instance.recipeManager != null) instance.recipeManager.unregisterAll();
+            if (instance.blockListener != null) instance.blockListener.shutdown();
+            if (instance.blockManager != null) instance.blockManager.shutdown();
+            if (instance.screenManager != null) instance.screenManager.shutdown();
             if (instance.biomeListener != null) instance.biomeListener.shutdown();
             if (instance.biomeManager != null) instance.biomeManager.unregisterAll();
             if (instance.perfManager != null) instance.perfManager.shutdown();
@@ -199,8 +210,10 @@ public final class SF implements SFApi {
             itemListener = new ItemListener(itemManager);
             regEvent(itemListener, plugin);
             regEvent(new cn.ZeroEngine.Engine.api.v3.feature.item.ItemChestListener(itemManager), plugin);
+            itemManager.registerIfAbsent(new cn.ZeroEngine.Engine.api.v3.feature.item.MagicScepterItem());
+            regCommand("sfitem", new cn.ZeroEngine.Engine.api.v3.feature.item.SFItemCommand(itemManager));
             SF sf = SF.sf();
-            sf.info("[Item] System initialized");
+            sf.info("[Item] System initialized (v3 /sfitem command ready; " + itemManager.all().size() + " items loaded)");
         }
         return itemManager;
     }
@@ -223,11 +236,35 @@ public final class SF implements SFApi {
         if (recipeManager == null) {
             SRecipe.init(plugin);
             recipeManager = new RecipeManager();
+            recipeManager.setItemManager(item());
+            regEvent(new cn.ZeroEngine.Engine.api.v3.feature.recipe.AdvancedCraftTableListener(recipeManager), plugin);
             regCommand("sfrecipe", new cn.ZeroEngine.Engine.api.v3.feature.recipe.SFRecipeCommand(recipeManager));
             SF sf = SF.sf();
-            sf.info("[Recipe] Custom recipe system initialized");
+            sf.info("[Recipe] Custom recipe system initialized (Advanced Craft Table ready)");
         }
         return recipeManager;
+    }
+
+    public BlockManager blocks() {
+        if (blockManager == null) {
+            blockManager = new BlockManager(plugin, item());
+            blockListener = new BlockListener(plugin, blockManager);
+            regEvent(blockListener, plugin);
+            regCommand("sfblock", new SFBlockCommand(blockManager));
+            SF sf = SF.sf();
+            sf.info("[Block] Custom block system initialized (v3 /sfblock command ready; " + blockManager.all().size() + " blocks loaded)");
+        }
+        return blockManager;
+    }
+
+    public ScreenManager screens() {
+        if (screenManager == null) {
+            screenManager = new ScreenManager(plugin);
+            regEvent(screenManager, plugin);
+            SF sf = SF.sf();
+            sf.info("[Screen] Custom screen system initialized (v3 Dialog API, blocks join until accepted; " + screenManager.all().size() + " screens loaded)");
+        }
+        return screenManager;
     }
 
     public cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomes() {

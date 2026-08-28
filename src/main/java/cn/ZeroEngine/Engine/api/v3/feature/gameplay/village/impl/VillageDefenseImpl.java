@@ -895,7 +895,7 @@ public class VillageDefenseImpl implements VillageDefense, Listener {
             Entity e = w.spawnEntity(location, et);
             if (e instanceof LivingEntity) {
                 bukkitEntity = (LivingEntity) e;
-                try { bukkitEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth); } catch (Exception ignored) {}
+                try { bukkitEntity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(maxHealth); } catch (Exception ignored) {}
                 bukkitEntity.setHealth(health);
             }
         }
@@ -1090,7 +1090,7 @@ public class VillageDefenseImpl implements VillageDefense, Listener {
                 Map<String, Object> base = getEnemyStats(es.type());
                 double hp = ((Number) base.getOrDefault("health", 20.0)).doubleValue() * es.healthMul();
                 double dmg = ((Number) base.getOrDefault("damage", 2.0)).doubleValue() * es.damageMul();
-                try { le.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(hp); } catch (Exception ignored) {}
+                try { le.getAttribute(Attribute.MAX_HEALTH).setBaseValue(hp); } catch (Exception ignored) {}
                 le.setHealth(hp);
                 enemyEntities.add(le);
                 fireEvent(new VillageEventImpl(VillageEvent.Type.ENEMY_SPAWN, this, null, le));
