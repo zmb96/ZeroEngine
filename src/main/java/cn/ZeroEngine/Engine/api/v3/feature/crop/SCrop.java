@@ -35,7 +35,14 @@ public abstract class SCrop extends SItem {
 
     public abstract Material cropBlock();
 
-    public int maxStage() { return 7; }
+    public java.util.List<Material> stages() { return Collections.emptyList(); }
+
+    public final boolean isStageMode() { return stages() != null && !stages().isEmpty(); }
+
+    public int maxStage() {
+        if (isStageMode()) return stages().size() - 1;
+        return 7;
+    }
 
     public double growthChance() { return 0.125; }
 
@@ -58,9 +65,14 @@ public abstract class SCrop extends SItem {
     public void onHarvest(Block block, Player player) {}
 
     public boolean placeAt(Block target, int stage) {
+        if (target == null || !target.getType().isAir()) return false;
+        if (isStageMode()) {
+            int idx = Math.max(0, Math.min(stage, stages().size() - 1));
+            target.setType(stages().get(idx));
+            return true;
+        }
         Material m = cropBlock();
         if (m == null || !m.isBlock()) return false;
-        if (!target.getType().isAir()) return false;
         target.setType(m);
         try {
             if (target.getBlockData() instanceof Ageable ageable) {
@@ -73,6 +85,12 @@ public abstract class SCrop extends SItem {
 
     public int currentStage(Block block) {
         if (block == null) return 0;
+        if (isStageMode()) {
+            Material cur = block.getType();
+            java.util.List<Material> st = stages();
+            for (int i = 0; i < st.size(); i++) if (st.get(i) == cur) return i;
+            return 0;
+        }
         try {
             if (block.getBlockData() instanceof Ageable ageable) {
                 return ageable.getAge();
@@ -87,6 +105,14 @@ public abstract class SCrop extends SItem {
 
     public boolean growOneStep(Block block) {
         if (block == null) return false;
+        if (isStageMode()) {
+            int cur = currentStage(block);
+            int max = maxStage();
+            if (cur >= max) return false;
+            block.setType(stages().get(cur + 1));
+            onGrow(block, cur + 1);
+            return true;
+        }
         try {
             if (block.getBlockData() instanceof Ageable ageable) {
                 int cur = ageable.getAge();

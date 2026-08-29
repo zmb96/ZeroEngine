@@ -1,5 +1,6 @@
 package cn.ZeroEngine.Engine.api.v3.feature.crop;
 
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -14,6 +15,7 @@ import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import cn.ZeroEngine.Engine.api.v3.SF;
@@ -62,7 +64,7 @@ public class CropListener implements Listener {
             }
         }
 
-        if (clicked.getBlockData() instanceof Ageable) {
+        if (clicked.getBlockData() instanceof Ageable || isStageCrop(clicked)) {
             SCrop crop = manager.findAt(clicked);
             if (crop == null) return;
             if (crop.isMature(clicked)) {
@@ -70,6 +72,11 @@ public class CropListener implements Listener {
                 harvest(clicked, crop, p);
             }
         }
+    }
+
+    private boolean isStageCrop(Block b) {
+        SCrop c = manager.findAt(b);
+        return c != null && c.isStageMode();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -102,12 +109,23 @@ public class CropListener implements Listener {
             e.setCancelled(true);
             return;
         }
+        if (crop.isStageMode()) {
+            if (crop.isMature(b)) e.setCancelled(true);
+            else { e.setCancelled(true); crop.growOneStep(b); }
+            return;
+        }
         if (b.getBlockData() instanceof Ageable ageable) {
             int max = Math.min(ageable.getMaximumAge(), crop.maxStage());
             if (ageable.getAge() >= max) {
                 e.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkLoad(ChunkLoadEvent e) {
+        Chunk chunk = e.getChunk();
+        manager.scanChunk(chunk);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

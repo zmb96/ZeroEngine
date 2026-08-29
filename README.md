@@ -2306,8 +2306,10 @@ sf.screens().register(new RulesScreen());
 | 方法 | 说明 | 默认 |
 |------|------|------|
 | `id()` / `displayName()` / `material()` | SItem 继承，物品形式（种子） | 必填 |
-| `cropBlock()` | 作物方块的 Material（必须是 Ageable 方块） | 必填 |
-| `maxStage()` | 最大生长阶段（对应 Ageable.getMaximumAge） | 7 |
+| `cropBlock()` | 作物方块的 Material（Ageable 模式必填；阶段模式仅占位） | 必填 |
+| `stages()` | 各阶段 Material 列表（非空=阶段模式，生长时切换方块类型） | 空=Ageable 模式 |
+| `isStageMode()` | 是否阶段模式（final，由 stages() 是否空决定） | 自动 |
+| `maxStage()` | 最大生长阶段（阶段模式=stages.size-1；Ageable=7） | 7 |
 | `growthChance()` | 随机刻生长概率 | 0.125 |
 | `harvestDrops()` | 成熟收获掉落的产物列表 | 空 |
 | `minSeedsOnHarvest()` / `maxSeedsOnHarvest()` | 收获掉落种子数量范围 | 1 / 3 |
@@ -2346,6 +2348,42 @@ sf.crops().register(new TomatoCrop());
 3. 骨粉右键 → `BlockFertilizeEvent` 推进 age
 4. 成熟后（age≥maxStage）右键作物 → 收获：掉 `harvestDrops()` + 1~3 个种子，方块变回空气
 5. 破坏未成熟作物 → 取消原版掉落，调 `onHarvest`（可按需重写为返还种子）
+
+### 双模式：Ageable 模式 vs 阶段模式
+
+`SCrop` 支持两种生长模式，由 `stages()` 是否返回非空列表自动切换：
+
+| 模式 | 触发 | 生长机制 | 适用 |
+|---|---|---|---|
+| **Ageable 模式**（默认） | `stages()` 返回空 | 单 `cropBlock()` 方块 + `Ageable.setAge` 推进 age，依赖 vanilla 随机刻 `BlockGrowEvent` | 复用原版作物方块（WHEAT/CARROTS/POTATOES/BEETROOTS/NETHER_WART/SWEET_BERRY_BUSH 等 BlockData 实现 Ageable 的 Material） |
+| **阶段模式**（新） | `stages()` 返回非空列表 | 每个 stage 对应不同 Material，生长时 `setType` 切换方块；**不依赖 vanilla 随机刻**，由引擎 `BukkitRunnable` 每 5 秒按 `growthChance` 推进 | 任意 Material（不限于 Ageable），完全自定义各阶段视觉 |
+
+阶段模式的定时生长由 `CropManager` 维护内存位置索引（`plantedCrops` Set），`ChunkLoadEvent` 加载时扫描 chunk PDC 恢复索引，重启不丢失。
+
+```java
+public class TomatoCrop extends SCrop {
+    @Override public String id() { return "tomato"; }
+    @Override public String displayName() { return "§c番茄种子"; }
+    @Override public Material material() { return Material.WHEAT_SEEDS; }  // 种子物品
+    @Override public Material cropBlock() { return Material.WHEAT; }      // 阶段模式仅占位
+
+    @Override public List<Material> stages() {
+        return List.of(
+            Material.NETHER_SPROUTS,     // 阶段0：幼苗
+            Material.WHEAT,              // 阶段1：成长中
+            Material.CARROTS,            // 阶段2：开花
+            Material.BEETROOTS,          // 阶段3：结果
+            Material.RED_MUSHROOM_BLOCK  // 阶段4：成熟番茄
+        );
+    }
+
+    @Override public List<ItemStack> harvestDrops() {
+        return List.of(new ItemStack(Material.APPLE, 2));
+    }
+}
+```
+
+玩家种下 → `NETHER_SPROUTS` → 定时任务/骨粉切换 → `WHEAT` → ... → `RED_MUSHROOM_BLOCK`（成熟）→ 右键收获。每个阶段可任意 Material，不再受 Ageable 限制。
 
 ---
 
@@ -5602,11 +5640,12 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 
 ### [3.3.1-LTS] - 2026-08-29
 
-- **自定义农作物系统（SCrop）** —— 继承 `SCrop`（extends SItem，物品形式即种子）
-  - `cropBlock()` 用 vanilla Ageable Material（WHEAT/CARROTS/POTATOES/BEETROOTS 等）+ chunk PDC 标记 cropId 区分
-  - `maxStage()` / `growthChance()` / `harvestDrops()` / `min-maxSeedsOnHarvest()` / `requireFarmland()` / `minLightLevel()` / `onBonemeal()` 可重写
+- **自定义农作物系统（SCrop）** —— 继承 `SCrop`（extends SItem，物品形式即种子），双生长模式
+  - **Ageable 模式**（默认）：`cropBlock()` 用 vanilla Ageable Material（WHEAT/CARROTS/POTATOES/BEETROOTS/NETHER_WART/SWEET_BERRY_BUSH 等）+ `Ageable.setAge` 推进，依赖 vanilla 随机刻
+  - **阶段模式**（新）：`stages()` 返回各阶段 Material 列表，生长时 `setType` 切换方块；**不依赖 vanilla 随机刻**，引擎 `BukkitRunnable` 每 5 秒按 `growthChance` 推进，任意 Material 可用（不再限于 Ageable）
+  - chunk PDC 标记 cropId 区分；`maxStage()` / `growthChance()` / `harvestDrops()` / `min-maxSeedsOnHarvest()` / `requireFarmland()` / `minLightLevel()` / `onBonemeal()` 可重写
   - `onPlant/onGrow/onHarvest` 钩子；`canGrowAt` 种植条件校验
-  - `CropManager` 位置映射 + `CropListener`（种植/生长/骨粉/收获/破坏）+ `/sfcrop` 命令（alias `/sfcr` `/sfcrops`，避开 `/sfchat` 的 `/sfc`）
+  - `CropManager` 位置映射 + 内存位置索引 + 定时生长任务 + `scanChunk` 恢复 + `CropListener`（种植/生长/骨粉/收获/破坏/ChunkLoad 恢复）+ `/sfcrop` 命令（alias `/sfcr` `/sfcrops`，避开 `/sfchat` 的 `/sfc`）
   - `SF.crops()` 懒加载注册
 - **物品食物方法** —— `SItem` 新增 5 个食物钩子
   - `isFood()` / `foodNutrition()` / `foodSaturation()` / `canAlwaysEat()` / `onEat(PlayerItemConsumeEvent)`

@@ -8,12 +8,14 @@ import org.bukkit.block.Block;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -33,10 +35,69 @@ public class CropManager {
     private final SF sf;
     private final Map<String, SCrop> registry = new HashMap<>();
     private final Map<String, NamespacedKey> chunkKeyCache = new ConcurrentHashMap<>();
+    private final Set<Location> plantedCrops = ConcurrentHashMap.newKeySet();
+    private BukkitRunnable growthTask;
 
     public CropManager(Plugin plugin) {
         this.plugin = plugin;
         this.sf = SF.sf();
+        startGrowthTask();
+    }
+
+    private void startGrowthTask() {
+        growthTask = new BukkitRunnable() {
+            @Override public void run() {
+                if (plantedCrops.isEmpty()) return;
+                for (Location loc : plantedCrops) {
+                    try {
+                        Block b = loc.getBlock();
+                        String cropId = readCropId(b);
+                        if (cropId == null) { plantedCrops.remove(loc); continue; }
+                        SCrop crop = registry.get(cropId);
+                        if (crop == null) { plantedCrops.remove(loc); continue; }
+                        if (!crop.isStageMode()) continue;
+                        if (crop.isMature(b)) continue;
+                        if (!crop.canGrowAt(b)) continue;
+                        if (Math.random() >= crop.growthChance()) continue;
+                        crop.growOneStep(b);
+                    } catch (Throwable ignore) {}
+                }
+            }
+        };
+        growthTask.runTaskTimer(plugin, 100L, 100L);
+    }
+
+    public void indexCrop(Block block) {
+        if (block != null) plantedCrops.add(block.getLocation());
+    }
+
+    public void unindexCrop(Block block) {
+        if (block != null) plantedCrops.remove(block.getLocation());
+    }
+
+    public void scanChunk(Chunk chunk) {
+        try {
+            PersistentDataContainer pdc = chunk.getPersistentDataContainer();
+            for (NamespacedKey key : pdc.getKeys()) {
+                String name = key.getKey();
+                if (!name.startsWith(PDC_PREFIX)) continue;
+                String cropId = pdc.get(key, PersistentDataType.STRING);
+                if (cropId == null) continue;
+                String rel = name.substring(PDC_PREFIX.length());
+                String[] parts = rel.split("_");
+                if (parts.length != 3) continue;
+                int rx = Integer.parseInt(parts[0]);
+                int ry = Integer.parseInt(parts[1]);
+                int rz = Integer.parseInt(parts[2]);
+                int bx = (chunk.getX() << 4) + rx;
+                int bz = (chunk.getZ() << 4) + rz;
+                Block b = chunk.getBlock(rx, ry, rz);
+                if (b.getType().isAir()) { pdc.remove(key); continue; }
+                plantedCrops.add(b.getLocation());
+            }
+        } catch (Throwable t) {
+            sf.error("[Crop] scanChunk failed", t);
+        }
     }
 
     public CropManager register(SCrop crop) {
@@ -73,6 +134,7 @@ public class CropManager {
         if (block == null || crop == null) return false;
         if (!crop.placeAt(block, stage)) return false;
         writeCropId(block, crop.id());
+        indexCrop(block);
         return true;
     }
 
@@ -80,6 +142,7 @@ public class CropManager {
         if (block == null) return false;
         if (readCropId(block) == null) return false;
         clearCropId(block);
+        unindexCrop(block);
         return true;
     }
 
@@ -144,6 +207,8 @@ public class CropManager {
     }
 
     public void shutdown() {
+        if (growthTask != null) { try { growthTask.cancel(); } catch (Throwable ignore) {} }
+        plantedCrops.clear();
         registry.clear();
         chunkKeyCache.clear();
     }
