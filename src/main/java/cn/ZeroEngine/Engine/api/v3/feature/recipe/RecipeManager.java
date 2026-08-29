@@ -2,6 +2,7 @@ package cn.ZeroEngine.Engine.api.v3.feature.recipe;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
@@ -31,6 +32,7 @@ public class RecipeManager {
     private final Map<String, SRecipe> registry = new HashMap<>();
     private final Map<String, NamespacedKey> registeredKeys = new ConcurrentHashMap<>();
     private final Map<String, AdvancedCraftTable> tables = new HashMap<>();
+    private final Map<Material, AdvancedCraftTable> defaultByMaterial = new ConcurrentHashMap<>();
     private final Map<String, NamespacedKey> tableKeyCache = new ConcurrentHashMap<>();
     private ItemManager itemManager;
     private Plugin plugin;
@@ -80,19 +82,46 @@ public class RecipeManager {
             throw new IllegalStateException("AdvancedCraftTable already registered: " + table.id());
         }
         tables.put(table.id(), table);
-        SF.sf().info("[Recipe] AdvancedCraftTable registered: " + table.id());
+        if (table.baseBlock() != null) {
+            defaultByMaterial.putIfAbsent(table.baseBlock(), table);
+        }
+        SF.sf().info("[Recipe] AdvancedCraftTable registered: " + table.id() + " (base=" + table.baseBlock() + ")");
         return table;
     }
 
     public boolean registerTableIfAbsent(AdvancedCraftTable table) {
-        if (tables.containsKey(table.id())) return false;
+        if (tables.containsKey(table.id())) {
+            // refresh defaultByMaterial if absent
+            if (table.baseBlock() != null) defaultByMaterial.putIfAbsent(table.baseBlock(), tables.get(table.id()));
+            return false;
+        }
         try { registerTable(table); return true; }
         catch (IllegalStateException ignore) { return false; }
     }
 
     public AdvancedCraftTable getTable(String id) { return tables.get(id); }
 
+    public void unregisterTable(String id) {
+        AdvancedCraftTable old = tables.remove(id);
+        if (old != null && old.baseBlock() != null) {
+            defaultByMaterial.entrySet().removeIf(e -> e.getValue() == old);
+        }
+        tableKeyCache.keySet().removeIf(k -> k.startsWith(id + ":"));
+    }
+
+    public void unregisterAllTables() {
+        tables.clear();
+        defaultByMaterial.clear();
+        tableKeyCache.clear();
+    }
+
     public Collection<AdvancedCraftTable> allTables() { return Collections.unmodifiableCollection(tables.values()); }
+
+    /** 默认按顶部方块 Material 匹配到的机器 */
+    public AdvancedCraftTable defaultTableFor(Material topBlock) {
+        if (topBlock == null) return null;
+        return defaultByMaterial.get(topBlock);
+    }
 
     public boolean bindTableAt(Block workbench, AdvancedCraftTable table) {
         if (plugin == null) plugin = SF.sf().plugin();
@@ -113,11 +142,12 @@ public class RecipeManager {
             Chunk chunk = workbench.getChunk();
             PersistentDataContainer pdc = chunk.getPersistentDataContainer();
             String id = pdc.get(tableKey(workbench), PersistentDataType.STRING);
-            if (id == null) return null;
-            return tables.get(id);
-        } catch (Throwable ignore) {
-            return null;
-        }
+            if (id != null) {
+                AdvancedCraftTable t = tables.get(id);
+                if (t != null) return t;
+            }
+        } catch (Throwable ignore) { }
+        return defaultByMaterial.get(workbench.getType());
     }
 
     public boolean unbindTableAt(Block workbench) {

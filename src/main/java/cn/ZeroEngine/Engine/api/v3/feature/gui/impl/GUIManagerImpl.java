@@ -66,6 +66,17 @@ public class GUIManagerImpl implements GUIManager {
     }
 
     @Override
+    public void unregister(SChestGUI gui) {
+        String cmd = gui.command();
+        if (cmd != null && !cmd.isEmpty()) {
+            SChestGUI cur = byCommand.get(cmd.toLowerCase());
+            if (cur == gui) byCommand.remove(cmd.toLowerCase());
+        }
+        byCommand.values().removeIf(v -> v == gui);
+        SF.sf().info("[GUI] SChestGUI unregistered: " + gui.id());
+    }
+
+    @Override
     public SChestGUI byCommand(String command) {
         return command == null ? null : byCommand.get(command.toLowerCase());
     }

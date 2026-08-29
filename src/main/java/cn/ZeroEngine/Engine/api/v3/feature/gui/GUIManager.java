@@ -13,6 +13,8 @@ public interface GUIManager {
 
     void register(SChestGUI gui);
 
+    void unregister(SChestGUI gui);
+
     SChestGUI byCommand(String command);
 
     void closeAll();

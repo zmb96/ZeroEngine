@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.8-green)
-![Version](https://img.shields.io/badge/Version-3.3.1--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.3.3--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -5679,6 +5679,16 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.3.3-LTS] - 2026-08-29
+
+- **热加载/卸载 API 补齐** —— 支持第三方插件（如 zmb96_GamePlugin）优雅地热插拔注册对象
+  - `RecipeManager` 新增 `unregisterTable(String id)` / `unregisterAllTables()` —— 加工机器（AdvancedCraftTable）运行时注销，避免 `/sfaddons reload` 等热更命令重复注册或残留
+  - `GUIManager` 新增 `unregister(SChestGUI gui)` —— SChestGUI 从注册表 & 命令绑定中移除，方便 GUI 代码改动后原地替换
+  - 配套 Screen/Crop/Item 的 `unregister(id)` 已在早前版本存在，现在整套 v3 玩法功能 API 全部具备「注册 + 注销」对称能力
+- **注册健壮性增强** —— ScreenManager.register() 重复注册抛出 `IllegalStateException` 的历史问题：新增 `registerIfAbsent` 安全写法并贯穿所有 Manager（Screens/Crops/Items/Recipes/Tables）均提供 `registerIfAbsent` 返回 boolean
+- **SChestGUI.command() 空值防护建议** —— 第三方插件若 SChestGUI 子类 `command()` 返回 null，应在注册检查阶段先做非空判断（推荐第三方插件按示例写法比较 command）；ZeroEngine 侧 GUIManager.register() 对 command==null 不再自动注册命令（仅注册 GUI，需代码手动 open）
+- **SFAttr.ensureLoaded() 属性别名双向兼容** —— 注册 Attribute 别名时同时写入「原名」「去前缀名」「GENERIC_前缀名」三种写法，第三方插件即使使用字符串裸名也能命中（缓解 1.21.7+ 枚举→接口变动后的跨插件字符串属性不匹配）
 
 ### [3.3.2-LTS] - 2026-08-29
 
