@@ -44,6 +44,10 @@ import cn.ZeroEngine.Engine.api.v3.feature.block.BlockListener;
 import cn.ZeroEngine.Engine.api.v3.feature.block.SFBlockCommand;
 import cn.ZeroEngine.Engine.api.v3.feature.screen.ScreenManager;
 import cn.ZeroEngine.Engine.api.v3.feature.screen.SScreen;
+import cn.ZeroEngine.Engine.api.v3.feature.crop.CropManager;
+import cn.ZeroEngine.Engine.api.v3.feature.crop.CropListener;
+import cn.ZeroEngine.Engine.api.v3.feature.crop.SFCropCommand;
+import cn.ZeroEngine.Engine.api.v3.feature.crop.SCrop;
 import cn.ZeroEngine.Engine.api.v3.feature.teleport.TeleportManager;
 import cn.ZeroEngine.Engine.api.v3.feature.tick.TickManager;
 import cn.ZeroEngine.Engine.api.v3.feature.chat.ChatManager;
@@ -83,6 +87,8 @@ public final class SF implements SFApi {
     private BlockManager blockManager;
     private BlockListener blockListener;
     private ScreenManager screenManager;
+    private CropManager cropManager;
+    private CropListener cropListener;
     private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomeManager;
     private cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeListener biomeListener;
     private ChatManager chatManager;
@@ -148,6 +154,8 @@ public final class SF implements SFApi {
             if (instance.blockListener != null) instance.blockListener.shutdown();
             if (instance.blockManager != null) instance.blockManager.shutdown();
             if (instance.screenManager != null) instance.screenManager.shutdown();
+            if (instance.cropManager != null) instance.cropManager.shutdown();
+            if (instance.cropListener != null) instance.cropListener.shutdown();
             if (instance.biomeListener != null) instance.biomeListener.shutdown();
             if (instance.biomeManager != null) instance.biomeManager.unregisterAll();
             if (instance.perfManager != null) instance.perfManager.shutdown();
@@ -265,6 +273,18 @@ public final class SF implements SFApi {
             sf.info("[Screen] Custom screen system initialized (v3 Dialog API, blocks join until accepted; " + screenManager.all().size() + " screens loaded)");
         }
         return screenManager;
+    }
+
+    public CropManager crops() {
+        if (cropManager == null) {
+            cropManager = new CropManager(plugin);
+            cropListener = new CropListener(plugin, cropManager, item());
+            regEvent(cropListener, plugin);
+            regCommand("sfcrop", new SFCropCommand(cropManager));
+            SF sf = SF.sf();
+            sf.info("[Crop] Custom crop system initialized (v3 /sfcrop command ready; " + cropManager.all().size() + " crops loaded)");
+        }
+        return cropManager;
     }
 
     public cn.ZeroEngine.Engine.api.v3.feature.biome.BiomeManager biomes() {

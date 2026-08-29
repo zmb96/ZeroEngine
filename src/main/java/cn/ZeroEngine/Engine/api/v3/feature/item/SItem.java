@@ -61,6 +61,16 @@ public abstract class SItem {
 
     public boolean onLeftClick(PlayerInteractEvent e) { return false; }
 
+    public boolean isFood() { return false; }
+
+    public int foodNutrition() { return 0; }
+
+    public float foodSaturation() { return 0; }
+
+    public boolean canAlwaysEat() { return false; }
+
+    public void onEat(org.bukkit.event.player.PlayerItemConsumeEvent e) {}
+
     public void onInteract(Player player, Action action, ItemStack item) {}
 
     public void onEquip(Player player, ItemStack item) {}

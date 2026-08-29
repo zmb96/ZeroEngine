@@ -49,6 +49,11 @@ commands:
     usage: /sfblock <list|give|info|hand|look|reload|help>
     aliases: [sfb]
     permission: sf.admin.block
+  sfcrop:
+    description: SF 自定义农作物系统
+    usage: /sfcrop <list|give|info|look|help>
+    aliases: [sfcr, sfcrops]
+    permission: sf.admin.crop
   sfchat:
     description: SF 聊天系统
     usage: /sfchat <channel|mute|unmute|muteinfo|block|unblock|blocklist|clear|help>
@@ -94,6 +99,9 @@ permissions:
     default: op
   sf.admin.block:
     description: SF 自定义方块系统
+    default: op
+  sf.admin.crop:
+    description: SF 自定义农作物系统
     default: op
   sf.admin.world:
     description: 世界管理

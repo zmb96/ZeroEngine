@@ -13,6 +13,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.ItemStack;
@@ -54,6 +55,39 @@ public class ItemListener implements Listener {
         }
 
         custom.onInteract(p, action, item);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onConsume(PlayerItemConsumeEvent e) {
+        ItemStack item = e.getItem();
+        if (item == null || item.getType().isAir()) return;
+        SItem custom = manager.find(item);
+        if (custom == null || !custom.isFood()) return;
+
+        e.setCancelled(true);
+        Player p = e.getPlayer();
+
+        ItemStack mainHand = p.getInventory().getItemInMainHand();
+        boolean offHand = false;
+        if (!custom.is(mainHand)) {
+            ItemStack off = p.getInventory().getItemInOffHand();
+            if (custom.is(off)) { mainHand = off; offHand = true; }
+            else return;
+        }
+        if (mainHand.getAmount() <= 1) {
+            if (offHand) p.getInventory().setItemInOffHand(null);
+            else p.getInventory().setItemInMainHand(null);
+        } else {
+            mainHand.setAmount(mainHand.getAmount() - 1);
+        }
+
+        int nutrition = Math.max(0, custom.foodNutrition());
+        float saturation = Math.max(0f, custom.foodSaturation());
+        int newFood = Math.min(20, p.getFoodLevel() + nutrition);
+        p.setFoodLevel(newFood);
+        p.setSaturation(Math.min(newFood, p.getSaturation() + saturation));
+
+        custom.onEat(e);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

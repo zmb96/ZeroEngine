@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import cn.ZeroEngine.Engine.api.v3.feature.gui.SChestGUI;
 
 public class AdvancedCraftTableListener implements Listener {
 
@@ -28,24 +29,33 @@ public class AdvancedCraftTableListener implements Listener {
         if (clicked == null || clicked.getType() != Material.CRAFTING_TABLE) return;
 
         Block below = clicked.getRelative(BlockFace.DOWN);
-        if (below.getType() != Material.DISPENSER) {
-            return;
-        }
-
+        if (below.getType() != Material.DISPENSER) return;
         if (!(below.getState() instanceof Dispenser dispenser)) return;
 
         Player p = e.getPlayer();
         e.setCancelled(true);
 
         Inventory inv = dispenser.getInventory();
-        SRecipe recipe = manager.craftAtInventory(inv);
+        AdvancedCraftTable table = manager.findTableAt(clicked);
 
+        if (table != null) {
+            SChestGUI gui = table.onRightChest();
+            table.onOpenChest(p, clicked, below, inv);
+            if (gui != null) {
+                gui.open(p);
+                return;
+            }
+            p.openInventory(inv);
+            return;
+        }
+
+        SRecipe recipe = manager.craftAtInventory(inv);
         if (recipe != null) {
             p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.4f);
             p.sendMessage("§a合成成功 §7→ §f" + recipe.id());
             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.6f, 1.6f);
         } else {
-            p.sendMessage("§c合成失败：发射器内的物品与任何配方不匹配。");
+            p.openInventory(inv);
         }
     }
 }

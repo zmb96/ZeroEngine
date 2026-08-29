@@ -1,10 +1,14 @@
 package cn.ZeroEngine.Engine.api.v3.feature.recipe;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import cn.ZeroEngine.Engine.api.v3.SF;
 import cn.ZeroEngine.Engine.api.v3.feature.item.ItemManager;
@@ -26,7 +30,10 @@ public class RecipeManager {
 
     private final Map<String, SRecipe> registry = new HashMap<>();
     private final Map<String, NamespacedKey> registeredKeys = new ConcurrentHashMap<>();
+    private final Map<String, AdvancedCraftTable> tables = new HashMap<>();
+    private final Map<String, NamespacedKey> tableKeyCache = new ConcurrentHashMap<>();
     private ItemManager itemManager;
+    private Plugin plugin;
 
     /** 注册一个配方（立即调用 Bukkit.addRecipe），成功 true，失败（重复 id 或 Bukkit 拒绝）false */
     public boolean register(SRecipe r) {
@@ -59,7 +66,7 @@ public class RecipeManager {
         return this;
     }
 
-    public void setItemManager(ItemManager im) { this.itemManager = im; }
+    public void setItemManager(ItemManager im) { this.itemManager = im; this.plugin = SF.sf().plugin(); }
     public ItemManager itemManager() { return itemManager; }
 
     public SRecipe get(String id) { return registry.get(id); }
@@ -67,6 +74,68 @@ public class RecipeManager {
     public Collection<SRecipe> all() { return Collections.unmodifiableCollection(registry.values()); }
 
     public NamespacedKey getKey(String id) { return registeredKeys.get(id); }
+
+    public AdvancedCraftTable registerTable(AdvancedCraftTable table) {
+        if (tables.containsKey(table.id())) {
+            throw new IllegalStateException("AdvancedCraftTable already registered: " + table.id());
+        }
+        tables.put(table.id(), table);
+        SF.sf().info("[Recipe] AdvancedCraftTable registered: " + table.id());
+        return table;
+    }
+
+    public boolean registerTableIfAbsent(AdvancedCraftTable table) {
+        if (tables.containsKey(table.id())) return false;
+        try { registerTable(table); return true; }
+        catch (IllegalStateException ignore) { return false; }
+    }
+
+    public AdvancedCraftTable getTable(String id) { return tables.get(id); }
+
+    public Collection<AdvancedCraftTable> allTables() { return Collections.unmodifiableCollection(tables.values()); }
+
+    public boolean bindTableAt(Block workbench, AdvancedCraftTable table) {
+        if (plugin == null) plugin = SF.sf().plugin();
+        try {
+            Chunk chunk = workbench.getChunk();
+            PersistentDataContainer pdc = chunk.getPersistentDataContainer();
+            pdc.set(tableKey(workbench), PersistentDataType.STRING, table.id());
+            return true;
+        } catch (Throwable t) {
+            SF.sf().error("[Recipe] bindTableAt failed", t);
+            return false;
+        }
+    }
+
+    public AdvancedCraftTable findTableAt(Block workbench) {
+        if (workbench == null) return null;
+        try {
+            Chunk chunk = workbench.getChunk();
+            PersistentDataContainer pdc = chunk.getPersistentDataContainer();
+            String id = pdc.get(tableKey(workbench), PersistentDataType.STRING);
+            if (id == null) return null;
+            return tables.get(id);
+        } catch (Throwable ignore) {
+            return null;
+        }
+    }
+
+    public boolean unbindTableAt(Block workbench) {
+        try {
+            Chunk chunk = workbench.getChunk();
+            PersistentDataContainer pdc = chunk.getPersistentDataContainer();
+            if (pdc.get(tableKey(workbench), PersistentDataType.STRING) == null) return false;
+            pdc.remove(tableKey(workbench));
+            return true;
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    private NamespacedKey tableKey(Block b) {
+        String k = "sfact_" + (b.getX() & 15) + "_" + (b.getY() & 15) + "_" + (b.getZ() & 15);
+        return tableKeyCache.computeIfAbsent(k, key -> new NamespacedKey(plugin, key));
+    }
 
     /** 从 Bukkit 移除一个自定义配方；同时清空注册表记录 */
     public boolean remove(String id) {

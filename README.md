@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.8-green)
-![Version](https://img.shields.io/badge/Version-3.3.0--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.3.1--LTS-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -28,6 +28,9 @@
 - [🌲 自定义生物群系系统](#-自定义生物群系系统)
 - [🧱 自定义方块系统](#-自定义方块系统)
 - [🖥️ 自定义屏幕系统（Dialog API）](#️-自定义屏幕系统dialog-api)
+- [🌾 自定义农作物系统](#-自定义农作物系统)
+- [🍽️ 物品食物方法](#️-物品食物方法)
+- [🧰 自定义箱子 GUI（SChestGUI）](#-自定义箱子-guischestgui)
 - [🔧 高级工作台](#-高级工作台)
 - [💎 物品获取来源](#-物品获取来源)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
@@ -76,7 +79,10 @@
 - 📜 **配方注册系统**：继承 `SRecipe` 自定义配方，原版工作台 + 有序/无序 + 原版物品/自定义物品混合材料
 - 🧱 **方块注册系统**：继承 `SBlock` 自定义方块，右键/左键监听、红石通电响应、掉落物、放置限制、20+ Bukkit 方块事件钩子，物品形式自动注册到 `/sfitem`
 - 🖥️ **屏幕注册系统**：继承 `SScreen` 基于 Paper 1.21.8 Dialog API，玩家进服配置阶段弹窗，阻塞直到同意/拒绝/超时踢出
-- 🔧 **高级工作台**：工作台 + 发射器多方块结构，右击工作台触发发射器内材料按配方合成
+- 🌾 **农作物注册系统**：继承 `SCrop` 自定义农作物（种子/方块/生长/收获），vanilla Ageable 方块 + chunk PDC 持久化，骨粉/随机刻生长
+- 🍽️ **物品食物方法**：`SItem` 新增 `isFood/foodNutrition/foodSaturation/canAlwaysEat/onEat` 5 个钩子，吃东西自定义营养值 + 给 buff
+- 🧰 **箱子 GUI 基类**：继承 `SChestGUI` 的 OOP 箱子界面，`command()` 返回命令名即可用 `/cd` 命令打开
+- 🔧 **高级工作台**：工作台 + 发射器多方块结构，右击工作台触发合成；`extends AdvancedCraftTable` 重写 `onRightChest()` 返回 `SChestGUI` 即可做成加工机器
 - 💎 **物品获取来源**：`SItem.dropSources()` 声明方块破坏/实体死亡/钓鱼/宝箱 4 种掉落途径
 - 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
 - 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
@@ -419,6 +425,18 @@ lp group admin permission set sf.admin.* true
 | `/sfitem info <id>` | 查看物品详情 |
 | `/sfitem hand` | 查看手中物品信息 |
 | `/sfitem reload` | 重置物品系统 |
+
+### 农作物系统命令
+
+**命令**：`/sfcrop`（别名 `/sfcr` `/sfcrops`） ｜ **权限**：`sf.admin.crop`
+
+| 命令 | 说明 |
+|------|------|
+| `/sfcrop list` | 列出所有已注册农作物 |
+| `/sfcrop give <id> [数量]` | 给予种子物品 |
+| `/sfcrop info <id>` | 查看作物详情（方块/阶段/生长/食物） |
+| `/sfcrop look` | 看向已种植作物查询身份和阶段 |
+| `/sfcrop help` | 显示帮助 |
 
 ---
 
@@ -2279,6 +2297,148 @@ sf.screens().register(new RulesScreen());
 
 ---
 
+## 🌾 自定义农作物系统
+
+`SCrop` 是自定义农作物的抽象基类（继承 `SItem`，物品形式即种子，自动注册到 `/sfitem`）。作物方块使用 vanilla `Ageable` Material（如 `WHEAT`/`CARROTS`），通过 chunk PDC 标记 cropId 区分不同自定义作物，重启自动恢复。生长沿用原版随机刻，骨粉/右键收获由引擎监听器处理。
+
+### 基类方法
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` / `displayName()` / `material()` | SItem 继承，物品形式（种子） | 必填 |
+| `cropBlock()` | 作物方块的 Material（必须是 Ageable 方块） | 必填 |
+| `maxStage()` | 最大生长阶段（对应 Ageable.getMaximumAge） | 7 |
+| `growthChance()` | 随机刻生长概率 | 0.125 |
+| `harvestDrops()` | 成熟收获掉落的产物列表 | 空 |
+| `minSeedsOnHarvest()` / `maxSeedsOnHarvest()` | 收获掉落种子数量范围 | 1 / 3 |
+| `requireFarmland()` | 是否必须种在耕地上 | true |
+| `minLightLevel()` | 生长所需最低光照 | 9 |
+| `onBonemeal(Block)` | 骨粉是否允许加速 | true |
+| `onPlant/onGrow/onHarvest(Block, Player/int)` | 种植/生长/收获钩子 | 空 |
+
+### 用法示例
+
+```java
+public class TomatoCrop extends SCrop {
+    @Override public String id() { return "tomato"; }
+    @Override public String displayName() { return "§c番茄种子"; }
+    @Override public Material material() { return Material.WHEAT_SEEDS; }   // 种子物品
+    @Override public Material cropBlock() { return Material.WHEAT; }        // 作物方块
+    @Override public int maxStage() { return 7; }
+
+    @Override public List<ItemStack> harvestDrops() {
+        return List.of(new ItemStack(Material.APPLE, 2));   // 成熟掉苹果作为番茄产物
+    }
+
+    @Override public void onHarvest(Block b, Player p) {
+        p.sendMessage("§a你收获了一颗番茄！");
+    }
+}
+
+// 注册（种子物品形式同步进入 /sfitem）
+sf.crops().register(new TomatoCrop());
+```
+
+### 玩家操作流程
+
+1. 玩家手持番茄种子右键耕地 → 在耕地上方放置 `WHEAT` 方块（age=0）+ chunk PDC 标记 `tomato`
+2. 随机刻触发 `BlockGrowEvent` → 按 `growthChance()` 概率推进 age
+3. 骨粉右键 → `BlockFertilizeEvent` 推进 age
+4. 成熟后（age≥maxStage）右键作物 → 收获：掉 `harvestDrops()` + 1~3 个种子，方块变回空气
+5. 破坏未成熟作物 → 取消原版掉落，调 `onHarvest`（可按需重写为返还种子）
+
+---
+
+## 🍽️ 物品食物方法
+
+`SItem` 内置 5 个食物钩子，任何自定义物品都可以变成"食物"——吃了回自定义饥饿值 + 给 buff，无需写监听器。
+
+### 钩子
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `isFood()` | 是否可食用（true 才会触发吃东西监听） | false |
+| `foodNutrition()` | 回复饥饿值（0~20） | 0 |
+| `foodSaturation()` | 回复饱和度（浮点） | 0 |
+| `canAlwaysEat()` | 是否饱腹也可食用 | false |
+| `onEat(PlayerItemConsumeEvent)` | 吃东西时触发的钩子（给药水效果/buff 等） | 空 |
+
+### 引擎监听流程
+
+`ItemListener` 监听 `PlayerItemConsumeEvent`（HIGH 优先级）：取消原版营养 → 手动消耗主/副手 1 个物品 → `setFoodLevel/Saturation` 应用自定义值 → 调 `onEat` 给 buff。
+
+### 用法示例
+
+```java
+public class MagicBread extends SItem {
+    @Override public String id() { return "magic_bread"; }
+    @Override public String displayName() { return "§6魔力面包"; }
+    @Override public Material material() { return Material.BREAD; }
+
+    @Override public boolean isFood() { return true; }
+    @Override public int foodNutrition() { return 8; }       // 回 8 饥饿
+    @Override public float foodSaturation() { return 1.2f; } // 1.2 饱和
+
+    @Override public void onEat(PlayerItemConsumeEvent e) {
+        Player p = e.getPlayer();
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, 1)); // 30秒速度II
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, 0));
+        p.sendMessage("§a魔力面包让你精神百倍！");
+    }
+}
+
+sf.items().register(new MagicBread());
+```
+
+玩家吃下魔力面包 → 回 8 饥饿 + 1.2 饱和 + 速度 II 30 秒 + 生命恢复 I 10 秒。
+
+---
+
+## 🧰 自定义箱子 GUI（SChestGUI）
+
+`SChestGUI` 是箱子界面 GUI 的 OOP 基类（委托底层 `ChestGUI` 实现）。`extends` 它重写 `build(Builder)` 填格子、`onClick` 处理点击即可做出复杂界面；`command()` 返回命令名（如 `"cd"`）还能用 `/cd` 命令打开。
+
+### 基类方法
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` | 唯一标识 | 必填 |
+| `title()` | GUI 标题 | "容器" |
+| `size()` | 格子数（9 的倍数） | 27 |
+| `readonly()` | 是否只读（禁止玩家拿放） | false |
+| `command()` | 打开命令名（如 `"cd"`）；非空则引擎注册 `/cd` 命令 | null |
+| `build(Builder)` | 填物品（用 Builder 链式 API） | 空 |
+| `onClick(ClickContext)` | 点击钩子 | 空 |
+| `onOpen(Player)` / `onClose(Player)` | 打开/关闭钩子 | 空 |
+| `open(Player)` | 引擎实现，打开 GUI | final |
+
+### Builder API
+
+`SChestGUI.Builder` 封装底层 `ChestGUI`：`item(slot, item)` / `item(slot, item, onClick)` / `fill(mat, name, lore)` / `border(mat, name, lore)` / `fillRange(start, end, item)` / `clear(slot)` / `clear()` / `pagination(items, perPage)`。
+
+### 用法示例
+
+```java
+public class ShopGui extends SChestGUI {
+    @Override public String id() { return "shop"; }
+    @Override public String title() { return "§6商店"; }
+    @Override public int size() { return 27; }
+    @Override public String command() { return "cd"; }   // /cd 命令打开此 GUI
+
+    @Override public void build(Builder b) {
+        b.item(0, new ItemStack(Material.DIAMOND), ctx ->
+            ctx.player().sendMessage("§b你点了钻石"));
+        b.border(Material.GRAY_STAINED_GLASS_PANE, " ");  // 边框
+    }
+}
+
+sf.gui().register(new ShopGui());   // 注册并自动绑定 /cd 命令
+```
+
+玩家输入 `/cd` → 打开商店 GUI；点钻石格 → 提示"你点了钻石"。
+
+---
+
 ## 🔧 高级工作台
 
 多方块结构：工作台在上，发射器在下。玩家右击工作台时，检测下方发射器，对其 9 格按已注册 `SRecipe` 匹配——命中则消耗材料、产物放入空槽。
@@ -2295,6 +2455,33 @@ sf.screens().register(new RulesScreen());
 3. 发射器内材料被消耗，产物自动放入空槽，播放 `ANVIL_USE` 音效
 
 配方仍用 `sf.recipes().register(new MyRecipe())` 注册——同一配方即可在原版工作台和高级工作台生效。匹配逻辑由 `SRecipe.matchesGrid()` + `RecipeManager.craftAtInventory()` 完成，支持有序/无序、`Material` 与 `SItem` 混合材料。
+
+---
+
+### 加工机器（AdvancedCraftTable 基类）
+
+`AdvancedCraftTable` 是高级工作台的抽象基类，重写 `onRightChest()` 返回 `SChestGUI` 即可把工作台变成加工机器（带自定义 UI 的磨面机/烹饪台等）。引擎通过 chunk PDC 记录工作台位置→tableId 映射。
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` | 唯一标识 | 必填 |
+| `onRightChest()` | 右键工作台返回的 GUI；返回 null 则打开发射器原版界面 | null |
+| `onOpenChest(Player, workbench, dispenser, inv)` | 打开时钩子 | 空 |
+| `onCraft(Player, workbench, dispenser, recipe)` | 合成时钩子 | 空 |
+| `allowDefaultCraft()` | 是否允许无 GUI 时走原 craftAtInventory | true |
+
+```java
+public class MillMachine extends AdvancedCraftTable {
+    @Override public String id() { return "mill"; }
+    @Override public SChestGUI onRightChest() { return new MillGui(); }  // 打开磨面机 UI
+}
+
+// 注册并绑定到某个已放置的工作台方块
+sf.recipes().registerTableIfAbsent(new MillMachine());
+sf.recipes().bindTableAt(workbenchBlock, sf.recipes().getTable("mill"));
+```
+
+右键该工作台 → 打开 `MillGui`（而非直接合成），玩家在 GUI 内放材料 + 点按钮调 `sf.recipes().craftAtInventory(dispenserInv)` 完成加工。未绑定的普通工作台仍走原直接合成逻辑。
 
 ---
 
@@ -5412,6 +5599,26 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.3.1-LTS] - 2026-08-29
+
+- **自定义农作物系统（SCrop）** —— 继承 `SCrop`（extends SItem，物品形式即种子）
+  - `cropBlock()` 用 vanilla Ageable Material（WHEAT/CARROTS/POTATOES/BEETROOTS 等）+ chunk PDC 标记 cropId 区分
+  - `maxStage()` / `growthChance()` / `harvestDrops()` / `min-maxSeedsOnHarvest()` / `requireFarmland()` / `minLightLevel()` / `onBonemeal()` 可重写
+  - `onPlant/onGrow/onHarvest` 钩子；`canGrowAt` 种植条件校验
+  - `CropManager` 位置映射 + `CropListener`（种植/生长/骨粉/收获/破坏）+ `/sfcrop` 命令（alias `/sfcr` `/sfcrops`，避开 `/sfchat` 的 `/sfc`）
+  - `SF.crops()` 懒加载注册
+- **物品食物方法** —— `SItem` 新增 5 个食物钩子
+  - `isFood()` / `foodNutrition()` / `foodSaturation()` / `canAlwaysEat()` / `onEat(PlayerItemConsumeEvent)`
+  - `ItemListener` 监听 `PlayerItemConsumeEvent`：取消原版营养 → 手动消耗 → 应用自定义营养/饱和 → 调 `onEat` 给 buff
+- **自定义箱子 GUI（SChestGUI）** —— OOP 箱子界面基类（委托底层 ChestGUI）
+  - `id()` / `title()` / `size()` / `readonly()` / `command()`（返回命令名如 `"cd"`，引擎注册 `/cd` 打开）
+  - `build(Builder)` 填物品 / `onClick` / `onOpen` / `onClose` / `open(Player)` final
+  - `GUIManager.register(SChestGUI)` 按 `command()` 自动用 `SFCommandOps.regCommand` 注册命令
+- **加工机器（AdvancedCraftTable 基类）** —— 高级工作台抽象基类
+  - `onRightChest()` 返回 SChestGUI 打开自定义加工机器 UI；返回 null 默认打开发射器原版界面
+  - `RecipeManager.registerTable/bindTableAt/findTableAt/unbindTableAt`（chunk PDC `sfact_` 位置映射）
+  - `AdvancedCraftTableListener` 改：右键工作台先查绑定的 table → 调 onRightChest；无绑定走原 craftAtInventory 直接合成
 
 ### [3.3.0-LTS] - 2026-08-28
 
