@@ -6,7 +6,7 @@
 
     <groupId>io.github.zmb96</groupId>
     <artifactId>ZeroEngine</artifactId>
-    <version>3.3.1-LTS</version>
+    <version>3.3.2-LTS</version>
     <packaging>jar</packaging>
 
     <name>ZeroEngine</name>

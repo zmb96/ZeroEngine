@@ -2299,7 +2299,12 @@ sf.screens().register(new RulesScreen());
 
 ## 🌾 自定义农作物系统
 
-`SCrop` 是自定义农作物的抽象基类（继承 `SItem`，物品形式即种子，自动注册到 `/sfitem`）。作物方块使用 vanilla `Ageable` Material（如 `WHEAT`/`CARROTS`），通过 chunk PDC 标记 cropId 区分不同自定义作物，重启自动恢复。生长沿用原版随机刻，骨粉/右键收获由引擎监听器处理。
+`SCrop` 是自定义农作物的抽象基类（继承 `SItem`，物品形式即种子，自动注册到 `/sfitem`）。支持**双生长模式**：
+
+- **Ageable 模式**（默认）：复用 vanilla 作物方块（`WHEAT`/`CARROTS`/`POTATOES`/`BEETROOTS`/`NETHER_WART`/`SWEET_BERRY_BUSH` 等 BlockData 实现 `Ageable` 的 Material），靠 `Ageable.setAge` 推进 age，沿用原版随机刻。
+- **阶段模式**：重写 `stages()` 返回各阶段 Material 列表，生长时 `setType` 切换方块类型，**任意 Material 可用**（不限于 Ageable），由引擎定时任务推进，不依赖 vanilla 随机刻。
+
+作物方块通过 chunk PDC 标记 cropId 区分不同自定义作物，重启自动恢复。骨粉加速、右键收获、破坏掉落均由引擎监听器统一处理。
 
 ### 基类方法
 
@@ -2343,11 +2348,15 @@ sf.crops().register(new TomatoCrop());
 
 ### 玩家操作流程
 
-1. 玩家手持番茄种子右键耕地 → 在耕地上方放置 `WHEAT` 方块（age=0）+ chunk PDC 标记 `tomato`
-2. 随机刻触发 `BlockGrowEvent` → 按 `growthChance()` 概率推进 age
-3. 骨粉右键 → `BlockFertilizeEvent` 推进 age
-4. 成熟后（age≥maxStage）右键作物 → 收获：掉 `harvestDrops()` + 1~3 个种子，方块变回空气
-5. 破坏未成熟作物 → 取消原版掉落，调 `onHarvest`（可按需重写为返还种子）
+| 步骤 | Ageable 模式 | 阶段模式 |
+|---|---|---|
+| 种植 | 右键耕地放置 `cropBlock()` 方块（age=0） | 右键耕地放置 `stages().get(0)` 方块 |
+| 生长推进 | vanilla 随机刻 `BlockGrowEvent` + `growthChance()` 推进 age | 引擎 `BukkitRunnable` 每 5 秒 + `growthChance()` 切换下一阶段 Material |
+| 骨粉加速 | `BlockFertilizeEvent` 推进 age（`onBonemeal` 可拒） | 取消原版事件，直接调 `growOneStep` 推进 1 阶段（`onBonemeal` 可拒） |
+| 成熟收获 | 右键成熟作物 → 掉 `harvestDrops()` + 1~3 种子，方块变空气 | 同左（`isMature` 判断当前 Material 是否为 `stages().get(maxStage)`） |
+| 破坏未成熟 | 取消原版掉落，调 `onHarvest`（可重写返还种子） | 同左 |
+
+> 阶段模式下，vanilla 随机刻不会对非 Ageable 方块触发 `BlockGrowEvent`，故生长完全由引擎定时任务驱动；Ageable 模式则双轨（vanilla 随机刻 + 引擎监听 `BlockGrowEvent` 概率过滤）。
 
 ### 双模式：Ageable 模式 vs 阶段模式
 
@@ -2384,6 +2393,39 @@ public class TomatoCrop extends SCrop {
 ```
 
 玩家种下 → `NETHER_SPROUTS` → 定时任务/骨粉切换 → `WHEAT` → ... → `RED_MUSHROOM_BLOCK`（成熟）→ 右键收获。每个阶段可任意 Material，不再受 Ageable 限制。
+
+### 阶段模式行为细节
+
+| 机制 | 说明 |
+|---|---|
+| 生长调度 | `CropManager` 内置 `BukkitRunnable`，每 100 tick（5 秒）遍历内存位置索引 `plantedCrops`，对阶段模式作物按 `growthChance()` 概率调 `growOneStep` 切换方块；Ageable 模式作物跳过（交给 vanilla 随机刻） |
+| 位置索引 | `Set<Location> plantedCrops`（`ConcurrentHashMap.newKeySet` 线程安全）；`placeAt` 时 `indexCrop` 加入，`removeAt` 时 `unindexCrop` 移除 |
+| 重启恢复 | 监听 `ChunkLoadEvent` → `CropManager.scanChunk(chunk)` 遍历该 chunk PDC 的 `sfcrop_<rx>_<ry>_<rz>` 键，解析相对坐标还原 `Block`，重新加入 `plantedCrops`；若方块已变空气则删除失效 PDC 记录 |
+| 成熟判断 | 阶段模式 `currentStage(block)` 用 `block.getType()` 在 `stages()` 列表里 `indexOf`；`isMature` = 当前阶段索引 ≥ `maxStage`（= `stages().size()-1`） |
+| 骨粉 | 阶段模式取消原版 `BlockFertilizeEvent`（避免 vanilla 把非作物方块当普通方块处理），改为直接 `growOneStep` 推进 1 阶段；`onBonemeal` 返回 false 可整体拒绝 |
+| 收获 | 右键成熟作物（阶段模式也命中：判断条件 `instanceof Ageable \|\| isStageCrop()`）→ 取消原版交互 → 掉 `harvestDrops()` + `min~maxSeedsOnHarvest` 个种子 → 方块变空气 → 移除 PDC + 索引 |
+
+### 管理 API（CropManager）
+
+| 方法 | 说明 |
+|---|---|
+| `register(SCrop)` / `registerIfAbsent(SCrop)` | 注册作物（同步进 `/sfitem`），后者避免重复注册异常 |
+| `get(id)` / `all()` | 按 id 查 / 列出全部 |
+| `findAt(Block)` | 查方块所属 SCrop（O(1) 读 chunk PDC） |
+| `placeAt(Block, SCrop, stage)` / `removeAt(Block)` | 程序化种植/移除（维护 PDC + 位置索引） |
+| `scanChunk(Chunk)` | 扫描 chunk PDC 恢复位置索引（重启后自动调） |
+| `indexCrop(Block)` / `unindexCrop(Block)` | 维护内存位置索引 |
+| `SF.crops()` | 懒加载入口（`sf.crops().register(...)`） |
+
+### 钩子触发时机
+
+| 钩子 | 触发 |
+|---|---|
+| `onPlant(Block, Player)` | 玩家右键耕地种下种子后 |
+| `onGrow(Block, int newStage)` | 生长推进（Ageable setAge 或阶段模式 setType）后 |
+| `onHarvest(Block, Player)` | 成熟右键收获 / 未成熟破坏后（可重写返还种子） |
+| `onBonemeal(Block)` | 骨粉右键时（返回 false 拒绝） |
+| `canGrowAt(Block)` | 生长前校验（光照/耕地等，返回 false 不生长） |
 
 ---
 
@@ -5637,6 +5679,15 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.3.2-LTS] - 2026-08-29
+
+- **SCrop 双生长模式细化** —— 阶段模式（`stages()`）行为补全 + 文档详尽化
+  - 阶段模式位置索引 `plantedCrops` Set + `BukkitRunnable` 每 5 秒按 `growthChance` 推进（不依赖 vanilla 随机刻）
+  - `ChunkLoadEvent` → `scanChunk` 扫 chunk PDC 恢复索引，清理空气位置失效记录，重启不丢失
+  - 阶段模式骨粉：取消原版 `BlockFertilizeEvent`，直接 `growOneStep` 推进 1 阶段
+  - 收获判断兼容阶段模式：`instanceof Ageable || isStageCrop()`
+  - README 新增：双模式玩家操作流程对照表、阶段模式行为细节表、CropManager 管理 API 表、钩子触发时机表
 
 ### [3.3.1-LTS] - 2026-08-29
 
