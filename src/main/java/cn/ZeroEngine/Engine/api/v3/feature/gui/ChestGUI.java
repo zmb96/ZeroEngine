@@ -21,6 +21,8 @@ public interface ChestGUI {
         boolean isRightClick();
         ClickType type();
         ChestGUI gui();
+        default void cursor(ItemStack item) {}
+        default void cancelled(boolean v) {}
     }
 
     enum ClickType {

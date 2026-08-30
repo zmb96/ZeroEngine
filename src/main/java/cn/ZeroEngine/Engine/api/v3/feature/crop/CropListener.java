@@ -66,6 +66,7 @@ public class CropListener implements Listener {
 
         if (clicked.getBlockData() instanceof Ageable || isStageCrop(clicked)) {
             SCrop crop = manager.findAt(clicked);
+            if (crop == null) crop = findMatureFallback(clicked);
             if (crop == null) return;
             if (crop.isMature(clicked)) {
                 e.setCancelled(true);
@@ -77,6 +78,16 @@ public class CropListener implements Listener {
     private boolean isStageCrop(Block b) {
         SCrop c = manager.findAt(b);
         return c != null && c.isStageMode();
+    }
+
+    private SCrop findMatureFallback(Block b) {
+        if (b == null) return null;
+        if (!(b.getBlockData() instanceof Ageable ageable)) return null;
+        SCrop fb = manager.findFallback(b);
+        if (fb == null) return null;
+        int max = Math.min(ageable.getMaximumAge(), fb.maxStage());
+        if (ageable.getAge() < max) return null;
+        return fb;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -132,6 +143,7 @@ public class CropListener implements Listener {
     public void onBreak(BlockBreakEvent e) {
         Block b = e.getBlock();
         SCrop crop = manager.findAt(b);
+        if (crop == null) crop = findMatureFallback(b);
         if (crop == null) return;
         Player p = e.getPlayer();
         e.setDropItems(false);

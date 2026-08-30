@@ -21,6 +21,8 @@ public class EnchantChestListener implements Listener {
     private double defaultChance = 0.05;
     private int maxLootPerChest = 2;
     private final Set<String> lootedChests = Collections.synchronizedSet(new HashSet<>());
+    /** 全局掉率缩放因子（1.0=不变，越小越稀有），由外部插件按装备等级动态调整 */
+    private static double chanceScale = 1.0;
 
     public EnchantChestListener(EnchantManager enchantManager) {
         this.enchantManager = enchantManager;
@@ -53,7 +55,7 @@ public class EnchantChestListener implements Listener {
             if (lootCount >= maxLootPerChest) break;
 
             double chance = lootChances.getOrDefault(enchant.id(), defaultChance);
-            if (Math.random() > chance) continue;
+            if (Math.random() > chance * chanceScale) continue;
 
             int level = Math.max(1, (int) (Math.random() * enchant.maxLevel()) + 1);
             ItemStack book = enchantManager.createBook(enchant, level);
@@ -90,5 +92,14 @@ public class EnchantChestListener implements Listener {
 
     public void resetLootCache() {
         lootedChests.clear();
+    }
+
+    /** 设置全局掉率缩放（1.0=不变，0.1=十分之一），供外部插件按装备等级动态调整 */
+    public static void setChanceScale(double scale) {
+        chanceScale = Math.max(0.01, Math.min(1.0, scale));
+    }
+
+    public static double getChanceScale() {
+        return chanceScale;
     }
 }

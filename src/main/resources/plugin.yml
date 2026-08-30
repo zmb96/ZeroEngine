@@ -4,7 +4,7 @@ version: '${version}'
 main: cn.ZeroEngine.Engine.api.v1.main
 api-version: '1.21.5'
 load: POSTWORLD
-softdepend: [Vault, Essentials, EssentialsX]
+softdepend: [Vault, Essentials, EssentialsX, ViaVersion]
 
 commands:
   servermanagement:
@@ -77,6 +77,11 @@ commands:
     usage: /sfperf <status|tps|mem|gc|chunks|entities|toggle|help>
     aliases: [sfpf]
     permission: sf.admin.perf
+  sfaddons:
+    description: SF 热加载管理（卸载/重载/状态）
+    usage: /sfaddons <help|unload|load|reload|status>
+    aliases: [sfa, sfaddon]
+    permission: sf.admin.addons
 
 permissions:
   servermanagement.use:
@@ -117,4 +122,7 @@ permissions:
     default: op
   sf.admin.perf:
     description: 性能优化系统
+    default: op
+  sf.admin.addons:
+    description: SF 热加载管理
     default: op

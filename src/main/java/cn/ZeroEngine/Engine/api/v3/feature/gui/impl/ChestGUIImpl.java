@@ -348,12 +348,23 @@ public class ChestGUIImpl implements ChestGUI, Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Inventory inv = event.getInventory();
         if (!isTracked(inv)) return;
-        event.setCancelled(readonly);
 
         if (event.getClickedInventory() == null) return;
-        if (!event.getClickedInventory().equals(inv)) {
-            if (readonly) event.setCancelled(true);
-            return;
+        boolean clickInGui = event.getClickedInventory().equals(inv);
+
+        if (readonly) {
+            if (clickInGui) {
+                event.setCancelled(true);
+            } else {
+                org.bukkit.event.inventory.ClickType bct = event.getClick();
+                boolean simple = bct == org.bukkit.event.inventory.ClickType.LEFT
+                        || bct == org.bukkit.event.inventory.ClickType.RIGHT;
+                if (!simple) event.setCancelled(true);
+                return;
+            }
+        } else {
+            event.setCancelled(false);
+            if (!clickInGui) return;
         }
 
         int slot = event.getRawSlot();
@@ -384,6 +395,12 @@ public class ChestGUIImpl implements ChestGUI, Listener {
             @Override public boolean isRightClick() { return event.isRightClick(); }
             @Override public ClickType type() { return ct; }
             @Override public ChestGUI gui() { return ChestGUIImpl.this; }
+            @Override public void cursor(ItemStack item) {
+                try { event.setCursor(item); } catch (Throwable ignore) {}
+            }
+            @Override public void cancelled(boolean v) {
+                event.setCancelled(v);
+            }
         };
 
         Consumer<ClickContext> handler = clickHandlers.get(slot);
@@ -398,7 +415,11 @@ public class ChestGUIImpl implements ChestGUI, Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!isTracked(event.getInventory())) return;
-        if (readonly) event.setCancelled(true);
+        if (!readonly) return;
+        int topSize = event.getView().getTopInventory().getSize();
+        for (int s : event.getRawSlots()) {
+            if (s < topSize) { event.setCancelled(true); return; }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

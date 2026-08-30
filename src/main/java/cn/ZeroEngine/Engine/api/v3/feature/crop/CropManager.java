@@ -130,6 +130,22 @@ public class CropManager {
         return cropId == null ? null : registry.get(cropId);
     }
 
+    public SCrop findFallback(Block block) {
+        if (block == null) return null;
+        Material mat = block.getType();
+        SCrop match = null;
+        int count = 0;
+        for (SCrop c : registry.values()) {
+            if (c.isStageMode()) continue;
+            if (c.cropBlock() == mat) {
+                match = c;
+                count++;
+                if (count > 1) return null;
+            }
+        }
+        return match;
+    }
+
     public boolean placeAt(Block block, SCrop crop, int stage) {
         if (block == null || crop == null) return false;
         if (!crop.placeAt(block, stage)) return false;

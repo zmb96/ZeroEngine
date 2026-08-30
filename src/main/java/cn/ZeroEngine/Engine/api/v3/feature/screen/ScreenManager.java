@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ScreenManager implements Listener {
 
+    private static final int PROTOCOL_1_21_7 = 772;
+
     private final Plugin plugin;
     private final SF sf;
     private final java.util.Map<String, SScreen> screens = new ConcurrentHashMap<>();
@@ -73,6 +75,12 @@ public class ScreenManager implements Listener {
         UUID uuid;
         try { uuid = conn.getProfile().getId(); } catch (Throwable t) { return; }
         if (uuid == null) return;
+
+        int proto = getProtocolVersion(uuid);
+        if (proto > 0 && proto < PROTOCOL_1_21_7) {
+            sf.info("[Screen] 跳过自定义屏幕：客户端协议版本 " + proto + " < 1.21.7(" + PROTOCOL_1_21_7 + ")");
+            return;
+        }
 
         List<SScreen> toShow = new ArrayList<>();
         for (SScreen s : screens.values()) {
@@ -147,6 +155,24 @@ public class ScreenManager implements Listener {
 
     public void shutdown() {
         pending.clear();
+    }
+
+    private int getProtocolVersion(UUID uuid) {
+        if (uuid == null) return -1;
+        try {
+            org.bukkit.plugin.Plugin via = org.bukkit.Bukkit.getPluginManager().getPlugin("ViaVersion");
+            if (via == null) return -1;
+            Class<?> viaClass = Class.forName("com.viaversion.viaversion.api.Via");
+            java.lang.reflect.Method getAPI = viaClass.getMethod("getAPI");
+            Object api = getAPI.invoke(null);
+            if (api == null) return -1;
+            java.lang.reflect.Method getPlayerVersion = api.getClass().getMethod("getPlayerVersion", java.util.UUID.class);
+            Object result = getPlayerVersion.invoke(api, uuid);
+            if (result instanceof Integer) return (Integer) result;
+        } catch (Throwable t) {
+            sf.error("[Screen] 获取协议版本失败", t);
+        }
+        return -1;
     }
 
     private static String slug(String name) {

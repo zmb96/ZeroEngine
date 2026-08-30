@@ -140,6 +140,8 @@ public final class SF implements SFApi {
         instance = new SF(plugin);
         plugin.getServer().getServicesManager().register(SFApi.class, instance, plugin, org.bukkit.plugin.ServicePriority.Normal);
         plugin.getServer().getServicesManager().register(SF.class, instance, plugin, org.bukkit.plugin.ServicePriority.Normal);
+        instance.regCommand("sfaddons", new cn.ZeroEngine.Engine.api.v3.feature.addons.SFAddonsCommand());
+        plugin.getLogger().info("[SF] /sfaddons command registered (hot-reload management)");
     }
 
     public static void shutdown() {

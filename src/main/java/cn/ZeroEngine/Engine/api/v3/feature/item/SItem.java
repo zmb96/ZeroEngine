@@ -18,6 +18,19 @@ import java.util.*;
 
 public abstract class SItem {
 
+    // 外部（插件）可注入每个物品的 CustomModelData，用于资源包下发后客户端显示自定义纹理。
+    // key = SItem.id()；非 null 的值会在 create() 时写入 ItemMeta 的 setCustomModelData。
+    private static final java.util.Map<String,Integer> CUSTOM_MODEL_DATA = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 给指定物品 id 注入 CustomModelData；传入 null 会清除。线程安全。 */
+    public static void setCustomModelData(String id, Integer modelData) {
+        if (id == null) return;
+        if (modelData == null) CUSTOM_MODEL_DATA.remove(id); else CUSTOM_MODEL_DATA.put(id, modelData);
+    }
+
+    /** 读当前已注入的 CustomModelData；未设置返回 null。 */
+    public static Integer peekCustomModelData(String id) { return id == null ? null : CUSTOM_MODEL_DATA.get(id); }
+
     private static Plugin plugin;
 
     public static void init(Plugin p) {
@@ -218,6 +231,10 @@ public abstract class SItem {
             meta.setLore(lore);
             meta.setUnbreakable(isUnbreakable());
             meta.setMaxStackSize(maxStackSize());
+            Integer cmd = CUSTOM_MODEL_DATA.get(id());
+            if (cmd != null) {
+                try { meta.setCustomModelData(cmd); } catch (Throwable ignore) {}
+            }
             for (ItemAttributeBonus a : attributes()) {
                 try {
                     org.bukkit.attribute.Attribute attr = findAttribute(a.attribute);
