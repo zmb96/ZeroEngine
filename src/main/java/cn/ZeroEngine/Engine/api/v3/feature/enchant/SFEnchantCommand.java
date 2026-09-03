@@ -113,6 +113,10 @@ public class SFEnchantCommand implements CommandExecutor, TabCompleter {
                 return;
             }
         }
+        if (EnchantAnvilListener.conflictsVanilla(e, item)) {
+            sf.msg(p, ChatColor.RED + "与物品上的原版附魔冲突");
+            return;
+        }
         int current = e.getLevel(item);
         int finalLevel = Math.max(1, Math.min(level, e.maxLevel()));
         e.setLevel(item, finalLevel);

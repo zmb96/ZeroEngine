@@ -136,8 +136,13 @@ public class CropManager {
         SCrop match = null;
         int count = 0;
         for (SCrop c : registry.values()) {
-            if (c.isStageMode()) continue;
-            if (c.cropBlock() == mat) {
+            boolean matches;
+            if (c.isStageMode()) {
+                matches = c.stages().contains(mat);
+            } else {
+                matches = c.cropBlock() == mat;
+            }
+            if (matches) {
                 match = c;
                 count++;
                 if (count > 1) return null;
@@ -192,9 +197,14 @@ public class CropManager {
             PersistentDataContainer pdc = chunk.getPersistentDataContainer();
             String v = pdc.get(keyFor(relKey(block)), PersistentDataType.STRING);
             if (v == null) return null;
-            if (!registry.containsKey(v)) return null;
+            SCrop crop = registry.get(v);
+            if (crop == null) return null;
             Material actual = block.getType();
-            if (actual != registry.get(v).cropBlock()) return null;
+            if (crop.isStageMode()) {
+                if (!crop.stages().contains(actual)) return null;
+            } else {
+                if (actual != crop.cropBlock()) return null;
+            }
             return v;
         } catch (Throwable ignore) {
             return null;

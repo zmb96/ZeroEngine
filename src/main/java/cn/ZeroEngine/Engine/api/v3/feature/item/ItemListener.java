@@ -32,7 +32,7 @@ public class ItemListener implements Listener {
         this.manager = manager;
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         ItemStack item = e.getItem();

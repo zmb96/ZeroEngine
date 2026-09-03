@@ -82,9 +82,13 @@ public class CropListener implements Listener {
 
     private SCrop findMatureFallback(Block b) {
         if (b == null) return null;
-        if (!(b.getBlockData() instanceof Ageable ageable)) return null;
         SCrop fb = manager.findFallback(b);
         if (fb == null) return null;
+        if (fb.isStageMode()) {
+            java.util.List<Material> stages = fb.stages();
+            return b.getType() == stages.get(stages.size() - 1) ? fb : null;
+        }
+        if (!(b.getBlockData() instanceof Ageable ageable)) return null;
         int max = Math.min(ageable.getMaximumAge(), fb.maxStage());
         if (ageable.getAge() < max) return null;
         return fb;

@@ -73,6 +73,7 @@ public class EnchantManager {
         for (Map.Entry<SEnchantment, Integer> e : getOn(item).entrySet()) {
             if (!e.getKey().id().equals(enchant.id()) && enchant.conflictsWith(e.getKey())) return item;
         }
+        if (EnchantAnvilListener.conflictsVanilla(enchant, item)) return item;
         ItemStack result = item.clone();
         enchant.setLevel(result, level);
         return result;

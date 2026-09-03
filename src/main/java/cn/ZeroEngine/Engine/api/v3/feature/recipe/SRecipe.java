@@ -74,6 +74,14 @@ public abstract class SRecipe {
     /** 铁砧/砂轮等是否允许在合成台上解锁 —— 默认 true */
     public boolean unlockedByDefault() { return true; }
 
+    /**
+     * 是否仅限高级工作台（AdvancedCraftTable）合成。
+     * 默认 false —— 注册时同时注册到 Bukkit 原版工作台。
+     * 子类重写返回 true 时，RecipeManager.register() 跳过 Bukkit.addRecipe()，
+     * 仅加入内部 registry 供高级工作台 matchesGrid() 匹配，普通工作台无法合成。
+     */
+    public boolean advancedOnly() { return false; }
+
     public enum RecipeMode { SHAPED, SHAPELESS }
 
     // ==================== 内部工具 ====================

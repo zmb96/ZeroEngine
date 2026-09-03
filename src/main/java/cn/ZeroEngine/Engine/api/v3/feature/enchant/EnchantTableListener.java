@@ -51,11 +51,12 @@ public class EnchantTableListener implements Listener {
             if (en.canEnchantItem(item) && !en.isTreasure()) {
                 boolean conflict = false;
                 for (Map.Entry<SEnchantment, Integer> existing : enchantManager.getOn(item).entrySet()) {
-                    if (en.conflictsWith(existing.getKey())) {
+                    if (!existing.getKey().id().equals(en.id()) && en.conflictsWith(existing.getKey())) {
                         conflict = true;
                         break;
                     }
                 }
+                if (!conflict) conflict = EnchantAnvilListener.conflictsVanilla(en, item);
                 if (!conflict) applicable.add(en);
             }
         }

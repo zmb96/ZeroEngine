@@ -37,7 +37,7 @@ public class RecipeManager {
     private ItemManager itemManager;
     private Plugin plugin;
 
-    /** 注册一个配方（立即调用 Bukkit.addRecipe），成功 true，失败（重复 id 或 Bukkit 拒绝）false */
+    /** 注册一个配方。advancedOnly=true 时跳过 Bukkit.addRecipe，仅加入内部 registry 供高级工作台使用 */
     public boolean register(SRecipe r) {
         SF sf = SF.sf();
         String id = r.id();
@@ -45,22 +45,25 @@ public class RecipeManager {
             sf.warn("[Recipe] already registered: " + id);
             return false;
         }
-        try {
-            Recipe bukkit = r.toBukkitRecipe();
-            boolean ok = Bukkit.addRecipe(bukkit, r.unlockedByDefault());
-            if (!ok) {
-                sf.warn("[Recipe] Bukkit.addRecipe returned false for: " + id);
+        boolean advancedOnly = r.advancedOnly();
+        if (!advancedOnly) {
+            try {
+                Recipe bukkit = r.toBukkitRecipe();
+                boolean ok = Bukkit.addRecipe(bukkit, r.unlockedByDefault());
+                if (!ok) {
+                    sf.warn("[Recipe] Bukkit.addRecipe returned false for: " + id);
+                    return false;
+                }
+                NamespacedKey k = new NamespacedKey(SF.sf().plugin(), "sf_" + id);
+                registeredKeys.put(id, k);
+            } catch (Throwable t) {
+                sf.error("[Recipe] register failed: " + id, t);
                 return false;
             }
-            NamespacedKey k = new NamespacedKey(SF.sf().plugin(), "sf_" + id);
-            registry.put(id, r);
-            registeredKeys.put(id, k);
-            sf.info("[Recipe] registered: " + id + " (" + r.mode() + " -> " + formatResult(r) + ")");
-            return true;
-        } catch (Throwable t) {
-            sf.error("[Recipe] register failed: " + id, t);
-            return false;
         }
+        registry.put(id, r);
+        sf.info("[Recipe] registered: " + id + " (" + r.mode() + (advancedOnly ? " [advanced-only]" : "") + " -> " + formatResult(r) + ")");
+        return true;
     }
 
     public RecipeManager registerAll(SRecipe... recipes) {
@@ -224,9 +227,14 @@ public class RecipeManager {
         return mr.recipe;
     }
 
-    /** 清空所有已注册配方（Bukkit 层一并移除） */
+    /** 清空所有已注册配方（Bukkit 层一并移除，包括 advancedOnly 的内部 registry） */
     public void unregisterAll() {
         for (String id : new ArrayList<>(registeredKeys.keySet())) remove(id);
+        int advancedOnlyLeft = registry.size();
+        if (advancedOnlyLeft > 0) {
+            registry.clear();
+            SF.sf().info("[Recipe] cleared " + advancedOnlyLeft + " advanced-only recipes from registry");
+        }
     }
 
     private String formatResult(SRecipe r) {
