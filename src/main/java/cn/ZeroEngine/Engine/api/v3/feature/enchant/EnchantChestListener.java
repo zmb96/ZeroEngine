@@ -1,5 +1,6 @@
 package cn.ZeroEngine.Engine.api.v3.feature.enchant;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -9,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import cn.ZeroEngine.Engine.api.v3.SF;
 
 import java.util.*;
@@ -38,6 +40,8 @@ public class EnchantChestListener implements Listener {
         if (e.isCancelled()) return;
 
         if (blacklistWorlds.contains(block.getWorld().getName())) return;
+
+        if (isPlayerPlaced((Chest) state)) return;
 
         String chestKey = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
         if (lootedChests.contains(chestKey)) return;
@@ -101,5 +105,17 @@ public class EnchantChestListener implements Listener {
 
     public static double getChanceScale() {
         return chanceScale;
+    }
+
+    private static final NamespacedKey PLAYER_PLACED_KEY =
+            new NamespacedKey("zeroengine", "player_placed");
+
+    private static boolean isPlayerPlaced(Chest chest) {
+        try {
+            return chest.getPersistentDataContainer()
+                    .has(PLAYER_PLACED_KEY, PersistentDataType.BYTE);
+        } catch (Throwable ignore) {
+            return false;
+        }
     }
 }

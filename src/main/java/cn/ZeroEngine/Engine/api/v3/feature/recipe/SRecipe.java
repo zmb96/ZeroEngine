@@ -226,15 +226,50 @@ public abstract class SRecipe {
                 }
             }
 
+            int sMinR = 3, sMaxR = -1, sMinC = 3, sMaxC = -1;
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    if (rows.get(r).charAt(c) != ' ') {
+                        if (r < sMinR) sMinR = r;
+                        if (r > sMaxR) sMaxR = r;
+                        if (c < sMinC) sMinC = c;
+                        if (c > sMaxC) sMaxC = c;
+                    }
+                }
+            }
+            if (sMaxR < 0) return MatchResult.FAIL;
+
+            int gMinR = 3, gMaxR = -1, gMinC = 3, gMaxC = -1;
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    if (gridChars[r][c] != ' ') {
+                        if (r < gMinR) gMinR = r;
+                        if (r > gMaxR) gMaxR = r;
+                        if (c < gMinC) gMinC = c;
+                        if (c > gMaxC) gMaxC = c;
+                    }
+                }
+            }
+            if (gMaxR < 0) return MatchResult.FAIL;
+
+            int sH = sMaxR - sMinR + 1;
+            int sW = sMaxC - sMinC + 1;
+            int gH = gMaxR - gMinR + 1;
+            int gW = gMaxC - gMinC + 1;
+            if (sH != gH || sW != gW) return MatchResult.FAIL;
+
             List<Integer> consume = new ArrayList<>();
-            for (int row = 0; row < 3; row++) {
-                String shapeRow = rows.get(row);
-                for (int col = 0; col < 3; col++) {
-                    char shapeChar = shapeRow.charAt(col);
-                    char gridChar = gridChars[row][col];
-                    if (shapeChar == ' ' && gridChar == ' ') continue;
+            for (int r = 0; r < sH; r++) {
+                String shapeRow = rows.get(sMinR + r);
+                for (int c = 0; c < sW; c++) {
+                    char shapeChar = shapeRow.charAt(sMinC + c);
+                    char gridChar = gridChars[gMinR + r][gMinC + c];
+                    if (shapeChar == ' ') {
+                        if (gridChar != ' ') return MatchResult.FAIL;
+                        continue;
+                    }
                     if (shapeChar != gridChar) return MatchResult.FAIL;
-                    consume.add(row * 3 + col);
+                    consume.add((gMinR + r) * 3 + (gMinC + c));
                 }
             }
             return new MatchResult(true, consume, resultItem(), this);
