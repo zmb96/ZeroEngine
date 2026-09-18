@@ -1,0 +1,6519 @@
+# ZeroEngine
+
+> 一款现代化、模块化的 Minecraft 服务器引擎，提供完整的服务器管理工具、原版操控能力和简洁的 API 供其他插件调用。
+
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Bukkit](https://img.shields.io/badge/Bukkit-1.21.8-green)
+![Version](https://img.shields.io/badge/Version-3.3.3--LTS-blue)
+![License](https://img.shields.io/badge/License-GPLv3-blue)
+
+## 目录
+
+- [✨ 特性](#-特性)
+- [📦 安装](#-安装)
+- [🚀 快速开始](#-快速开始)
+- [🎮 命令参考](#-命令参考)
+    - [系统命令](#系统命令)
+    - [世界管理命令](#世界管理命令)
+    - [聊天系统命令](#聊天系统命令)
+    - [权限系统命令](#权限系统命令)
+    - [附魔系统命令](#附魔系统命令)
+    - [物品系统命令](#物品系统命令)
+- [⚡ SF Tick 系统](#-sf-tick-系统)
+- [🔮 自定义附魔系统](#-自定义附魔系统)
+- [🎯 SFAttr 属性常量库](#-sfattr-属性常量库)
+- [🎒 自定义物品系统](#-自定义物品系统)
+- [🧟 自定义生物系统](#-自定义生物系统)
+- [📜 自定义配方系统](#-自定义配方系统)
+- [🌲 自定义生物群系系统](#-自定义生物群系系统)
+- [🧱 自定义方块系统](#-自定义方块系统)
+- [🖥️ 自定义屏幕系统（Dialog API）](#️-自定义屏幕系统dialog-api)
+- [🌾 自定义农作物系统](#-自定义农作物系统)
+- [🍽️ 物品食物方法](#️-物品食物方法)
+- [🧰 自定义箱子 GUI（SChestGUI）](#-自定义箱子-guischestgui)
+- [🔧 高级工作台](#-高级工作台)
+- [💎 物品获取来源](#-物品获取来源)
+- [📝 SFText 文本组件 API](#-sftext-文本组件-api)
+- [💬 聊天事件优先级 API](#-聊天事件优先级-api)
+- [🚀 性能优化系统](#-性能优化系统)
+- [🗄️ SQLite / MySQL 数据库 API](#-sqlite--mysql-数据库-api)
+- [⚙️ ZeroEngine 原版操控引擎](#-zeroengine-原版操控引擎)
+    - [怪物属性操控](#怪物属性操控)
+    - [伤害系统操控](#伤害系统操控)
+    - [方块/挖掘操控](#方块挖掘操控)
+    - [实体生成操控](#实体生成操控)
+    - [资源包管理](#资源包管理)
+- [🔐 权限列表](#-权限列表)
+- [⚙️ 配置文件](#️-配置文件)
+- [💻 开发者 API](#-开发者-api)
+    - [API 接口文档](#api-接口文档)
+    - [📦 箱子 GUI 系统（ChestGUI）](#-箱子-gui-系统chestgui)
+    - [玩法功能 API（v3 新增）](#玩法功能-apiv3-新增)
+        - [🛏️ 起床战争（Bedwars）](#-起床战争bedwars)
+        - [⚔️ PVP 竞技（PvPArena）](#-pvp-竞技pvparena)
+        - [🧟 惊变尸潮（Horde）](#-惊变尸潮horde)
+        - [🏰 保卫村庄（VillageDefense）](#-保卫村庄villagedefense)
+    - [API 接入示例](#api-接入示例)
+- [❓ 常见问题](#-常见问题)
+- [📝 变更日志](#-变更日志)
+- [🤝 贡献指南](#-贡献指南)
+- [📄 License](#-license)
+
+---
+
+## ✨ 特性
+
+- 🚀 **极简 API**：一行代码完成日志、经济、传送、调度等操作
+- 🎯 **20+ 内置命令**：世界管理、聊天、权限、附魔、物品一应俱全
+- 💰 **双后端经济**：自动检测 EssentialsX / Vault，无需手动配置
+- 🗄️ **持久化存储**：内置 SQLite / MySQL 切换，零配置开箱即用
+- 🔔 **完整事件系统**：120+ Bukkit 事件分类封装，链式调用
+- ⚡ **SF Tick 系统**：独立线程 100tick/秒，不干扰原版 20tick/秒
+- 🌍 **世界管理**：时间/天气/难度/PVP/世界边界/生物生成/火焰蔓延/预设
+- 💬 **聊天系统**：多频道、禁言、脏话过滤、聊天格式化
+- 🔑 **权限系统**：权限组、继承、前缀后缀、个人权限
+- 🔮 **附魔注册系统**：继承 `SEnchantment` 自定义附魔，铁砧附魔支持
+- 🎯 **SFAttr 属性常量库**：全部 Bukkit Attribute 枚举封装、中文名、快捷构造，自动兼容多版本
+- 🎒 **物品注册系统**：继承 `SItem` 自定义物品，属性加成、交互事件
+- 🧟 **生物注册系统**：继承 `SEntity` 自定义生物，血量/攻击/阵营/生成条件/装备掉落/SFTick 钩子
+- 📜 **配方注册系统**：继承 `SRecipe` 自定义配方，原版工作台 + 有序/无序 + 原版物品/自定义物品混合材料
+- 🧱 **方块注册系统**：继承 `SBlock` 自定义方块，右键/左键监听、红石通电响应、掉落物、放置限制、20+ Bukkit 方块事件钩子，物品形式自动注册到 `/sfitem`
+- 🖥️ **屏幕注册系统**：继承 `SScreen` 基于 Paper 1.21.8 Dialog API，玩家进服配置阶段弹窗，阻塞直到同意/拒绝/超时踢出
+- 🌾 **农作物注册系统**：继承 `SCrop` 自定义农作物（种子/方块/生长/收获），vanilla Ageable 方块 + chunk PDC 持久化，骨粉/随机刻生长
+- 🍽️ **物品食物方法**：`SItem` 新增 `isFood/foodNutrition/foodSaturation/canAlwaysEat/onEat` 5 个钩子，吃东西自定义营养值 + 给 buff
+- 🧰 **箱子 GUI 基类**：继承 `SChestGUI` 的 OOP 箱子界面，`command()` 返回命令名即可用 `/cd` 命令打开
+- 🔧 **高级工作台**：工作台 + 发射器多方块结构，右击工作台触发合成；`extends AdvancedCraftTable` 重写 `onRightChest()` 返回 `SChestGUI` 即可做成加工机器
+- 💎 **物品获取来源**：`SItem.dropSources()` 声明方块破坏/实体死亡/钓鱼/宝箱 4 种掉落途径
+- 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
+- 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
+- 🚀 **性能优化系统**：内存监控、区块卸载、实体清理、TPS 自适应视距
+- ⚙️ **ZeroEngine 原版操控引擎**：怪物属性、伤害系统、方块挖掘、实体生成、资源包管理 5 大引擎模块
+- 🔌 **第三方接入**：通过 Bukkit ServicesManager 暴露 `SFApi` 接口
+- ⚡ **异步安全**：经济操作自动回滚
+
+---
+
+## 📦 安装
+
+### 环境要求
+
+| 组件 | 版本 |
+|------|------|
+| Minecraft Server | 1.21.5+ |
+| Java | 21+ |
+| Bukkit/Paper API | 1.21.5 |
+
+**支持的服务端**：Paper、Purpur、Folia（实验性）、Spigot、CraftBukkit
+
+### 可选依赖
+
+以下插件非必需，但推荐安装以解锁更多功能：
+
+| 插件 | 用途 | 下载 |
+|------|------|------|
+| EssentialsX | 经济系统后端（优先） | [essentialsx.net](https://essentialsx.net/) |
+| Vault | 经济系统后端（回退） | [spigotmc.org](https://www.spigotmc.org/resources/vault.34315/) |
+
+> 💡 如果两个都安装，会优先使用 EssentialsX；若都未安装，经济相关功能会自动禁用，但不影响其他功能。
+
+### 安装步骤
+
+**1. 下载插件**
+
+从 [Releases 页面](https://github.com/zmb96/ZeroCkate_ServerManagementPlugin/releases) 下载最新版本的 `.jar` 文件。
+
+**2. 放入插件目录**
+
+将 jar 文件放入服务器的 `plugins/` 目录：
+
+```
+你的服务器/
+├── plugins/
+│   └── ZeroCkate_ServerManagementPlugin-x.x.x.jar   ← 放这里
+├── server.jar
+└── ...
+```
+
+**3. 启动服务器**
+
+首次启动会自动生成以下文件：
+
+```
+plugins/ZeroCkate_SFServerPlugin/
+├── config.yml          ← 主配置文件
+├── data.db             ← SQLite 数据库（默认）
+└── help.txt            ← /sh 命令的帮助文本
+```
+
+**4. 验证安装**
+
+在控制台或游戏内执行 `/servermanagement`，看到帮助信息即表示安装成功。
+
+查看经济系统状态（控制台日志）：
+
+```
+[INFO] Database ready: true
+[INFO] Economy ready: true (Essentials=true, Vault=false)
+[INFO] 插件已加载
+```
+
+### 升级
+
+1. **停止服务器**
+2. 备份 `plugins/ZeroCkate_SFServerPlugin/` 目录（特别是 `data.db`）
+3. 替换为新版本的 jar 文件
+4. 启动服务器
+
+> ⚠️ 升级前务必备份！数据库结构可能随版本变化。
+
+### 卸载
+
+1. 停止服务器
+2. 执行 `/servermanagement` 确认插件状态
+3. 删除 `plugins/ZeroCkate_SFServerPlugin.jar`
+4. （可选）删除 `plugins/ZeroCkate_SFServerPlugin/` 目录以清除所有数据
+
+### 切换到 MySQL
+
+默认使用 SQLite，若要切换到 MySQL：
+
+1. 编辑 `config.yml`：
+
+```yaml
+database:
+  mysql:
+    enabled: true
+    host: localhost
+    port: 3306
+    database: minecraft
+    user: root
+    password: "你的密码"
+    prefix: "sf_"
+```
+
+2. 在 MySQL 中创建数据库：
+
+```sql
+CREATE DATABASE minecraft CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+3. 重启服务器，表会自动创建。
+
+---
+
+## 🚀 快速开始
+
+本指南将带你在 5 分钟内完成 SF 插件的基础配置。
+
+### 1. 安装插件
+
+将 `ZeroCkate_ServerApiPlugin.jar` 放入服务器的 `plugins/` 目录，重启服务器。
+
+### 2. 验证加载
+
+控制台应显示：
+```
+[SF] 插件已加载
+[SF] Economy ready: true (Essentials=..., Vault=...)
+```
+
+### 3. 基本命令
+
+```
+/servermanagement reload    # 重载配置
+/sfenchant list             # 查看所有附魔
+/sfitem list                # 查看所有物品
+/sfworld day                # 设为白天
+/sfchat help                # 聊天系统帮助
+/sfperm list                # 查看权限组
+/sfreach info               # 查看交互距离
+```
+
+### 4. 权限设置
+
+使用 LuckPerms 或类似插件分配权限：
+
+```
+# 给管理员所有权限
+lp group admin permission set sf.admin.* true
+```
+
+---
+
+## 🎮 命令参考
+
+### 系统命令
+
+| 命令 | 用法 | 说明 | 权限 |
+|------|------|------|------|
+| `/servermanagement` | `/servermanagement [reload]` | 插件管理 | `servermanagement.use` |
+| `/ty` | `/ty <意见内容>` | 提交意见反馈 | - |
+| `/ru` | `/ru` | 显示服务器规则 | - |
+| `/sh` | `/sh` | 显示帮助信息 | - |
+| `/giveit` | `/giveit` | 给予预设物品 | - |
+
+`/servermanagement` **别名**：`sm`, `svm`
+
+### 世界管理命令
+
+**命令**：`/sfworld`（别名 `/sfw`） ｜ **权限**：`sf.admin.world`
+
+#### 时间控制
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld time <数值> [世界]` | 设置时间为指定值 |
+| `/sfworld day [世界]` | 设为白天（1000） |
+| `/sfworld night [世界]` | 设为夜晚（13000） |
+| `/sfworld noon [世界]` | 设为中午（6000） |
+| `/sfworld midnight [世界]` | 设为午夜（18000） |
+| `/sfworld locktime [世界]` | 锁定当前时间 |
+| `/sfworld unlocktime [世界]` | 解锁时间流动 |
+
+#### 天气控制
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld weather sun [世界]` | 设为晴天 |
+| `/sfworld weather rain [世界]` | 设为雨天 |
+| `/sfworld weather storm [世界]` | 设为雷暴 |
+
+#### 难度与 PVP
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld difficulty <peaceful\|easy\|normal\|hard> [世界]` | 设置难度 |
+| `/sfworld pvp <true\|false> [世界]` | 开关 PVP |
+
+#### 世界边界
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld border size <数值> [秒数] [世界]` | 设置边界大小（可选过渡秒数） |
+| `/sfworld border center <x> <z> [世界]` | 设置边界中心 |
+| `/sfworld border reset [世界]` | 重置世界边界 |
+
+#### 世界规则
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld mob <true\|false> [世界]` | 开关生物生成 |
+| `/sfworld fire <true\|false> [世界]` | 开关火焰蔓延 |
+
+#### 预设管理
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld preset save <名称> [世界]` | 保存当前世界状态为预设 |
+| `/sfworld preset apply <名称> [世界]` | 应用预设到世界 |
+| `/sfworld preset list` | 列出所有预设 |
+
+#### 信息查询
+
+| 用法 | 说明 |
+|------|------|
+| `/sfworld info [世界]` | 查看世界详细信息 |
+| `/sfworld list` | 列出所有已加载世界 |
+
+### 聊天系统命令
+
+**命令**：`/sfchat`（别名 `/sfc`）
+
+#### 频道管理
+
+| 用法 | 说明 |
+|------|------|
+| `/sfchat channel [名称]` | 查看/切换频道 |
+| `/sfchat create <名称> [范围] [前缀]` | 创建新频道（范围=0 全局，>0 附近格数） |
+| `/sfchat delete <名称>` | 删除自定义频道 |
+
+内置频道：
+- `global` — 全局频道（默认）
+- `local` — 附近频道（100 格内可见）
+- `staff` — 管理频道
+
+**示例**：
+```
+/sfchat create trade 0 §7[§6交易§7]
+/sfchat create city 200 §7[§a同城§7]
+/sfchat channel trade
+```
+
+#### 禁言管理
+
+| 用法 | 说明 |
+|------|------|
+| `/sfchat mute <玩家> [秒数] [原因]` | 禁言玩家（秒数=0 永久） |
+| `/sfchat unmute <玩家>` | 解除禁言 |
+| `/sfchat muteinfo <玩家>` | 查看禁言信息 |
+
+**权限**：`sf.admin.chat`
+
+#### 屏蔽词
+
+| 用法 | 说明 |
+|------|------|
+| `/sfchat block <词语>` | 添加屏蔽词 |
+| `/sfchat unblock <词语>` | 移除屏蔽词 |
+| `/sfchat blocklist` | 查看屏蔽词列表 |
+
+#### 其他
+
+| 用法 | 说明 |
+|------|------|
+| `/sfchat clear` | 清空聊天屏幕 |
+
+### 权限系统命令
+
+**命令**：`/sfperm`（别名 `/sfp`） ｜ **权限**：`sf.admin.permission`
+
+#### 权限组管理
+
+| 用法 | 说明 |
+|------|------|
+| `/sfperm group create <组名> [前缀] [后缀] [权重]` | 创建权限组 |
+| `/sfperm group setprefix <组名> <前缀>` | 设置组前缀 |
+| `/sfperm group setsuffix <组名> <后缀>` | 设置组后缀 |
+| `/sfperm group addperm <组名> <权限>` | 添加组权限 |
+| `/sfperm group rmperm <组名> <权限>` | 移除组权限 |
+| `/sfperm group inherit <组名> <父组名>` | 设置组继承 |
+
+#### 玩家权限
+
+| 用法 | 说明 |
+|------|------|
+| `/sfperm set <玩家> <组名>` | 设置玩家所属组 |
+| `/sfperm addperm <玩家> <权限>` | 给玩家添加个人权限 |
+| `/sfperm rmperm <玩家> <权限>` | 移除玩家个人权限 |
+
+#### 信息查询
+
+| 用法 | 说明 |
+|------|------|
+| `/sfperm info <玩家>` | 查看玩家权限信息 |
+| `/sfperm list` | 列出所有权限组 |
+
+内置权限组：
+- `default` — 默认组（权重 0）
+- `vip` — VIP 组（权重 10，跳过传送冷却）
+- `mod` — 管理组（权重 50，继承 vip，聊天管理权限）
+- `admin` — 管理员组（权重 100，继承 mod，全部管理权限）
+- `owner` — 服主组（权重 200，继承 admin，所有权限）
+
+### 附魔系统命令
+
+**命令**：`/sfenchant`（别名 `/sfe`） ｜ **权限**：`sf.admin.enchant`
+
+| 用法 | 说明 |
+|------|------|
+| `/sfenchant list` | 列出所有已注册附魔 |
+| `/sfenchant book <id> [等级] [数量]` | 获取附魔书 |
+| `/sfenchant apply <id> [等级]` | 将附魔应用到手持物品 |
+| `/sfenchant remove <id>` | 移除手持物品上的指定附魔 |
+| `/sfenchant info <id>` | 查看附魔详情 |
+| `/sfenchant hand` | 查看手持物品的所有附魔 |
+| `/sfenchant reload` | 重置附魔系统 |
+
+### 物品系统命令
+
+**命令**：`/sfitem`（别名 `/sfi`） ｜ **权限**：`sf.admin.item`
+
+| 用法 | 说明 |
+|------|------|
+| `/sfitem list` | 列出所有已注册物品 |
+| `/sfitem give <id> [数量] [玩家]` | 给予物品 |
+| `/sfitem info <id>` | 查看物品详情 |
+| `/sfitem hand` | 查看手中物品信息 |
+| `/sfitem reload` | 重置物品系统 |
+
+### 农作物系统命令
+
+**命令**：`/sfcrop`（别名 `/sfcr` `/sfcrops`） ｜ **权限**：`sf.admin.crop`
+
+| 命令 | 说明 |
+|------|------|
+| `/sfcrop list` | 列出所有已注册农作物 |
+| `/sfcrop give <id> [数量]` | 给予种子物品 |
+| `/sfcrop info <id>` | 查看作物详情（方块/阶段/生长/食物） |
+| `/sfcrop look` | 看向已种植作物查询身份和阶段 |
+| `/sfcrop help` | 显示帮助 |
+
+---
+
+## ⚡ SF Tick 系统
+
+SF 插件内置独立的 Tick 调度系统，**1 秒 = 100 tick**，在独立线程运行，完全不干扰原版 20tick/秒的游戏循环。
+
+### 核心概念
+
+| 概念 | 说明 |
+|------|------|
+| SF Tick | SF 自定义的时间单位，1 秒 = 100 SF tick |
+| Bukkit Tick | 原版游戏 tick，1 秒 = 20 tick |
+| 独立线程 | SF Tick 在 `ScheduledExecutorService` 上运行，不阻塞主线程 |
+
+### 换算关系
+
+| SF Tick | 秒 | Bukkit Tick |
+|---------|-----|-------------|
+| 1 | 0.01s | 0.2 |
+| 10 | 0.1s | 2 |
+| 50 | 0.5s | 10 |
+| 100 | 1s | 20 |
+| 600 | 6s | 120 |
+| 1000 | 10s | 200 |
+| 6000 | 60s | 1200 |
+
+### API 用法
+
+```java
+TickManager tick = SF.sf().tick();
+
+// 延迟执行（100 tick = 1 秒后）
+tick.runLater(sfTick -> {
+    SF.sf().info("1秒后执行");
+}, 100);
+
+// 定时循环（每 100 tick = 每秒）
+tick.runTimer(sfTick -> {
+    SF.sf().info("每秒执行一次，当前 tick: " + sfTick);
+}, 100);
+
+// 带延迟的定时循环
+tick.runTimer(sfTick -> {
+    SF.sf().broadcast("每分钟公告");
+}, 6000, 6000);  // 延迟 60 秒，每 60 秒
+
+// 取消任务
+long taskId = tick.runTimer(t -> { ... }, 100);
+tick.cancel(taskId);
+
+// 获取当前 tick
+long now = tick.now();
+
+// 时间换算
+long seconds = tick.toSeconds(500);         // 5
+long sfTicks = tick.fromSeconds(30);        // 3000
+long bukkitTicks = tick.toBukkitTicks(100);  // 20
+
+// 需要回到主线程操作 Bukkit API 时
+tick.runSync(() -> {
+    player.sendMessage("在主线程执行");
+});
+
+// 延迟回到主线程
+tick.runSyncLater(() -> {
+    player.sendMessage("1秒后在主线程执行");
+}, 100);
+```
+
+### 常量
+
+```java
+TickManager.TICKS_PER_SECOND  // 100
+TickManager.TICK_INTERVAL_MS  // 10
+```
+
+### 注意事项
+
+- SF Tick 系统在**独立线程**运行，不要在 tick 回调中直接调用 Bukkit API
+- 需要操作 Bukkit API 时使用 `runSync()` / `runSyncLater()` 切回主线程
+- 所有新 API 的定时功能（如禁言倒计时）都基于此系统
+- 插件卸载时自动关闭 tick 线程
+
+---
+
+## 🔮 自定义附魔系统
+
+SF 提供全新的附魔注册系统，通过继承 `SEnchantment` 类即可创建自定义附魔，玩家可通过**铁砧**附魔到工具上。
+
+### 创建自定义附魔
+
+```java
+import server.sf.model.api.v2.feature.enchant.SEnchantment;
+import org.bukkit.attribute.Attribute;
+import java.util.*;
+
+public class MyEnchant extends SEnchantment {
+
+    @Override
+    public String id() { return "my_enchant"; }
+
+    @Override
+    public String displayName() { return "§a我的附魔"; }
+
+    @Override
+    public int maxLevel() { return 3; }
+
+    @Override
+    public Set<String> applicableItems() {
+        return new HashSet<>(Arrays.asList("SWORD", "AXE"));
+    }
+
+    @Override
+    public List<AttributeBonus> attributes() {
+        return Arrays.asList(
+            AttributeBonus.add("dmg", "GENERIC_ATTACK_DAMAGE", 2.0, 1.0)
+        );
+    }
+
+    @Override
+    public void onAttack(EnchantContext ctx) {
+        if (ctx.level() >= 2) {
+            ctx.target().setFireTicks(40);
+        }
+    }
+
+    @Override
+    public void onDamaged(EnchantContext ctx) {
+        if (Math.random() < 0.1 * ctx.level()) {
+            ctx.player().setHealth(ctx.player().getHealth() + 2);
+        }
+    }
+}
+```
+
+### 注册附魔
+
+```java
+SF.sf().enchant().register(new MyEnchant());
+```
+
+### SEnchantment 可重写方法
+
+| 方法 | 说明 |
+|------|------|
+| `id()` | 附魔唯一标识（必填） |
+| `displayName()` | 游戏内显示名称（必填） |
+| `maxLevel()` | 最大等级（必填） |
+| `applicableItems()` | 可附魔物品类型（必填） |
+| `attributes()` | 属性加成列表 |
+| `conflictGroups()` | 冲突组（同组互斥） |
+| `anvilCost()` | 铁砧消耗经验等级 |
+| `onAttack(ctx)` | 攻击时触发 |
+| `onDamaged(ctx)` | 被攻击时触发 |
+| `onEquip(ctx)` | 装备时触发 |
+| `onUnequip(ctx)` | 卸下时触发 |
+| `onTick(ctx)` | 每刻触发（性能敏感） |
+
+### applicableItems 匹配规则（通配符支持）
+
+`applicableItems()` 返回 `Set<String>`，每个字符串可以使用以下写法，**同一 set 中可以混用**：
+
+| 写法 | 含义 | 命中示例 |
+|------|------|---------|
+| `"*"` | 匹配所有物品 | 任意 ItemStack |
+| `"SWORD"` | **简写匹配**：自动命中所有以 `_SWORD` 结尾的材质 | `DIAMOND_SWORD`, `IRON_SWORD`, `NETHERITE_SWORD`, `GOLDEN_SWORD`, `STONE_SWORD`, `WOODEN_SWORD` |
+| `"HELMET"` / `"CHESTPLATE"` / `"LEGGINGS"` / `"BOOTS"` | 简写匹配，命中全部盔甲位（6 种材质） | `NETHERITE_HELMET`, `LEATHER_BOOTS` ... |
+| `"*_SWORD"` | 显式后缀匹配（与简写 `SWORD` 等价） | 同上所有剑 |
+| `"DIAMOND_*"` | 前缀匹配：以 `DIAMOND_` 开头的所有材质 | `DIAMOND_SWORD`, `DIAMOND_PICKAXE`, `DIAMOND_AXE` ... |
+| `"*AXE*"` | 包含匹配：材质名里含 `AXE` | `IRON_AXE`, `GOLDEN_AXE`, `WOODEN_AXE` ... |
+| `"NETHERITE_SWORD"` | 完全相等：精确匹配单个材质 | 仅 `NETHERITE_SWORD` |
+
+**匹配优先级**：`"*"` > 包含匹配 > 前缀/后缀匹配 > 完全相等 > 简写匹配；只要任一规则命中就判定"可以附魔"。
+
+```java
+// 示例：一把"只要是剑就能附"的附魔
+@Override
+public Set<String> applicableItems() {
+    return Set.of("SWORD");
+}
+
+// 示例：所有盔甲 + 下界合金剑
+@Override
+public Set<String> applicableItems() {
+    return Set.of("HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS", "NETHERITE_SWORD");
+}
+```
+
+### AttributeBonus
+
+```java
+// AttributeBonus.add(名称, 属性名, 基础值, 每级增量)
+AttributeBonus.add("health", "GENERIC_MAX_HEALTH", 4.0, 2.0)
+// 等级1: +4.0, 等级2: +6.0, 等级3: +8.0
+
+// AttributeBonus.multiply(名称, 属性名, 基础值, 每级增量)
+AttributeBonus.multiply("speed", "GENERIC_MOVEMENT_SPEED", 0.05, 0.02)
+// 等级1: +5%, 等级2: +7%, 等级3: +9%
+```
+
+### 可用属性列表
+
+所有属性基于 Bukkit `Attribute` 枚举，系统通过反射自动查找，依次尝试 `GENERIC_` / `PLAYER_` / 无前缀三种写法，兼容不同 Paper 版本：
+
+| 属性名 | 说明 | 操作类型建议 |
+|--------|------|-------------|
+| `GENERIC_MAX_HEALTH` | 最大生命值 | ADD (1.0 = 半颗心) |
+| `GENERIC_ATTACK_DAMAGE` | 攻击伤害 | ADD (1.0 = 半颗心) |
+| `GENERIC_ATTACK_SPEED` | 攻击速度 | ADD (4.0 = 每秒多一次) |
+| `GENERIC_ARMOR` | 护甲值 | ADD |
+| `GENERIC_ARMOR_TOUGHNESS` | 护甲韧性 | ADD |
+| `GENERIC_KNOCKBACK_RESISTANCE` | 击退抗性 | ADD (1.0 = 完全免疫) |
+| `GENERIC_MOVEMENT_SPEED` | 移动速度 | MULTIPLY (0.05 = +5%) |
+| `GENERIC_FLYING_SPEED` | 飞行速度 | MULTIPLY |
+| `GENERIC_LUCK` | 幸运值 | ADD |
+| `GENERIC_BLOCK_INTERACTION_RANGE` | 方块交互距离 | ADD (1.0 = +1格) |
+| `GENERIC_ENTITY_INTERACTION_RANGE` | 实体交互距离 | ADD (1.0 = +1格) |
+| `GENERIC_GRAVITY` | 重力 | MULTIPLY (1.0 = 默认) |
+| `GENERIC_JUMP_STRENGTH` | 跳跃高度 | MULTIPLY |
+| `GENERIC_SCALE` | 体型大小 | MULTIPLY (1.0 = 默认) |
+| `GENERIC_STEP_HEIGHT` | 自动跨越高度 | ADD (0.5 = 半格) |
+| `GENERIC_FALL_DAMAGE_MULTIPLIER` | 摔落伤害倍率 | MULTIPLY |
+| `GENERIC_SAFE_FALL_DISTANCE` | 安全摔落距离 | ADD |
+
+> 如果当前服务端版本不支持某个属性，系统会静默跳过，不会崩溃。
+
+### 附魔书获取方式
+
+#### 方式一：管理员命令
+
+```
+/sfenchant book <id> [等级]
+```
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 附魔 ID，如 `ancestral_might` |
+| `等级` | 可选，指定等级（默认满级） |
+
+**示例：**
+```
+/sfenchant book ancestral_might       # 获取满级祖宗之力附魔书
+/sfenchant book ancestral_might 2     # 获取2级附魔书
+```
+
+#### 方式二：代码 API
+
+```java
+EnchantManager enchant = SF.sf().enchant();
+
+// 创建附魔书（返回 ItemStack）
+ItemStack book = enchant.createBook("ancestral_might");
+ItemStack bookLv2 = enchant.createBook("ancestral_might", 2);
+
+// 直接给予玩家
+enchant.giveBook(player, "ancestral_might");
+enchant.giveBook(player, "ancestral_might", 2);
+```
+
+#### 方式三：普通玩家被动获取（箱子战利品）
+
+玩家打开**箱子**时，系统有概率自动生成附魔书到箱子中：
+
+- 默认概率：**5%** 每本附魔书
+- 每个箱子最多：**2** 本
+- 可通过 API 调整概率和数量
+
+```java
+// 获取 EnchantChestListener 实例调整配置
+// 注意：监听器在 enchant() 初始化时创建
+EnchantChestListener chestListener = ...; // 需自行保存引用
+
+chestListener.setDefaultChance(0.10);     // 设置默认概率 10%
+chestListener.setMaxLootPerChest(3);      // 每箱最多 3 本
+chestListener.setLootChance("my_enchant", 0.20); // 单独设置某附魔概率
+chestListener.addBlacklistWorld("world_nether"); // 黑名单世界
+```
+
+> 提示：同一个箱子只会生成一次，第二次打开不会再生成。
+
+#### 方式四：附魔台获取
+
+玩家使用**附魔台**附魔物品时，有概率获得自定义附魔：
+
+- 默认概率：**15%** + 书架等级加成
+- 每级书架额外 +5% 概率
+- 玩家会收到提示：`✨ 附魔台为你附上了 XXX!`
+- 只有物品类型匹配的附魔才会出现
+
+```java
+// 获取 EnchantTableListener 实例调整配置
+EnchantTableListener tableListener = ...; // 需自行保存引用
+
+tableListener.setBaseChance(0.20);        // 基础概率 20%
+tableListener.setPerLevelBonus(0.08);     // 每级书架加成 8%
+tableListener.setEnchantChance("my_enchant", 0.30); // 单独设置某附魔概率
+tableListener.addBlacklistWorld("world_nether");    // 黑名单世界
+```
+
+> 提示：宝藏附魔（`isTreasure() == true`）不会通过附魔台获取。
+
+### 铁砧附魔
+
+1. 将附魔书放在铁砧左侧
+2. 将工具放在铁砧右侧
+3. 消耗经验即可附魔
+
+**附魔（装备 + 附魔书）规则：**
+- 装备上**没有**该附魔（首次附魔）：直接写入附魔书的等级
+- 装备已有，且**同等级**未达 `maxLevel()`：升级到 `bookLevel + 1`（允许合并升级）
+- 装备已有，且**同等级已达 `maxLevel()`**：跳过（最高等级不允许再合并）
+- 装备已有，且**不同等级**：跳过（不再按原版取 max，避免覆盖/虚高）
+- 与现有附魔冲突（`conflictGroups()` 同组）时无法附魔
+- 消耗经验 = `anvilCost() × 最终等级`
+
+**（附魔书 + 附魔书在铁砧合并为一本更高等级书）的规则同上：仅同等级、未达上限时才会升级成下一级书。**
+
+### 📝 完整实战示例 —— 雷霆之怒附魔
+
+下面这个示例**可直接 copy 到你插件里运行**，覆盖所有常用方法：属性加成、攻击钩子、被攻击钩子、装备/卸下钩子、Tick 钩子、附魔冲突组、铁砧经验消耗、附魔书材质限定。
+
+```java
+package my.plugin.enchant;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SEnchantment;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.AttributeBonus;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * 雷霆之怒 —— 演示一个完整附魔的所有重写点
+ *
+ * 行为：
+ *   - 可附魔在所有剑、所有斧（简写 SWORD + 简写 AXE）
+ *   - 最大 5 级；每级 +1.0 攻击伤害 +3% 攻击速度
+ *   - 攻击时有概率召唤雷电（等级越高概率越大、伤害越高）
+ *   - 被攻击时按等级反弹一定伤害
+ *   - 装备时给玩家雷击粒子提示，卸下时给低沉音效
+ *   - 每 20 SFTick 在持有者脚下生成微小烟雾粒子（动态特效）
+ *   - 铁砧附魔消耗 = 4 经验/级
+ *   - 与"吸血"附魔冲突（conflictGroups 含 "vampiric"）
+ */
+public class ThunderFuryEnchant extends SEnchantment {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "thunder_fury";
+    }
+
+    @Override
+    public String displayName() {
+        return "§b雷霆之怒";
+    }
+
+    @Override
+    public int maxLevel() {
+        return 5;
+    }
+
+    @Override
+    public Set<String> applicableItems() {
+        // 简写：SWORD 自动命中 *_SWORD 全部 6 种剑
+        // 简写：AXE   自动命中 *_AXE 全部 6 种斧（含挖木斧）
+        return new HashSet<>(Arrays.asList("SWORD", "AXE"));
+    }
+
+    @Override
+    public int anvilCost() {
+        return 4;   // 铁砧消耗 = 4 经验 × 附魔等级
+    }
+
+    @Override
+    public Set<String> conflictGroups() {
+        // 与同组（"vampiric"）的附魔互斥，铁砧拒绝同时附上
+        return new HashSet<>(Collections.singletonList("vampiric"));
+    }
+
+    // ==================== 属性加成 ====================
+
+    @Override
+    public List<AttributeBonus> attributes() {
+        // 用 SFAttr 静态常量，自动兼容 GENERIC_ 前缀 + 无前缀命名（v3.2.6+ 推荐写法）
+        return Arrays.asList(
+            // 每级 +1.0 攻击伤害（ADD_NUMBER 模式：基础值 + level * perLevel）
+            AttributeBonus.add("thunder_dmg", SFAttr.ATTACK_DAMAGE, 1.0, 1.0),
+            // 每级 +3% 攻击速度（MULTIPLY_SCALAR_1 模式：基础值 × (1 + level*0.03)）
+            AttributeBonus.mult("thunder_spd", SFAttr.ATTACK_SPEED, 0.0, 0.03)
+        );
+    }
+
+    // ==================== 事件钩子 ====================
+
+    /**
+     * 持有者攻击别人时触发
+     *   - level 1-5：15% × level 几率召唤雷电劈中目标
+     *   - 雷电额外造成 2 × level 真实伤害（绕过护甲）
+     */
+    @Override
+    public void onAttack(LivingEntity attacker, LivingEntity target,
+                         double damage, EntityDamageByEntityEvent event) {
+        int level = event.getEntity() instanceof Player ? 0 :
+                    getLevel(attacker.getEquipment() != null
+                             ? attacker.getEquipment().getItemInMainHand()
+                             : null);
+        if (level <= 0) return;
+
+        // 概率判定：5% × level → level 5 时 25%
+        if (Math.random() > 0.05 * level) return;
+
+        // 召唤雷电（不点燃、不破坏方块）
+        target.getWorld().strikeLightning(target.getLocation());
+
+        // 额外真实伤害（绕过护甲）
+        target.damage(2.0 * level, attacker);
+
+        // 玩家攻击者播放声效
+        if (attacker instanceof Player p) {
+            p.playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1.0f, 1.5f);
+        }
+    }
+
+    /**
+     * 持有者被攻击时触发
+     *   - 反弹 (level × 0.5) 伤害给攻击者
+     */
+    @Override
+    public void onDamaged(LivingEntity victim, EntityDamageEvent event) {
+        if (!(event instanceof EntityDamageByEntityEvent edee)) return;
+        if (!(edee.getDamager() instanceof LivingEntity attacker)) return;
+
+        int level = getLevel(victim.getEquipment() != null
+                             ? victim.getEquipment().getItemInMainHand()
+                             : null);
+        if (level <= 0) return;
+
+        // 反弹伤害（不触发递归 onAttack，否则会无限套娃）
+        attacker.damage(level * 0.5, victim);
+        // 反弹粒子
+        attacker.getWorld().spawnParticle(Particle.ELECTRIC_SPARK,
+                attacker.getLocation().add(0, 1, 0), 8, 0.3, 0.5, 0.3, 0.05);
+    }
+
+    /**
+     * 装备时触发（切到主手即触发）
+     */
+    @Override
+    public void onEquip(Player player, ItemStack item) {
+        int level = getLevel(item);
+        player.sendMessage("§b⚡ 雷霆之怒 §r已激活 §eLv." + level);
+        player.getWorld().spawnParticle(Particle.FIREWORK,
+                player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
+    }
+
+    /**
+     * 卸下时触发（切走主手物品时）
+     */
+    @Override
+    public void onUnequip(Player player, ItemStack item) {
+        player.sendMessage("§7⚡ 雷霆之怒 §r已沉睡");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 0.7f, 0.8f);
+    }
+
+    /**
+     * 每 SFTick 调用一次（性能敏感，避免重逻辑）
+     *   - 这里每 20 SFTick（= 1 Bukkit tick × 4）放个烟雾粒子做动态特效
+     */
+    @Override
+    public void onTick(LivingEntity holder, long sfTick) {
+        if (sfTick % 20 != 0) return;  // 节流：每 20 SFTick 才执行
+        holder.getWorld().spawnParticle(Particle.SMOKE,
+                holder.getLocation().add(0, 0.2, 0), 2, 0.2, 0.3, 0.2, 0.01);
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);                  // 初始化 SF（仅第一次有效，重复调用会被静默跳过）
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().enchant()
+     *        .register(new ThunderFuryEnchant());
+     * </pre>
+     *
+     * 之后玩家即可：
+     *   /sfenchant book thunder_fury 1    —— 拿到 I 级附魔书
+     *   /sfenchant book thunder_fury 5    —— 拿到 V 级附魔书（极限级）
+     *   把附魔书放铁砧 + 把剑放铁砧 → 消耗经验附魔上去
+     */
+}
+```
+
+> **要点速查**：
+> - 简写匹配 `"SWORD"` / `"AXE"` 一次命中所有材质，比写 `DIAMOND_SWORD, IRON_SWORD, ...` 简洁 10 倍
+> - `AttributeBonus.add()` 是 ADD_NUMBER 模式（数值相加），`.mult()` 是 MULTIPLY_SCALAR_1（百分比相乘）
+> - `onAttack` / `onDamaged` 都是 LivingEntity 通用版，既能处理玩家也能处理怪物
+> - `getLevel(ItemStack)` 是基类提供的工具方法，传入物品返回该附魔的等级（0 表示没有）
+> - 铁砧消耗 = `anvilCost() × 最终等级`，所以雷霆之怒 5 级一次附魔要 4×5=20 经验
+> - 注册前必须 `SF.init(this)` 一次，否则 `SF.sf()` 返回 null
+
+---
+
+## 🎯 SFAttr 属性常量库
+
+`SFAttr` 封装了 **全部 Bukkit `Attribute` 枚举**，提供静态常量、中文名映射、快捷构造方法，通过 `sf().attr()` 访问，自动兼容不同 Paper 版本（`GENERIC_` 前缀 / 无前缀）。
+
+### 获取方式
+
+```java
+SFAttr attr = sf().attr();  // 获取实例（推荐）
+// 或静态工具方法：
+Attribute a = SFAttr.get(SFAttr.MAX_HEALTH);
+```
+
+### 静态属性常量（30+）
+
+不区分大小写，可写 `MAX_HEALTH` / `GENERIC_MAX_HEALTH` / `max_health`，系统自动查找：
+
+| 常量 | 中文名 | 默认值参考 |
+|------|--------|-----------|
+| `MAX_HEALTH` | 最大生命 | 20.0 |
+| `MOVEMENT_SPEED` | 移动速度 | 0.1 |
+| `FLYING_SPEED` | 飞行速度 | 0.4 |
+| `ATTACK_DAMAGE` | 攻击伤害 | 1.0 |
+| `ATTACK_SPEED` | 攻击速度 | 4.0 |
+| `ATTACK_KNOCKBACK` | 攻击击退 | 0.0 |
+| `KNOCKBACK_RESISTANCE` | 击退抗性 | 0.0 |
+| `ARMOR` | 护甲 | 0.0 |
+| `ARMOR_TOUGHNESS` | 护甲韧性 | 0.0 |
+| `FALL_DAMAGE_MULTIPLIER` | 坠落伤害倍率 | 1.0 |
+| `LUCK` | 幸运 | 0.0 |
+| `MAX_ABSORPTION` | 最大吸收值 | 0.0 |
+| `BLOCK_INTERACTION_RANGE` | 方块交互距离 | 4.5 |
+| `ENTITY_INTERACTION_RANGE` | 实体交互距离 | 3.0 |
+| `GRAVITY` | 重力 | 0.08 |
+| `SAFE_FALL_DISTANCE` | 安全坠落距离 | 3.0 |
+| `BURNING_TIME` | 燃烧时间 | - |
+| `MOVEMENT_EFFICIENCY` | 移动效率 | - |
+| `OXYGEN_BONUS` | 氧气加成 | - |
+| `WATER_MOVEMENT_EFFICIENCY` | 水中移动效率 | - |
+| `ATTACK_TIME` | 攻击冷却 | - |
+| `MINING_EFFICIENCY` | 挖掘效率 | - |
+| `SNEAKING_SPEED` | 潜行速度 | - |
+| `SUBMERGED_MINING_SPEED` | 水下挖掘速度 | - |
+| `SWEEPING_DAMAGE_RATIO` | 横扫伤害比率 | - |
+| `TEMPT_RANGE` | 吸引范围 | - |
+| `SCALE` | 实体缩放 | 1.0 |
+| `STEP_HEIGHT` | 台阶高度 | 0.6 |
+| `EXPLOSION_KNOCKBACK_REDUCTION` | 爆炸击退减免（兼容旧名，建议用 `EXPLOSION_KNOCKBACK_RESISTANCE`） | - |
+| `SPAWN_REINFORCEMENTS` | 僵尸增援率 | 0.0 |
+| `BLOCK_BREAK_SPEED` | 方块破坏速度 | 1.0 |
+| `JUMP_STRENGTH` | 跳跃强度 | 0.42 |
+| `EXPLOSION_KNOCKBACK_RESISTANCE` | 爆炸击退抗性（Bukkit 1.21+ 正确名） | 0.0 |
+
+### 工具方法
+
+```java
+// 静态查询方法
+Attribute a = SFAttr.get("MAX_HEALTH");       // 按名查找
+boolean exists = SFAttr.exists("MAX_HEALTH");  // 是否存在
+int count = SFAttr.count();                    // 当前版本加载的属性总数
+Set<String> names = SFAttr.allNames();         // 所有属性名
+Collection<Attribute> all = SFAttr.all();      // 所有 Attribute 对象
+String zh = SFAttr.display("MAX_HEALTH");      // 中文名："最大生命"
+```
+
+### 附魔 AttributeBonus 快捷构造
+
+通过 `sf().attr().xxx(base, perLevel)` 一行构造 `SEnchantment.AttributeBonus`：
+
+```java
+@Override
+public List<AttributeBonus> attributes() {
+    SFAttr attr = sf().attr();
+    return Arrays.asList(
+        attr.maxHealth(4.0, 2.0),               // +最大生命：4 + 2×(等级-1)
+        attr.attackDamage(3.0, 1.5),             // +攻击伤害：3 + 1.5×(等级-1)
+        attr.movementSpeed(0.05, 0.02),          // +移动速度：5% + 2%/级
+        attr.armor(2.0, 1.0),                    // +护甲
+        attr.attackKnockback(0.5, 0.2),           // +攻击击退
+        attr.luck(1.0, 0.5),                      // +幸运
+        attr.fallDamageMul(0.9, -0.05),           // 坠落伤害倍率×(0.9 - 0.05/级)
+        attr.scale(0.02, 0.01),                   // +体型缩放
+        attr.miningEfficiency(0.1, 0.05),         // +挖掘效率
+        attr.sweepingDamage(0.1, 0.05)            // +横扫伤害比率
+    );
+}
+```
+
+### 所有快捷方法一览
+
+| 方法 | 说明 | 默认操作 |
+|------|------|---------|
+| `maxHealth(base, perLevel)` | 最大生命 | ADD |
+| `attackDamage(base, perLevel)` | 攻击伤害 | ADD |
+| `attackSpeed(base, perLevel)` | 攻击速度 | ADD |
+| `attackKnockback(base, perLevel)` | 攻击击退 | ADD |
+| `movementSpeed(base, perLevel)` | 移动速度 | ADD |
+| `flyingSpeed(base, perLevel)` | 飞行速度 | ADD |
+| `knockbackResistance(base, perLevel)` | 击退抗性 | ADD |
+| `armor(base, perLevel)` | 护甲 | ADD |
+| `armorToughness(base, perLevel)` | 护甲韧性 | ADD |
+| `luck(base, perLevel)` | 幸运 | ADD |
+| `maxAbsorption(base, perLevel)` | 最大吸收 | ADD |
+| `blockRange(base, perLevel)` | 方块交互距离 | ADD |
+| `entityRange(base, perLevel)` | 实体交互距离 | ADD |
+| `followRange(base, perLevel)` | 追踪范围 | ADD |
+| `fallDamageMul(base, perLevel)` | 坠落伤害倍率 | MULTIPLY |
+| `gravity(base, perLevel)` | 重力 | ADD |
+| `safeFallDistance(base, perLevel)` | 安全坠落距离 | ADD |
+| `scale(base, perLevel)` | 实体缩放 | ADD |
+| `stepHeight(base, perLevel)` | 台阶高度 | ADD |
+| `miningEfficiency(base, perLevel)` | 挖掘效率 | ADD |
+| `sweepingDamage(base, perLevel)` | 横扫伤害比率 | ADD |
+| `sneakSpeed(base, perLevel)` | 潜行速度 | ADD |
+| `submergedMining(base, perLevel)` | 水下挖掘速度 | ADD |
+| `waterMoveEff(base, perLevel)` | 水中移动效率 | ADD |
+| `oxygenBonus(base, perLevel)` | 氧气加成 | ADD |
+| `moveEfficiency(base, perLevel)` | 移动效率 | ADD |
+| `burningTime(base, perLevel)` | 燃烧时间 | ADD |
+| `attackTime(base, perLevel)` | 攻击冷却 | ADD |
+| `temptRange(base, perLevel)` | 吸引范围 | ADD |
+| `explosionKnockbackReduction(base, perLevel)` | 爆炸击退减免 | ADD |
+| `add(name, attr, base, perLevel)` | 自定义 ADD 加成 | ADD |
+| `multiply(name, attr, base, perLevel)` | 自定义 MULTIPLY 加成 | MULTIPLY |
+| `add(name, attr, base, perLevel, op, slot)` | 完全自定义构造 | 自由指定 |
+
+### 多版本兼容原理
+
+Paper 1.21+ 的 `Attribute` 枚举去除了 `GENERIC_` 前缀（旧版为 `GENERIC_MAX_HEALTH`，新版为 `MAX_HEALTH`）。`SFAttr` + `SEnchantment.findAttribute()` 的查找策略为：
+
+1. 先从 `Attribute.values()` 预加载 **当前服务端** 的所有属性名
+2. 查找时依次尝试：`无前缀` → `GENERIC_前缀` → `PLAYER_前缀` → `ZOMBIE_前缀`
+3. 仍找不到则通过反射直接扫描 `Attribute.class` 的字段
+4. 结果写入缓存，后续零成本命中
+
+因此无论使用哪种写法（`MAX_HEALTH` 或 `GENERIC_MAX_HEALTH`），在任意 Paper 版本上都能正确解析。
+
+---
+
+## 🎒 自定义物品系统
+
+SF 提供物品注册系统，通过继承 `SItem` 类即可创建自定义物品，支持属性加成、右键/左键交互、装备音效等。
+
+### 创建自定义物品
+
+```java
+import server.sf.model.api.v2.feature.item.SItem;
+import org.bukkit.Material;
+import org.bukkit.event.player.PlayerInteractEvent;
+import java.util.*;
+
+public class MyItem extends SItem {
+
+    @Override
+    public String id() { return "my_item"; }
+
+    @Override
+    public String displayName() { return "§a我的神器"; }
+
+    @Override
+    public Material material() { return Material.DIAMOND_SWORD; }
+
+    @Override
+    public List<String> lore() {
+        return Arrays.asList("§7一把传说中的武器", "§7右键触发特殊效果");
+    }
+
+    @Override
+    public List<ItemAttributeBonus> attributes() {
+        return Arrays.asList(
+            new ItemAttributeBonus("dmg", "GENERIC_ATTACK_DAMAGE", 5.0, 0,
+                AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND)
+        );
+    }
+
+    @Override
+    public boolean onRightClick(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        p.setVelocity(p.getLocation().getDirection().multiply(2));
+        p.getWorld().spawnParticle(Particle.FLAME, p.getLocation(), 30);
+        return true;  // 取消原版右键行为
+    }
+
+    @Override
+    public boolean onLeftClick(PlayerInteractEvent e) {
+        e.getPlayer().sendMessage("§c左键触发！");
+        return true;
+    }
+}
+```
+
+### 注册物品
+
+```java
+SF.sf().item().register(new MyItem());
+```
+
+### SItem 可重写方法
+
+| 方法 | 说明 |
+|------|------|
+| `id()` | 物品唯一标识（必填） |
+| `displayName()` | 显示名称（必填） |
+| `material()` | 原版物品材质（必填） |
+| `lore()` | 物品描述 |
+| `attributes()` | 属性加成列表 |
+| `onRightClick(e)` | 右键交互 |
+| `onLeftClick(e)` | 左键交互 |
+| `onEquip(e)` | 装备时触发 |
+| `onUnequip(e)` | 卸下时触发 |
+| `customModelData()` | 自定义模型数据 |
+
+### 物品获取方式
+
+#### 方式一：管理员命令
+
+```
+/sfitem give <id> [数量] [玩家]
+```
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 物品 ID，如 `magic_scepter` |
+| `数量` | 可选，物品数量（默认 1） |
+| `玩家` | 可选，目标玩家（默认自己） |
+
+**示例：**
+```
+/sfitem give magic_scepter                  # 给自己1个
+/sfitem give magic_scepter 5                # 给自己5个
+/sfitem give magic_scepter 1 Notch          # 给Notch1个
+```
+
+#### 方式二：代码 API
+
+```java
+ItemManager item = SF.sf().item();
+
+// 给予玩家物品
+item.give(player, "magic_scepter");
+item.give(player, "magic_scepter", 5);
+
+// 创建物品（用于 GUI 或箱子）
+ItemStack scepter = item.create("magic_scepter");
+ItemStack scepter5 = item.create("magic_scepter", 5);
+
+// 检查/消耗物品
+boolean has = item.has(player, "magic_scepter");
+int count = item.count(player, "magic_scepter");
+item.consume(player, "magic_scepter");
+item.consume(player, "magic_scepter", 3);
+```
+
+#### 方式三：普通玩家被动获取（箱子战利品）
+
+玩家打开**箱子**时，系统有概率自动生成自定义物品到箱子中：
+
+- 默认概率：**3%** 每个物品
+- 每个箱子最多：**1** 件
+- 可通过 API 调整概率和数量
+
+```java
+// 获取 ItemChestListener 实例调整配置
+ItemChestListener chestListener = ...; // 需自行保存引用
+
+chestListener.setDefaultChance(0.05);     // 设置默认概率 5%
+chestListener.setMaxLootPerChest(2);       // 每箱最多 2 件
+chestListener.setItemChance("my_item", 0.10); // 单独设置某物品概率
+chestListener.addBlacklistWorld("world_nether"); // 黑名单世界
+```
+
+> 提示：同一个箱子只会生成一次，第二次打开不会再生成。
+
+### ItemAttributeBonus
+
+```java
+new ItemAttributeBonus(
+    "唯一名称",           // 属性标识
+    "GENERIC_ATTACK_DAMAGE", // Bukkit 属性名
+    5.0,                    // 基础值
+    0,                      // 额外值
+    AttributeModifier.Operation.ADD_NUMBER, // 操作类型
+    EquipmentSlot.HAND      // 装备槽
+)
+```
+
+### 可用属性
+
+物品系统同样使用 Bukkit `Attribute` 枚举，与附魔系统共用同一套反射查找逻辑。完整属性列表见[附魔系统 - 可用属性列表](#可用属性列表)。
+
+装备槽（`EquipmentSlot`）可选值：
+
+| 装备槽 | 说明 |
+|--------|------|
+| `HAND` | 主手 |
+| `OFF_HAND` | 副手 |
+| `HEAD` | 头部 |
+| `CHEST` | 胸部 |
+| `LEGS` | 腿部 |
+| `FEET` | 脚部 |
+
+### 内置示例
+
+- **魔法权杖**（`magic_scepter`）：右键瞬移、左键粒子效果、速度加成
+
+### 📝 完整实战示例 —— 神圣守护盾
+
+下面这个示例可直接 copy 到你插件运行，覆盖所有常用方法：lore 描述、不可破坏、自定义标签、装备加成、右键交互、左键交互、装备/卸下钩子、CustomModelData。
+
+```java
+package my.plugin.item;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
+import cn.ZeroEngine.Engine.api.v3.feature.item.ItemAttributeBonus;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemFlag;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * 神圣守护盾 —— 演示一个完整自定义物品的所有重写点
+ *
+ * 行为：
+ *   - 材质为盾牌（SHIELD），不可破坏
+ *   - 显示名 "§e神圣守护盾"，lore 显示属性与传说
+ *   - 标签 [传说, 守护]
+ *   - 装备（切到主手或副手）时：
+ *       +5 最大生命、+2 护甲、+0.2 击退抗性
+ *       + 播放贝斯之歌音效
+ *   - 卸下时播放低沉音效
+ *   - 右键空气：给周围 5 格内所有友方玩家（含自己）上抗性提升 I 30 秒
+ *   - 右键方块：在方块上方召唤一片光柱粒子（装饰用）
+ *   - 左键：广播"盾之意志！"消息给附近玩家
+ *   - CustomModelData = 7700（用于资源包贴图）
+ */
+public class HolyShieldItem extends SItem {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "holy_shield";  // PDC key 内部会用 SHA-1 哈希做 slug 化，中文 id 也安全（v3.2.6+）
+    }
+
+    @Override
+    public String displayName() {
+        return "§e§l神圣守护盾";
+    }
+
+    @Override
+    public Material material() {
+        return Material.SHIELD;
+    }
+
+    @Override
+    public boolean isUnbreakable() {
+        return true;   // 不可破坏，耐久条不显示也不消耗
+    }
+
+    @Override
+    public int maxStackSize() {
+        return 1;      // 不可堆叠
+    }
+
+    @Override
+    public int customModelData() {
+        return 7700;   // 用于资源包贴图覆盖
+    }
+
+    // ==================== Lore 与标签 ====================
+
+    @Override
+    public List<String> lore() {
+        return Arrays.asList(
+            "§7据说由远古守护者所铸，",
+            "§7持盾者将获得神圣庇佑。",
+            "",
+            "§b► +5 §7最大生命",
+            "§b► +2 §7护甲",
+            "§b► +20% §7击退抗性",
+            "",
+            "§e[传说] §6[守护]"
+        );
+    }
+
+    @Override
+    public List<String> tags() {
+        return Arrays.asList("传说", "守护");
+    }
+
+    // ==================== 属性加成 ====================
+
+    @Override
+    public List<ItemAttributeBonus> attributes() {
+        return Arrays.asList(
+            // 用 SFAttr 常量保证多版本兼容（v3.2.6+ 推荐写法）
+            new ItemAttributeBonus("holy_hp", SFAttr.MAX_HEALTH, 5.0, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND),
+            new ItemAttributeBonus("holy_armor", SFAttr.ARMOR, 2.0, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND),
+            new ItemAttributeBonus("holy_kr", SFAttr.KNOCKBACK_RESISTANCE, 0.2, 0,
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
+        );
+    }
+
+    // ==================== 交互钩子 ====================
+
+    /**
+     * 右键事件：
+     *   - 右键空气 → 给附近 5 格内所有玩家上抗性提升 30 秒
+     *   - 右键方块 → 在方块上方召一道光柱粒子
+     */
+    @Override
+    public boolean onRightClick(PlayerInteractEvent event) {
+        Player p = event.getPlayer();
+        switch (event.getAction()) {
+            case RIGHT_CLICK_AIR -> {
+                // 给周围 5 格内所有玩家上抗性提升 I 30 秒
+                var effect = org.bukkit.Registry.EFFECT.get(
+                        org.bukkit.NamespacedKey.minecraft("resistance"));
+                if (effect != null) {
+                    p.getNearbyEntities(5, 5, 5).stream()
+                     .filter(e -> e instanceof Player)
+                     .map(e -> (Player) e)
+                     .forEach(target -> target.addPotionEffect(
+                             new org.bukkit.potion.PotionEffect(effect, 600, 0, false, true, true)));
+                }
+                // 播放金盾音效
+                p.getWorld().playSound(p.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.8f);
+                p.sendMessage("§e✨ 神圣庇佑已展开！");
+            }
+            case RIGHT_CLICK_BLOCK -> {
+                // 在方块上方召一道光柱粒子（装饰用）
+                var loc = event.getClickedBlock().getLocation().add(0.5, 1, 0.5);
+                for (int i = 0; i < 30; i++) {
+                    loc.getWorld().spawnParticle(Particle.END_ROD,
+                            loc.clone().add(0, i * 0.3, 0), 1, 0, 0, 0, 0);
+                }
+            }
+            default -> { /* 忽略其他动作 */ }
+        }
+        return true;   // 取消原版右键行为（盾牌举起来挡伤害的动画也取消）
+    }
+
+    /**
+     * 左键事件：广播消息给附近 10 格内所有玩家
+     */
+    @Override
+    public boolean onLeftClick(PlayerInteractEvent event) {
+        Player p = event.getPlayer();
+        p.getNearbyEntities(10, 10, 10).stream()
+         .filter(e -> e instanceof Player)
+         .map(e -> (Player) e)
+         .forEach(near -> near.sendMessage("§6⚔ " + p.getName() + " 的盾之意志震荡大地！"));
+        // 给附近所有实体施加小幅击退
+        p.getNearbyEntities(3, 3, 3).forEach(e ->
+                e.setVelocity(e.getLocation().toVector()
+                        .subtract(p.getLocation().toVector()).normalize().multiply(0.6)));
+        return true;
+    }
+
+    // ==================== 装备钩子 ====================
+
+    @Override
+    public void onEquip(Player player, ItemStack item) {
+        player.sendMessage("§a✨ 神圣守护盾已激活");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.5f);
+    }
+
+    @Override
+    public void onUnequip(Player player, ItemStack item) {
+        player.sendMessage("§7✨ 神圣守护盾已沉睡");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 0.8f);
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item()
+     *        .register(new HolyShieldItem());
+     * </pre>
+     *
+     * 之后玩家即可：
+     *   /sfitem give holy_shield          —— 自己拿一个
+     *   /sfitem give holy_shield 1 Notch  —— 给 Notch 一个
+     *   /sfitem info holy_shield          —— 查看属性
+     *   /sfitem hand                      —— 看主手是不是这个
+     */
+}
+```
+
+> **要点速查**：
+> - `isUnbreakable() = true` + `maxStackSize() = 1` 是装备类自定义物品的标准配置
+> - `attributes()` 的 `EquipmentSlot` 决定属性在哪个槽位生效（OFF_HAND 表示副手）
+> - 物品的 `id()` 会写入 PDC，玩家手里的"神圣守护盾"才能被 `SItem.is()` 识别为同一个
+> - `onRightClick` 返回 `true` 会取消原版右键行为（如盾牌格挡动画）
+> - `attributes()` 里如果只填 `baseValue`、`perLevel = 0` —— 物品级属性实际不分级，所以物品用 base 即可（v3.2.6+）
+
+---
+
+## 🧟 自定义生物系统
+
+继承 `SEntity` 抽象基类即可定义自定义生物，自动覆盖**血量/攻击/速度/护甲/阵营/生成条件/装备掉落/SFTick 钩子/攻击玩家监听**等全部行为。装配入口 `sf.entities()`（懒加载，自动注册监听器、调度 SFTick、绑定 `/sfentity` 命令）。
+
+### 注册与使用
+
+```java
+@Override
+public void onEnable() {
+    SF sf = SF.sf();
+    sf.entities().register(new ShadowStalkerEntity());   // 注册自定义生物
+}
+```
+
+三种生成方式：
+
+```java
+sf.entities().spawn("shadow_stalker", player.getLocation());   // 强生成（无视 SpawnCondition）
+sf.entities().trySpawn("shadow_stalker", loc);                  // 按条件尝试自然生成
+// 或在 SEntity 里设 spawnCondition().replaceVanillaSpawns = true
+// → 原版同 EntityType 生物出现时自动转换
+```
+
+### SEntity 抽象基类
+
+| 必须实现 | 说明 |
+|---------|------|
+| `id()` | 唯一 ID（PDC key = `sf_entity_id`）|
+| `displayName()` | 显示名（实体的 customName）|
+| `entityType()` | 基础材质：Bukkit `EntityType`（如 `ZOMBIE` / `HUSK` / `WITHER_SKELETON`）|
+
+**属性方法（带默认值，可重写）**：
+
+| 方法 | 默认值 | 说明 |
+|------|-------|------|
+| `maxHealth()` | 20.0 | 最大生命 |
+| `attackDamage()` | 2.0 | 攻击伤害 |
+| `attackSpeed()` | 4.0 | 攻击速度 |
+| `movementSpeed()` | 0.3 | 移动速度 |
+| `knockbackResistance()` | 0.0 | 击退抗性 |
+| `armor()` | 0.0 | 护甲 |
+| `armorToughness()` | 0.0 | 护甲韧性 |
+| `followRange()` | 16.0 | 追踪范围 |
+| `flyingSpeed()` | 0.4 | 飞行速度 |
+
+属性在 `applyAttributes(entity)` 里通过 `SFAttr` 写入 Bukkit `AttributeInstance`，自动兼容 `GENERIC_` / 无前缀命名。
+
+### 阵营（Hostility）
+
+```java
+public enum Hostility {
+    HOSTILE,    // 主动攻击玩家
+    NEUTRAL,    // 被攻击后才反击
+    PASSIVE     // 永不攻击玩家
+}
+```
+
+`EntityListener.onTarget` 会自动按阵营取消目标事件：
+- `PASSIVE`：永远取消追踪玩家
+- `NEUTRAL`：取消自然生成导致的追踪（CLOSEST_PLAYER / RANDOM_TARGET），仅在被攻击后才追
+- `HOSTILE`：放行原版逻辑
+
+### 生成条件（SpawnCondition）
+
+链式构造：
+
+```java
+@Override
+public SpawnCondition spawnCondition() {
+    return new SpawnCondition()
+            .chance(0.2)         // 20% 几率
+            .nightOnly()         // 仅夜晚（世界时间 >= 13000）
+            .burnInDay()         // 白天太阳下燃烧（怕光照）
+            .light(0, 7)         // 仅在光照 0~7 的位置生成
+            .world("world")      // 限定世界（可多次调用）
+            .biome(Biome.PLAINS); // 限定群系（可多次调用）
+}
+```
+
+| 字段 | 默认值 | 说明 |
+|------|-------|------|
+| `chance` | 1.0 | 生成几率 0.0~1.0 |
+| `worlds` | 空=所有 | 允许生成的世界名集合 |
+| `biomes` | 空=所有 | 允许的生物群系集合 |
+| `minY` / `maxY` | -64 / 320 | Y 坐标范围 |
+| `minLight` / `maxLight` | 0 / 15 | 光照范围（实际光照必须落在区间内才生成）|
+| `burnInDaylight` | false | 怕光照，白天太阳下燃烧 |
+| `onlyAtNight` | false | 只在夜晚生成 |
+| `replaceVanillaSpawns` | false | 是否替换原版同类型生物（true 时原版生物出现自动转换）|
+| `spawnLimitPerChunk` | 4 | 每区块最大数量 |
+
+### 装备与掉落
+
+**生成时穿装备**（按 `chance` 概率穿戴）：
+
+```java
+@Override
+public List<EquipmentEntry> equipment() {
+    return Arrays.asList(
+        new EquipmentEntry(new ItemStack(Material.IRON_SWORD), 0.5, EquipmentSlot.HAND, true, 0.05),
+        new EquipmentEntry(new ItemStack(Material.IRON_HELMET), 0.3, EquipmentSlot.HEAD, true, 0.10)
+    );
+    //              物品                  穿戴几率  装备槽      死亡掉  死亡掉率
+}
+```
+
+**死亡额外掉落**：
+
+```java
+@Override
+public List<ItemStack> deathDrops() {
+    return Collections.singletonList(new ItemStack(Material.WITHER_ROSE, 1));
+}
+```
+
+### 事件钩子
+
+| 钩子 | 触发时机 |
+|------|---------|
+| `onSpawn(entity, loc, reason)` | 生物生成后（PDC 标签 + 属性 + 装备应用完）|
+| `onDeath(entity, event)` | 死亡时（追加掉落已经加进 event.getDrops()）|
+| `onAttack(attacker, target, damage, event)` | 攻击玩家时（仅当 target 是 Player 才触发）|
+| `onDamaged(entity, event)` | 任何受伤时 |
+| `onTarget(event)` | EntityTargetEvent，可用于自定义 AI |
+| `onTick(entity, sfTick)` | 每 5 SFTick（= 1 Bukkit tick）调用一次 |
+| `onPerSecond(entity, sfTick)` | 每 100 SFTick（= 1 秒）调用一次 |
+
+> Bukkit 实体操作必须主线程，所以 `onTick` 通过 `runTaskTimer` 同步调度，每 5 SFTick 合批到 1 Bukkit tick 执行。
+
+### 内置示例
+
+**暗影猎手**（`shadow_stalker`）—— 完整演示所有特性：
+
+```java
+public class ShadowStalkerEntity extends SEntity {
+    @Override public String id() { return "shadow_stalker"; }
+    @Override public String displayName() { return "§5暗影猎手"; }
+    @Override public EntityType entityType() { return EntityType.HUSK; }
+
+    @Override public double maxHealth() { return 40.0; }
+    @Override public double attackDamage() { return 6.0; }
+    @Override public double armor() { return 4.0; }
+    @Override public double knockbackResistance() { return 0.5; }
+    @Override public Hostility hostility() { return Hostility.HOSTILE; }
+
+    @Override public SpawnCondition spawnCondition() {
+        return new SpawnCondition().chance(0.2).nightOnly().burnInDay().light(0, 7);
+    }
+
+    @Override public List<EquipmentEntry> equipment() {
+        return Arrays.asList(
+            new EquipmentEntry(new ItemStack(Material.IRON_SWORD), 0.5, EquipmentSlot.HAND, true, 0.05),
+            new EquipmentEntry(new ItemStack(Material.IRON_HELMET), 0.3, EquipmentSlot.HEAD, true, 0.10)
+        );
+    }
+
+    @Override public List<ItemStack> deathDrops() {
+        return Collections.singletonList(new ItemStack(Material.WITHER_ROSE, 1));
+    }
+
+    @Override public void onAttack(LivingEntity attacker, LivingEntity target, double damage, EntityDamageByEntityEvent e) {
+        if (target instanceof Player p) {
+            var pe = Registry.EFFECT.get(NamespacedKey.minecraft("poison"));
+            if (pe != null) p.addPotionEffect(new PotionEffect(pe, 80, 2, false, true, true));
+        }
+    }
+
+    @Override public void onTick(LivingEntity entity, long sfTick) {
+        if (sfTick % 20 != 0) return;  // 每 20 SFTick 拖一次粒子
+        entity.getWorld().spawnParticle(Particle.DUST,
+                entity.getLocation().add(0, 1.2, 0), 5, 0.3, 0.5, 0.3, 0.01,
+                new Particle.DustOptions(Color.fromRGB(80, 0, 100), 1.2f));
+    }
+
+    @Override public void onPerSecond(LivingEntity entity, long sfTick) {
+        if (Math.random() > 0.01) return;  // 1% 几率回血
+        AttributeInstance inst = entity.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH));
+        if (inst != null && entity.getHealth() < inst.getValue()) {
+            entity.setHealth(Math.min(inst.getValue(), entity.getHealth() + 1.0));
+        }
+    }
+}
+```
+
+### 📝 完整实战示例 —— 铁傀儡守卫（中立阵营对照版）
+
+下面这个示例演示一个 **NEUTRAL 阵营**生物 —— **不被攻击时不主动追玩家，被攻击后才反击**。与上面 HOSTILE 阵营的暗影猎手对照学习，可以快速掌握阵营行为差异。
+
+```java
+package my.plugin.entity;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.SEntity;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.Hostility;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.SpawnCondition;
+import cn.ZeroEngine.Engine.api.v3.feature.entity.EquipmentEntry;
+import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.EquipmentSlot;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * 铁傀儡守卫 —— 中立阵营，演示完整 SEntity 用法
+ *
+ * 行为：
+ *   - 基础材质：铁傀儡（IRON_GOLEM），不会被动攻击玩家
+ *   - 血量 100，攻击 15，护甲 8，击退抗性 1.0（免疫击退）
+ *   - 仅在村庄群系（VILLAGE）白天生成，几率 5%
+ *   - 不怕光（不燃烧）
+ *   - 生成时自动手持铁剑（5% 死亡掉落）
+ *   - 死亡必掉 3 个铁锭 + 1 个罂粟
+ *   - 仅在被玩家攻击后才会反击（NEUTRAL 阵营自动行为）
+ *   - 被动技能：每秒给周围 5 格内所有非敌对实体回 1 血
+ *   - 死亡时全图播放 iron_golem_death 音效
+ */
+public class IronGuardEntity extends SEntity {
+
+    // ==================== 基础元信息 ====================
+
+    @Override
+    public String id() {
+        return "iron_guard";
+    }
+
+    @Override
+    public String displayName() {
+        return "§f§l铁傀儡守卫";
+    }
+
+    @Override
+    public org.bukkit.entity.EntityType entityType() {
+        return org.bukkit.entity.EntityType.IRON_GOLEM;
+    }
+
+    // ==================== 属性 ====================
+
+    @Override
+    public double maxHealth() { return 100.0; }
+    @Override
+    public double attackDamage() { return 15.0; }
+    @Override
+    public double armor() { return 8.0; }
+    @Override
+    public double knockbackResistance() { return 1.0; }   // 免疫击退
+    @Override
+    public double followRange() { return 32.0; }            // 被攻击后追很远的距离
+
+    // ==================== 阵营 ====================
+
+    @Override
+    public Hostility hostility() {
+        // NEUTRAL：
+        //   - EntityListener.onTarget 会自动取消 CLOSEST_PLAYER / RANDOM_TARGET 类的目标事件
+        //   - 只有 EntityDamageByEntityEvent 触发后（被攻击），才会保留 RETALIATING_PLAYER 目标
+        //   - 即"你不打我，我不打你；你打我，我追杀到底"
+        return Hostility.NEUTRAL;
+    }
+
+    // ==================== 生成条件 ====================
+
+    @Override
+    public SpawnCondition spawnCondition() {
+        return new SpawnCondition()
+                .chance(0.05)                 // 5% 几率
+                .light(8, 15)                 // 仅光照 8 以上（白天）
+                // .nightOnly() 不调用 → 不限定夜晚
+                // .burnInDay() 不调用 → 不怕光
+                .world("world")              // 仅主世界
+                .biome(org.bukkit.block.Biome.PLAINS)   // 仅平原
+                .biome(org.bukkit.block.Biome.MEADOW)  // 或草甸
+                .spawnLimitPerChunk(2);       // 每区块最多 2 只
+        // 注意：replaceVanillaSpawns 默认 false → 不替换原版铁傀儡
+        //      要让原版铁傀儡出现时自动变身为 IronGuard，加 .replaceVanillaSpawns(true)
+    }
+
+    // ==================== 装备 ====================
+
+    @Override
+    public List<EquipmentEntry> equipment() {
+        return Collections.singletonList(
+            // 100% 持铁剑（仅生成时持有，不死亡掉落 → dropOnDeath=false）
+            // 改成 dropOnDeath=true, dropChance=0.05 → 5% 几率死亡掉铁剑
+            new EquipmentEntry(new ItemStack(Material.IRON_SWORD),
+                    1.0,                       // 100% 穿戴
+                    EquipmentSlot.HAND,
+                    true,                       // 死亡时参与掉落判定
+                    0.05)                       // 5% 几率掉落
+        );
+    }
+
+    // ==================== 死亡掉落 ====================
+
+    @Override
+    public List<ItemStack> deathDrops() {
+        return Arrays.asList(
+            new ItemStack(Material.IRON_INGOT, 3),    // 必掉 3 个铁锭
+            new ItemStack(Material.POPPY, 1)          // 必掉 1 朵罂粟（铁傀儡传统）
+        );
+    }
+
+    // ==================== 事件钩子 ====================
+
+    @Override
+    public void onSpawn(LivingEntity entity, Location loc, CreatureSpawnEvent.SpawnReason reason) {
+        // 生成时播放铁傀儡出生音效 + 7 个铁傀儡粒子
+        loc.getWorld().playSound(loc, Sound.ENTITY_IRON_GOLEM_REPAIR, 1.5f, 1.0f);
+        loc.getWorld().spawnParticle(Particle.IRON_DAMAGE, loc.clone().add(0, 1, 0), 7);
+    }
+
+    @Override
+    public void onAttack(LivingEntity attacker, LivingEntity target,
+                         double damage, EntityDamageByEntityEvent event) {
+        // 由于是 NEUTRAL，此方法只在被攻击后反击时才会触发
+        // 给被攻击者施加大幅击退效果
+        target.setVelocity(target.getLocation().toVector()
+                .subtract(attacker.getLocation().toVector()).normalize().multiply(1.5));
+        target.getWorld().spawnParticle(Particle.IRON_DAMAGE,
+                target.getLocation().add(0, 1, 0), 5, 0.3, 0.5, 0.3, 0.0);
+    }
+
+    @Override
+    public void onDamaged(LivingEntity victim, EntityDamageEvent event) {
+        // 受伤冒火花粒子
+        victim.getWorld().spawnParticle(Particle.IRON_DAMAGE,
+                victim.getLocation().add(0, 1, 0), 3, 0.3, 0.5, 0.3, 0.0);
+    }
+
+    @Override
+    public void onDeath(LivingEntity entity, EntityDeathEvent event) {
+        // 全图范围内 32 格播放铁傀儡死亡音效
+        entity.getWorld().playSound(entity.getLocation(),
+                Sound.ENTITY_IRON_GOLEM_DEATH, 2.0f, 1.0f);
+    }
+
+    @Override
+    public void onTarget(EntityTargetEvent event) {
+        // NEUTRAL 阵营已经由 EntityListener 自动处理"被动取消目标"
+        // 这里可加自定义逻辑，例如：
+        //   - 如果 target 不是玩家 → 放行
+        //   - 如果 target 是玩家但距离 > 16 → 取消（不追太远）
+        if (event.getTarget() instanceof Player p) {
+            if (event.getEntity().getLocation().distanceSquared(p.getLocation()) > 256) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @Override
+    public void onTick(LivingEntity entity, long sfTick) {
+        // 每 5 SFTick 调一次（默认节流）
+        // 这里不做节流，因为下方逻辑只检查距离、不写世界
+    }
+
+    @Override
+    public void onPerSecond(LivingEntity entity, long sfTick) {
+        // 每秒一次：给周围 5 格内所有非敌对实体回 1 血
+        var attr = entity.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH));
+        if (attr == null) return;
+
+        entity.getNearbyEntities(5, 5, 5).stream()
+              .filter(e -> e instanceof LivingEntity le && le.isValid())
+              .map(e -> (LivingEntity) e)
+              .forEach(target -> {
+                  double max = target.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH)) != null
+                          ? target.getAttribute(SFAttr.get(SFAttr.MAX_HEALTH)).getValue() : 20.0;
+                  if (target.getHealth() < max) {
+                      target.setHealth(Math.min(max, target.getHealth() + 1.0));
+                  }
+              });
+        // 自己也回 1 血
+        double maxHp = attr.getValue();
+        if (entity.getHealth() < maxHp) {
+            entity.setHealth(Math.min(maxHp, entity.getHealth() + 1.0));
+        }
+    }
+
+    // ==================== 注册 ====================
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().entities()
+     *        .register(new IronGuardEntity());
+     * </pre>
+     *
+     * 之后即可：
+     *   /sfentity list                  —— 看到列表里有 iron_guard
+     *   /sfentity spawn iron_guard      —— 在脚下强制生成一只
+     *   /sfentity info iron_guard       —— 查看属性 / 装备 / 生成条件
+     *   或让玩家在平原白天闲晃，5% 几率自然遇到
+     */
+}
+```
+
+> **要点速查**：
+> - **阵营对照**：HOSTILE（暗影猎手）= 主动追玩家；NEUTRAL（铁傀儡守卫）= 被打才追；PASSIVE = 永不追玩家
+> - **怕光控制**：调 `.burnInDay()` 白天燃烧（怕光怪物）；不调就不燃烧（铁傀儡、村民等友好生物）
+> - **生成控制**：`.light(min, max)` 限定光照；`.nightOnly()` 限定夜晚；二者独立
+> - **装备掉落**：`EquipmentEntry(item, 穿戴率, 槽位, 是否参与掉落, 掉落率)` —— 4 个参数完整覆盖"穿多少几率 + 死了掉多少几率"
+> - **`onTick` vs `onPerSecond`**：`onTick` 每 5 SFTick（高频，仅做轻逻辑）；`onPerSecond` 每秒（适合 AI 决策、回血、范围扫描）
+> - **`replaceVanillaSpawns=true`** 时原版同 EntityType 生物出现会被转换为本 SEntity，否则不会影响原版生成
+
+### `/sfentity` 命令（别名 `/sfe`）
+
+| 子命令 | 作用 |
+|--------|------|
+| `/sfentity list` | 列出所有已注册生物（id/名称/类型/阵营/HP/攻击/活动数）|
+| `/sfentity spawn <id> [数量]` | 在玩家脚下生成（最多 50）|
+| `/sfentity info <id>` | 查看属性 / 装备 / 生成条件 / 当前活动数 |
+| `/sfentity count [id]` | 查看活动实例数 |
+| `/sfentity cleanup` | 清理无效引用 |
+| `/sfentity reload` | 清空注册表（需代码重新注册）|
+| `/sfentity help` | 帮助 |
+
+权限：`sf.admin.entity`（默认 op）
+
+---
+
+## 📜 自定义配方系统
+
+继承 `SRecipe` 抽象基类即可定义**原版工作台合成配方**，自动支持：
+
+- **两种配方模式**：`SHAPED`（有序，3×3 形状）/ `SHAPELESS`（无序，任意摆放）
+- **原版物品 + 自定义物品混合材料**：`ingredients()` / `result()` 既可传 `Material` 枚举，也可传 `SItem` 实例
+- **精确匹配自定义物品**：当 ingredient 是 `SItem` 时，底层使用 Bukkit `RecipeChoice.ExactChoice(sItem.create(1))`，要求输入物品的 **displayName + lore + PDC（自定义物品标签）完全一致**，防止普通同名原版物品冒充
+- **注册即生效**：`RecipeManager.register(SRecipe)` 内部调用 `Bukkit.addRecipe()`，玩家在原版 3×3 工作台直接合成；取出结果后，原版自动消耗对应槽位材料
+
+装配入口 `sf.recipes()`（懒加载，自动注册 `/sfrecipe` 命令、shutdown 时自动 `unregisterAll()`）。
+
+### 快速开始
+
+```java
+@Override
+public void onEnable() {
+    SF sf = SF.sf();
+
+    // 注册配方（也可以写 sf.recipes().registerAll(new A(), new B(), ...)）
+    sf.recipes().register(new MagicScepterRecipe());
+}
+```
+
+之后玩家直接打开原版工作台：
+
+```
+ E     （上排中 = 末影之眼）
+GBG    （中排 = 金锭 + 烈焰棒 + 金锭）
+ D     （下排中 = 钻石）
+→ 合成产物：魔法权杖（MagicScepterItem）× 1
+```
+
+### SRecipe 抽象基类
+
+| 必须实现 | 返回类型 | 说明 |
+|---------|---------|------|
+| `id()` | `String` | 配方唯一标识（用于 Bukkit `NamespacedKey(plugin, "sf_" + id)`） |
+| `mode()` | `RecipeMode` | `SHAPED`（有序配方，必须再写 `shape()`）或 `SHAPELESS`（无序，只看 ingredients，不读 shape）|
+| `ingredients()` | `Map<Character, Object>` | 字符 → 材料。value 两种写法：① `Material` 原版物品 ② `SItem` 实例自定义物品 |
+| `result()` | `Object` | 合成产物：① `Material` 原版物品枚举 ② `SItem` 实例自定义物品 |
+
+| 可选重写 | 默认 | 说明 |
+|---------|------|------|
+| `shape()` | 空 | SHAPED 才用：`List<String>` 1~3 行，每行 1~3 个字符；`' '`=空槽 |
+| `resultAmount()` | `1` | 产物数量（SItem 会自动传给 `sItem.create(amount)`）|
+| `unlockedByDefault()` | `true` | 配方是否在玩家配方书里默认解锁（`Bukkit.addRecipe(recipe, <this>)`）|
+
+### 有序配方示例（SHAPED）—— MagicScepterRecipe
+
+```java
+public class MagicScepterRecipe extends SRecipe {
+    @Override public String id() { return "magic_scepter"; }
+    @Override public RecipeMode mode() { return RecipeMode.SHAPED; }
+
+    @Override public List<String> shape() {
+        // 3×3 形状；字母与 ingredients 一一对应，空格代表空槽
+        return Arrays.asList(
+            " E ",
+            "GBG",
+            " D "
+        );
+    }
+
+    @Override public Map<Character, Object> ingredients() {
+        // 用 LinkedHashMap 保证展示顺序与 info 命令一致
+        Map<Character, Object> map = new LinkedHashMap<>();
+        map.put('E', Material.ENDER_EYE);                // 原版物品
+        map.put('G', Material.GOLD_INGOT);
+        map.put('B', Material.BLAZE_ROD);
+        map.put('D', Material.DIAMOND);
+        return map;
+    }
+
+    @Override public Object result() { return new MagicScepterItem(); } // 自定义物品作产物
+    @Override public int resultAmount() { return 1; }
+}
+```
+
+### 无序配方示例（SHAPELESS）—— 简易金苹果
+
+```java
+public class ShinyAppleRecipe extends SRecipe {
+    @Override public String id() { return "shiny_apple"; }
+    @Override public RecipeMode mode() { return RecipeMode.SHAPELESS; }
+
+    @Override public Map<Character, Object> ingredients() {
+        // SHAPELESS 场景下，字符 key 可以任意写，实际只统计"每种材料各 1 份"
+        // 如果想要"两份金锭"，把 SHAPED 模式的 shape 写两个同字母即可
+        return Map.of(
+            'A', Material.APPLE,
+            'G', Material.GOLD_INGOT,   // 只写一份金锭
+            'C', new CustomShardItem()  // 把自定义物品"神秘碎片"作为 ingredient（要求完全一致，含 PDC）
+        );
+    }
+
+    @Override public Object result() { return Material.GOLDEN_APPLE; }  // 原版物品作产物
+    @Override public int resultAmount() { return 1; }
+}
+```
+
+### 材料与产物的类型对照
+
+| 目标 | 在 `ingredients()` / `result()` 里写什么 | 底层匹配/生成方式 |
+|------|------------------------------------------|------------------|
+| 原版钻石剑作材料 | `Material.DIAMOND_SWORD` | `RecipeChoice.MaterialChoice(DIAMOND_SWORD)`：任意同 Material 物品都能当材料 |
+| 自定义物品"神秘碎片"作材料 | `new CustomShardItem()` | `RecipeChoice.ExactChoice(sItem.create(1))`：**要求物品 PDC/显示名/lore 完全一致**，防止普通烈焰棒伪装成自定义烈焰棒 |
+| 原版钻石作产物 | `Material.DIAMOND` | 返回 `new ItemStack(DIAMOND, resultAmount())` |
+| 自定义魔法权杖作产物 | `new MagicScepterItem()` | 返回 `magicScepter.create(resultAmount())`，带完整 PDC、属性、音效 |
+
+> **关键安全提示**：自定义物品作材料时，必须使用"已注册的同一个 SItem"的 create() 产物；否则玩家随便写 `displayName` 相同、但 PDC 不同的物品是无法通过 `ExactChoice` 校验的，杜绝配方材料伪造刷物漏洞。
+
+### 多份同类型材料怎么表达？
+
+有序配方（SHAPED）：在 shape 里**重复同一个字母**。例：合成一把钻石剑需要 2 颗钻石 + 1 根木棍：
+
+```java
+@Override public List<String> shape() {
+    return Arrays.asList("D", "D", "S");   // 3 行 1 列竖排
+}
+@Override public Map<Character, Object> ingredients() {
+    return Map.of('D', Material.DIAMOND, 'S', Material.STICK);
+}
+// shape 中 D 出现 2 次 → 消耗 2 颗钻石；S 出现 1 次 → 消耗 1 根木棍
+```
+
+无序配方（SHAPELESS）：把同一个 `Material` / `SItem` 放进 map **多个不同 key**，或直接把 `List.of(Material.X, Material.X)` 包成集合（但我们的签名是 Map<Char,Object> —— 所以推荐用"多个不同 key 放同 value"）。
+
+### 📝 完整实战示例 —— 自定义物品升级链（混合材料 + 多份材料 + 自定义产物）
+
+下面演示一条**自定义物品升级链**：用原版钻石 × 2 + 自定义物品"魔法权杖"（带 PDC，要求**必须是真的 MagicScepter，伪造名不行**）→ 合成升级版"圣光权杖"。
+
+```java
+package my.plugin.recipe;
+
+import cn.ZeroEngine.Engine.api.v3.SF;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.SRecipe;
+import cn.ZeroEngine.Engine.api.v3.feature.recipe.RecipeMode;
+import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
+import cn.ZeroEngine.Engine.api.v3.feature.item.MagicScepterItem;
+import org.bukkit.Material;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 圣光权杖合成配方 —— 演示完整 SRecipe 用法
+ *
+ * 形状（3×3 有序）：
+ *     D          （上排中 = 钻石）
+ *     M          （中排中 = 魔法权杖，必须是已注册的 MagicScepterItem）
+ *     D          （下排中 = 钻石）
+ *
+ * 产物：圣光权杖 × 1（自定义物品 HolyLightScepter，必须先注册为 SItem）
+ *
+ * 要点：
+ *   - 自定义物品做材料 → 用 RecipeChoice.ExactChoice，必须 PDC/displayName/lore 完全一致
+ *   - 多份同材料 → SHAPED 写 shape 重复字母；SHAPELESS 写多个 key 放同 value
+ *   - 自定义物品做产物 → 用 sItem.create(resultAmount())
+ */
+public class HolyLightScepterRecipe extends SRecipe {
+
+    @Override
+    public String id() {
+        return "holy_light_scepter";
+    }
+
+    @Override
+    public RecipeMode mode() {
+        return RecipeMode.SHAPED;
+    }
+
+    @Override
+    public List<String> shape() {
+        // D 在 shape 中出现 2 次 → 消耗 2 颗钻石
+        // M 在 shape 中出现 1 次 → 消耗 1 根魔法权杖
+        return Arrays.asList(
+            " D ",
+            " M ",
+            " D "
+        );
+    }
+
+    @Override
+    public Map<Character, Object> ingredients() {
+        // 用 LinkedHashMap 保证 key 的迭代顺序稳定（info 命令展示更整齐）
+        Map<Character, Object> map = new LinkedHashMap<>();
+        map.put('D', Material.DIAMOND);                  // 原版物品：MaterialChoice
+        map.put('M', new MagicScepterItem());            // 自定义物品：ExactChoice，必须是真的 MagicScepter
+        // 注意：这里直接 new MagicScepterItem() 即可，SRecipe.choiceOf() 内部
+        //       会调用 sItem.create(1) 拿到一个带 PDC 的样本，跟玩家合成台里放的
+        //       物品逐字段比较 —— 普通 BLAZE_ROD 即使改了 displayName 也无法冒充
+        return map;
+    }
+
+    @Override
+    public Object result() {
+        // 自定义物品作产物：返回一个已注册的 SItem 实例
+        // SRecipe.toBukkitRecipe() 会调用 sItem.create(resultAmount()) 生成带 PDC 的 ItemStack
+        return new HolyLightScepterItem();   // 你的另一个 SItem 子类（须先 register）
+    }
+
+    @Override
+    public int resultAmount() {
+        return 1;
+    }
+
+    @Override
+    public boolean unlockedByDefault() {
+        // false → 玩家不会在配方书自动看到这个配方（需要"解锁"，例如通过冒险获得）
+        // true  → 默认配方书里就有
+        return false;
+    }
+
+    /**
+     * 在你的插件 onEnable 里调用：
+     *
+     * <pre>
+     *   cn.ZeroEngine.Engine.api.v3.SF.init(this);
+     *
+     *   // 先注册 SItem（材料 + 产物）
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item().register(new MagicScepterItem());
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().item().register(new HolyLightScepterItem());
+     *
+     *   // 再注册配方
+     *   cn.ZeroEngine.Engine.api.v3.SF.sf().recipes()
+     *        .register(new HolyLightScepterRecipe());
+     * </pre>
+     *
+     * 之后玩家直接打开原版工作台，按形状摆好：
+     *     D
+     *     M  → 产物：圣光权杖 ×1（M 必须是 MagicScepterItem 真品，普通烈焰棒无效）
+     *     D
+     */
+}
+```
+
+> **关键安全点**：
+> - 自定义物品做材料时，**必须先注册**对应的 `SItem`（`sf.item().register(new MagicScepterItem())`），否则 `sItem.create(1)` 拿不到带 PDC 的样本
+> - `MagicScepterItem` 是 ZeroEngine 自带的示例 SItem；你自己的升级链里，把 `MagicScepterItem` 换成你注册过的 SItem 子类即可
+> - 同样的 SItem，玩家**手工 lore 伪造**也无效：`RecipeChoice.ExactChoice` 内部会比对 PDC 字符串标签，普通 BLAZE_ROD 即使 `displayName` 改成"魔法权杖"也通不过
+> - `unlockedByDefault=false` 时玩家需要在配方书外**手动摆放**才合成；如果你想配方书里直接显示，改 `true`
+
+### RecipeManager API
+
+```java
+RecipeManager recipes = sf.recipes();
+
+recipes.register(new MagicScepterRecipe());   // 注册一个配方
+recipes.registerAll(new A(), new B());        // 批量注册
+
+SRecipe r = recipes.get("magic_scepter");     // 按 id 查找
+Collection<SRecipe> all = recipes.all();      // 全部已注册
+
+boolean ok = recipes.remove("magic_scepter"); // 从 Bukkit 移除 + 清注册表
+recipes.unregisterAll();                      // 清空全部
+```
+
+### `/sfrecipe` 命令（别名 `/sfr`）
+
+| 子命令 | 作用 |
+|--------|------|
+| `/sfrecipe list` | 列出所有已注册配方（id / 模式 / 产物）|
+| `/sfrecipe info <id>` | 查看形状（有序配方逐行显示字母与材料）/ 材料映射 / 产物 |
+| `/sfrecipe give <id> [玩家]` | 给玩家发放一份"配方产物"（相当于手动合成一次）|
+| `/sfrecipe remove <id>` | 移除一个配方（工作台不再显示该合成）|
+| `/sfrecipe reload` | 清空所有已注册配方（**需要在代码中重新 `register`**）|
+| `/sfrecipe help` | 帮助 |
+
+权限：`sf.admin.recipe`（默认 op）
+
+---
+
+## 🧱 自定义方块系统
+
+`SBlock` 是自定义方块的抽象基类（继承 `SItem`，物品形式自动注册到 `/sfitem`）。放下后用 chunk PDC 持久化，重启不丢失；提供 Bukkit 方块的全部能力钩子。
+
+### 创建自定义方块
+
+```java
+public class MagicCoreBlock extends SBlock {
+    @Override public String id() { return "magic_core"; }
+    @Override public String displayName() { return "§b魔力核心"; }
+    @Override public Material material() { return Material.LODESTONE; }
+    @Override public String description() { return "红石激活后发光"; }
+
+    @Override public int lightLevel() { return 0; }
+    @Override public int redstoneRadius() { return 2; }
+    @Override public void onRedstonePowered(Block b, int power) {
+        b.getWorld().spawnParticle(Particle.WAX_ON, b.getLocation().add(0.5,1,0.5), 10);
+    }
+
+    @Override public DropMode dropMode() { return DropMode.CUSTOM; }
+    @Override public List<ItemStack> drops() { return List.of(new ItemStack(Material.EMERALD, 2)); }
+
+    @Override public boolean onBlockRightClick(PlayerInteractEvent e) {
+        e.getPlayer().sendMessage("§a你激活了魔力核心");
+        return true;
+    }
+}
+
+sf.blocks().register(new MagicCoreBlock());
+sf.items().give(player, "magic_core");
+```
+
+### SBlock 可重写方法
+
+| 方法 | 说明 |
+|---|---|
+| `material()` | 必须是方块 Material（继承自 SItem） |
+| `lightLevel()` / `isOpaque()` / `isSolid()` / `isFlammable()` / `hardness()` / `blastResistance()` | 方块属性 |
+| `onBlockRightClick(e)` / `onBlockLeftClick(e)` | 右键/左键监听，返回 true 取消原版交互 |
+| `dropMode()` | `VANILLA`（原版掉落）/ `CUSTOM`（掉 `drops()`）/ `NONE`（不掉落） |
+| `drops()` / `expDrop()` | 自定义掉落物与经验 |
+| `redstoneRadius()` | 监听半径内红石通电，状态变化触发 `onRedstonePowered/Unpowered` |
+| `emitsRedstone()` / `redstonePower()` | 自身红石输出 |
+| `canPlaceAt(block, face)` | 放置限制 |
+| `onPlace/onBreak/onBlockDamage/onBurn/onIgnite/onPhysics/onFade/onForm/onSpread/onFromTo/onGrow/onPistonExtend/onPistonRetract/onDispense/onExplode/onLeavesDecay/onMoistureChange/onFluidLevelChange/onEntityChangeBlock/onSignChange/onNotePlay/onExpDrop` | 全部 Bukkit 方块事件钩子 |
+
+### `/sfblock` 命令（别名 `/sfb`）
+
+| 命令 | 说明 |
+|---|---|
+| `/sfblock list` | 列出所有已注册方块 |
+| `/sfblock give <id> [玩家]` | 给予方块物品形式 |
+| `/sfblock look` | 看向已放置方块查询身份 |
+| `/sfblock info <id>` | 查看方块详情 |
+
+---
+
+## 🖥️ 自定义屏幕系统（Dialog API）
+
+`SScreen` 是基于 Paper 1.21.8 Dialog API 的自定义屏幕基类。支持两种打开模式：
+
+1. **进服配置阶段**（玩家未进入世界）：原有机制，`AsyncPlayerConnectionConfigureEvent` 阻塞玩家直到同意/拒绝/超时
+2. **在世玩家**（已进入世界）：通过 `triggerEvent` / `triggerCommand` 声明式触发，或在代码里调 `sf.screens().open(player, id)` 主动打开
+
+> 需 Paper 1.21.7+（原版 1.21.6 引入 Dialog，Paper 1.21.7 提供 API）。1.21.8+ 在世玩家 Dialog 点击回调完整支持。
+
+### 创建自定义屏幕
+
+```java
+public class RulesScreen extends SScreen {
+    @Override public String id() { return "server_rules"; }
+    @Override public Component title() {
+        return Component.text("服务器规则").color(NamedTextColor.GOLD);
+    }
+    @Override public List<DialogBody> body() {
+        return List.of(DialogBody.plainMessage(
+            Component.text("1. 禁止作弊\n2. 友好交流\n\n同意后方可进入")));
+    }
+    @Override public List<ActionButton> buttons() {
+        return List.of(
+            button(Component.text("同意").color(NamedTextColor.GREEN), "agree"),
+            button(Component.text("拒绝").color(NamedTextColor.RED), "deny")
+        );
+    }
+    @Override public int timeoutSeconds() { return 120; }
+    @Override public void onClick(ClickContext ctx) {
+        if (ctx.action().equals("agree")) ctx.accept();
+        else ctx.deny(Component.text("你拒绝了规则"));
+    }
+}
+
+sf.screens().register(new RulesScreen());
+```
+
+### SScreen 可重写方法
+
+| 方法 | 说明 | 默认 |
+|---|---|---|
+| `id()` / `title()` | 唯一标识与标题 | 必填 |
+| `body()` | `DialogBody.plainMessage(...)` / `item(...)` 正文列表 | 空 |
+| `inputs()` | `DialogInput.bool/singleOption/text/numberRange` 输入控件 | 空 |
+| `buttons()` | 按钮列表，元素用 `button(label, action)` 构造 | 空 |
+| `columns()` | `multiAction` 布局列数（自定义按钮位置） | 1 |
+| `exitButton()` | 可选退出按钮，独立放网格末尾 | null |
+| `type()` | `DialogType`，默认根据 buttons/exitButton 数量自动选 | 自动 |
+| `canCloseWithEscape()` | 是否允许 ESC 关闭 | false |
+| `shouldShow(conn)` | 配置阶段条件展示 | true |
+| `shouldShow(Player)` | 在世玩家条件展示 | true |
+| `timeoutSeconds()` | 超时自动 deny 踢出（秒） | 60 |
+| `priority()` | 多屏顺序（小→大依次弹出） | 0 |
+| `triggerEvent()` | 声明式触发：返回 `PlayerEvent` 子类，系统自动监听打开 | null |
+| `triggerCommand()` | 声明式触发：返回命令名，玩家输入即打开 | null |
+| `onClick(ctx)` | 按钮点击钩子 | 必填 |
+
+辅助方法：
+
+| 方法 | 说明 |
+|---|---|
+| `button(label, action)` | 构造 ActionButton，自动生成 Key = `namespace:screenId/action` |
+| `button(label, tooltip, action)` | 带 tooltip 的按钮 |
+| `textInput(key, label)` / `(key, label, maxLen)` / `(key, label, maxLen, initial)` / `(key, label, maxLen, initial, width)` | 构造文本输入控件，默认 maxLength=100、width=200、单行 |
+
+### DialogType 自动选择
+
+`type()` 默认实现按 `buttons()` + `exitButton()` 数量自动匹配：
+
+| 条件 | Dialog 类型 | 布局 |
+|---|---|---|
+| 0 按钮 + 无 exit | `notice()` | 无按钮的纯提示 |
+| 1 按钮 + 无 exit | `notice(action)` | 单按钮居中 |
+| 2 按钮 + 无 exit | `confirmation(yes, no)` | 左 yes / 右 no |
+| 其他 | `multiAction(buttons, exit, columns)` | `columns` 列网格 + exit 独立末尾 |
+
+需要完全自定义可重写 `type()`。
+
+### 自定义按钮位置
+
+通过 `columns()` 控制多按钮网格列数，`exitButton()` 让特定按钮独立放在网格下方：
+
+```java
+public class VoteScreen extends SScreen {
+    @Override public String id() { return "vote"; }
+    @Override public Component title() { return Component.text("§6选择游戏模式"); }
+    @Override public int columns() { return 2; }   // 2 列网格：4 按钮排成 2x2
+
+    @Override public List<ActionButton> buttons() {
+        return List.of(
+            button(Component.text("§a起床战争"), "bedwars"),
+            button(Component.text("§bPVP"), "pvp"),
+            button(Component.text("§d守村"), "village"),
+            button(Component.text("§e尸潮"), "horde")
+        );
+    }
+
+    @Override public ActionButton exitButton() {
+        return button(Component.text("§c取消"), "cancel");   // 独立放网格下方
+    }
+
+    @Override public void onClick(ClickContext ctx) {
+        Player p = ctx.player();
+        if (p == null) { ctx.deny(); return; }
+        switch (ctx.action()) {
+            case "bedwars" -> p.info("已加入 §a起床战争");
+            case "pvp"     -> p.info("已加入 §bPVP");
+            case "village" -> p.info("已加入 §d守村");
+            case "horde"   -> p.info("已加入 §e尸潮");
+            case "cancel"  -> { ctx.accept(); return; }
+        }
+        ctx.accept();
+    }
+
+    @Override public String triggerCommand() { return "vote"; }   // /vote 命令打开
+}
+```
+
+### 输入框
+
+`inputs()` 返回 `DialogInput` 列表，可用基类助手 `textInput(key, label, ...)` 快速构造文本输入。玩家提交后通过 `ClickContext.inputText(key)` 取值。
+
+```java
+public class ApplyScreen extends SScreen {
+    @Override public String id() { return "apply"; }
+    @Override public Component title() { return Component.text("§e入服申请"); }
+
+    @Override public List<DialogBody> body() {
+        return List.of(DialogBody.plainMessage(
+            Component.text("请填写以下信息提交申请")));
+    }
+
+    @Override public List<DialogInput> inputs() {
+        return List.of(
+            textInput("name", Component.text("游戏名"), 20),
+            textInput("reason", Component.text("申请理由"), 200, "", 300)
+        );
+    }
+
+    @Override public List<ActionButton> buttons() {
+        return List.of(
+            button(Component.text("§a提交"), "submit"),
+            button(Component.text("§c重置"), "reset")
+        );
+    }
+
+    @Override public ActionButton exitButton() {
+        return button(Component.text("§7关闭"), "close");
+    }
+
+    @Override public void onClick(ClickContext ctx) {
+        if ("submit".equals(ctx.action())) {
+            String name = ctx.inputText("name");
+            String reason = ctx.inputText("reason");
+            if (name == null || name.isBlank()) {
+                Player p = ctx.player();
+                if (p != null) p.info("§c请填写游戏名");
+                ctx.accept();
+                return;
+            }
+            // 保存申请...
+        }
+        ctx.accept();
+    }
+
+    @Override public String triggerCommand() { return "apply"; }
+}
+```
+
+`ClickContext` 输入取值 API：
+
+| 方法 | 返回 | 说明 |
+|---|---|---|
+| `inputText(key)` | `String` 或 null | 取文本输入值 |
+| `inputBool(key)` | `Boolean` 或 null | 取布尔输入值 |
+| `inputFloat(key)` | `Float` 或 null | 取数字输入值 |
+| `response()` | `DialogResponseView` 或 null | 取原始响应视图 |
+
+### 在世玩家打开（声明式触发）
+
+`SScreen` 通过两个钩子声明自己的触发方式，注册时 `ScreenManager` 自动接线，无需手写监听器或命令：
+
+```java
+public class ShopScreen extends SScreen {
+    @Override public String id() { return "shop"; }
+    @Override public Component title() { return Component.text("§6商店"); }
+
+    @Override public List<ActionButton> buttons() {
+        return List.of(
+            button(Component.text("§a购买"), "buy"),
+            button(Component.text("§c关闭"), "close")
+        );
+    }
+
+    @Override public String triggerCommand() { return "shop"; }                              // ← 玩家用 /shop 打开
+    @Override public Class<? extends Event> triggerEvent() { return PlayerInteractEvent.class; }  // ← 右键空气触发
+    @Override public boolean shouldShow(Player player) { return player.hasPermission("shop.use"); }
+
+    @Override public void onClick(ClickContext ctx) {
+        if ("buy".equals(ctx.action())) {
+            // 处理购买...
+        }
+        ctx.accept();
+    }
+}
+```
+
+| 触发方式 | 钩子 | 说明 |
+|---|---|---|
+| 命令 | `triggerCommand()` 返回命令名 | 玩家输入命令即打开，自动注册（无需 plugin.yml） |
+| 事件 | `triggerEvent()` 返回 `PlayerEvent` 子类 | 系统自动监听该事件，触发时为 `getPlayer()` 打开 |
+
+两种触发器可同时声明。也可不写钩子，直接在代码里调 `sf.screens().open(player, "shop")` 主动打开。
+
+### ClickContext API
+
+`onClick(ClickContext ctx)` 内可用方法：
+
+| 方法 | 说明 |
+|---|---|
+| `action()` | 当前点击的按钮 action 字符串 |
+| `player()` | 在世时返回 `Player`，配置阶段返回 null |
+| `connection()` | `PlayerCommonConnection`（配置阶段=`PlayerConfigurationConnection`，在世=`PlayerGameConnection`） |
+| `playerId()` | 玩家 UUID |
+| `isInGame()` / `isInConfiguration()` | 当前打开模式 |
+| `inputText/Bool/Float(key)` | 取输入框值 |
+| `response()` | 原始 `DialogResponseView` |
+| `accept()` | 放行（关 Dialog + future=true） |
+| `deny()` / `deny(msg)` | 踢出（`connection.disconnect`，两种模式统一行为） |
+| `isResolved()` | 是否已被 accept/deny 解决（多次调用只生效第一次） |
+
+### 运行流程
+
+**配置阶段（玩家进服时）**：
+
+1. `AsyncPlayerConnectionConfigureEvent` 触发（玩家未进入世界）
+2. 协议版本检查（< 1.21.7 跳过弹窗）
+3. 收集所有 `shouldShow(conn)=true` 的屏幕，按 `priority` 排序
+4. 逐个屏：`showDialog` → `future.join()` 阻塞 → 点击触发 `PlayerCustomClickEvent` → `onClick`
+5. `accept()` → 进入下一屏；全部通过则进世界
+6. `deny(msg)` 或超时 → `connection.disconnect` 踢出
+
+**在世玩家（triggerEvent / triggerCommand / 主动 open）**：
+
+1. 触发器命中（事件触发 / 命令输入 / `sf.screens().open(player, id)` 调用）
+2. `shouldShow(Player)` 校验通过则 `player.showDialog(dialog)`
+3. 玩家点击触发 `PlayerCustomClickEvent`，`getCommonConnection()` 返回 `PlayerGameConnection`
+4. `onClick(ctx)` 处理，`ctx.player()` 拿到 `Player`
+5. `accept()` 关 Dialog；`deny(msg)` 走 `connection.disconnect` 踢出连接
+
+### ScreenManager 管理 API
+
+| 方法 | 说明 |
+|---|---|
+| `register(SScreen)` / `registerIfAbsent(SScreen)` | 注册屏幕（自动接线 triggerEvent/triggerCommand） |
+| `unregister(id)` / `unregisterAll()` | 注销 |
+| `open(Player, id)` | 在世玩家主动打开 |
+| `get(id)` / `all()` | 查询 |
+| `sf.screens()` | 懒加载入口 |
+
+---
+
+## 🌾 自定义农作物系统
+
+`SCrop` 是自定义农作物的抽象基类（继承 `SItem`，物品形式即种子，自动注册到 `/sfitem`）。支持**双生长模式**：
+
+- **Ageable 模式**（默认）：复用 vanilla 作物方块（`WHEAT`/`CARROTS`/`POTATOES`/`BEETROOTS`/`NETHER_WART`/`SWEET_BERRY_BUSH` 等 BlockData 实现 `Ageable` 的 Material），靠 `Ageable.setAge` 推进 age，沿用原版随机刻。
+- **阶段模式**：重写 `stages()` 返回各阶段 Material 列表，生长时 `setType` 切换方块类型，**任意 Material 可用**（不限于 Ageable），由引擎定时任务推进，不依赖 vanilla 随机刻。
+
+作物方块通过 chunk PDC 标记 cropId 区分不同自定义作物，重启自动恢复。骨粉加速、右键收获、破坏掉落均由引擎监听器统一处理。
+
+### 基类方法
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` / `displayName()` / `material()` | SItem 继承，物品形式（种子） | 必填 |
+| `cropBlock()` | 作物方块的 Material（Ageable 模式必填；阶段模式仅占位） | 必填 |
+| `stages()` | 各阶段 Material 列表（非空=阶段模式，生长时切换方块类型） | 空=Ageable 模式 |
+| `isStageMode()` | 是否阶段模式（final，由 stages() 是否空决定） | 自动 |
+| `maxStage()` | 最大生长阶段（阶段模式=stages.size-1；Ageable=7） | 7 |
+| `growthChance()` | 随机刻生长概率 | 0.125 |
+| `harvestDrops()` | 成熟收获掉落的产物列表 | 空 |
+| `minSeedsOnHarvest()` / `maxSeedsOnHarvest()` | 收获掉落种子数量范围 | 1 / 3 |
+| `requireFarmland()` | 是否必须种在耕地上 | true |
+| `minLightLevel()` | 生长所需最低光照 | 9 |
+| `onBonemeal(Block)` | 骨粉是否允许加速 | true |
+| `onPlant/onGrow/onHarvest(Block, Player/int)` | 种植/生长/收获钩子 | 空 |
+
+### 用法示例
+
+```java
+public class TomatoCrop extends SCrop {
+    @Override public String id() { return "tomato"; }
+    @Override public String displayName() { return "§c番茄种子"; }
+    @Override public Material material() { return Material.WHEAT_SEEDS; }   // 种子物品
+    @Override public Material cropBlock() { return Material.WHEAT; }        // 作物方块
+    @Override public int maxStage() { return 7; }
+
+    @Override public List<ItemStack> harvestDrops() {
+        return List.of(new ItemStack(Material.APPLE, 2));   // 成熟掉苹果作为番茄产物
+    }
+
+    @Override public void onHarvest(Block b, Player p) {
+        p.sendMessage("§a你收获了一颗番茄！");
+    }
+}
+
+// 注册（种子物品形式同步进入 /sfitem）
+sf.crops().register(new TomatoCrop());
+```
+
+### 玩家操作流程
+
+| 步骤 | Ageable 模式 | 阶段模式 |
+|---|---|---|
+| 种植 | 右键耕地放置 `cropBlock()` 方块（age=0） | 右键耕地放置 `stages().get(0)` 方块 |
+| 生长推进 | vanilla 随机刻 `BlockGrowEvent` + `growthChance()` 推进 age | 引擎 `BukkitRunnable` 每 5 秒 + `growthChance()` 切换下一阶段 Material |
+| 骨粉加速 | `BlockFertilizeEvent` 推进 age（`onBonemeal` 可拒） | 取消原版事件，直接调 `growOneStep` 推进 1 阶段（`onBonemeal` 可拒） |
+| 成熟收获 | 右键成熟作物 → 掉 `harvestDrops()` + 1~3 种子，方块变空气 | 同左（`isMature` 判断当前 Material 是否为 `stages().get(maxStage)`） |
+| 破坏未成熟 | 取消原版掉落，调 `onHarvest`（可重写返还种子） | 同左 |
+
+> 阶段模式下，vanilla 随机刻不会对非 Ageable 方块触发 `BlockGrowEvent`，故生长完全由引擎定时任务驱动；Ageable 模式则双轨（vanilla 随机刻 + 引擎监听 `BlockGrowEvent` 概率过滤）。
+
+### 双模式：Ageable 模式 vs 阶段模式
+
+`SCrop` 支持两种生长模式，由 `stages()` 是否返回非空列表自动切换：
+
+| 模式 | 触发 | 生长机制 | 适用 |
+|---|---|---|---|
+| **Ageable 模式**（默认） | `stages()` 返回空 | 单 `cropBlock()` 方块 + `Ageable.setAge` 推进 age，依赖 vanilla 随机刻 `BlockGrowEvent` | 复用原版作物方块（WHEAT/CARROTS/POTATOES/BEETROOTS/NETHER_WART/SWEET_BERRY_BUSH 等 BlockData 实现 Ageable 的 Material） |
+| **阶段模式**（新） | `stages()` 返回非空列表 | 每个 stage 对应不同 Material，生长时 `setType` 切换方块；**不依赖 vanilla 随机刻**，由引擎 `BukkitRunnable` 每 5 秒按 `growthChance` 推进 | 任意 Material（不限于 Ageable），完全自定义各阶段视觉 |
+
+阶段模式的定时生长由 `CropManager` 维护内存位置索引（`plantedCrops` Set），`ChunkLoadEvent` 加载时扫描 chunk PDC 恢复索引，重启不丢失。
+
+```java
+public class TomatoCrop extends SCrop {
+    @Override public String id() { return "tomato"; }
+    @Override public String displayName() { return "§c番茄种子"; }
+    @Override public Material material() { return Material.WHEAT_SEEDS; }  // 种子物品
+    @Override public Material cropBlock() { return Material.WHEAT; }      // 阶段模式仅占位
+
+    @Override public List<Material> stages() {
+        return List.of(
+            Material.NETHER_SPROUTS,     // 阶段0：幼苗
+            Material.WHEAT,              // 阶段1：成长中
+            Material.CARROTS,            // 阶段2：开花
+            Material.BEETROOTS,          // 阶段3：结果
+            Material.RED_MUSHROOM_BLOCK  // 阶段4：成熟番茄
+        );
+    }
+
+    @Override public List<ItemStack> harvestDrops() {
+        return List.of(new ItemStack(Material.APPLE, 2));
+    }
+}
+```
+
+玩家种下 → `NETHER_SPROUTS` → 定时任务/骨粉切换 → `WHEAT` → ... → `RED_MUSHROOM_BLOCK`（成熟）→ 右键收获。每个阶段可任意 Material，不再受 Ageable 限制。
+
+### 阶段模式行为细节
+
+| 机制 | 说明 |
+|---|---|
+| 生长调度 | `CropManager` 内置 `BukkitRunnable`，每 100 tick（5 秒）遍历内存位置索引 `plantedCrops`，对阶段模式作物按 `growthChance()` 概率调 `growOneStep` 切换方块；Ageable 模式作物跳过（交给 vanilla 随机刻） |
+| 位置索引 | `Set<Location> plantedCrops`（`ConcurrentHashMap.newKeySet` 线程安全）；`placeAt` 时 `indexCrop` 加入，`removeAt` 时 `unindexCrop` 移除 |
+| 重启恢复 | 监听 `ChunkLoadEvent` → `CropManager.scanChunk(chunk)` 遍历该 chunk PDC 的 `sfcrop_<rx>_<ry>_<rz>` 键，解析相对坐标还原 `Block`，重新加入 `plantedCrops`；若方块已变空气则删除失效 PDC 记录 |
+| 成熟判断 | 阶段模式 `currentStage(block)` 用 `block.getType()` 在 `stages()` 列表里 `indexOf`；`isMature` = 当前阶段索引 ≥ `maxStage`（= `stages().size()-1`） |
+| 骨粉 | 阶段模式取消原版 `BlockFertilizeEvent`（避免 vanilla 把非作物方块当普通方块处理），改为直接 `growOneStep` 推进 1 阶段；`onBonemeal` 返回 false 可整体拒绝 |
+| 收获 | 右键成熟作物（阶段模式也命中：判断条件 `instanceof Ageable \|\| isStageCrop()`）→ 取消原版交互 → 掉 `harvestDrops()` + `min~maxSeedsOnHarvest` 个种子 → 方块变空气 → 移除 PDC + 索引 |
+
+### 管理 API（CropManager）
+
+| 方法 | 说明 |
+|---|---|
+| `register(SCrop)` / `registerIfAbsent(SCrop)` | 注册作物（同步进 `/sfitem`），后者避免重复注册异常 |
+| `get(id)` / `all()` | 按 id 查 / 列出全部 |
+| `findAt(Block)` | 查方块所属 SCrop（O(1) 读 chunk PDC） |
+| `placeAt(Block, SCrop, stage)` / `removeAt(Block)` | 程序化种植/移除（维护 PDC + 位置索引） |
+| `scanChunk(Chunk)` | 扫描 chunk PDC 恢复位置索引（重启后自动调） |
+| `indexCrop(Block)` / `unindexCrop(Block)` | 维护内存位置索引 |
+| `SF.crops()` | 懒加载入口（`sf.crops().register(...)`） |
+
+### 钩子触发时机
+
+| 钩子 | 触发 |
+|---|---|
+| `onPlant(Block, Player)` | 玩家右键耕地种下种子后 |
+| `onGrow(Block, int newStage)` | 生长推进（Ageable setAge 或阶段模式 setType）后 |
+| `onHarvest(Block, Player)` | 成熟右键收获 / 未成熟破坏后（可重写返还种子） |
+| `onBonemeal(Block)` | 骨粉右键时（返回 false 拒绝） |
+| `canGrowAt(Block)` | 生长前校验（光照/耕地等，返回 false 不生长） |
+
+---
+
+## 🍽️ 物品食物方法
+
+`SItem` 内置 5 个食物钩子，任何自定义物品都可以变成"食物"——吃了回自定义饥饿值 + 给 buff，无需写监听器。
+
+### 钩子
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `isFood()` | 是否可食用（true 才会触发吃东西监听） | false |
+| `foodNutrition()` | 回复饥饿值（0~20） | 0 |
+| `foodSaturation()` | 回复饱和度（浮点） | 0 |
+| `canAlwaysEat()` | 是否饱腹也可食用 | false |
+| `onEat(PlayerItemConsumeEvent)` | 吃东西时触发的钩子（给药水效果/buff 等） | 空 |
+
+### 引擎监听流程
+
+`ItemListener` 监听 `PlayerItemConsumeEvent`（HIGH 优先级）：取消原版营养 → 手动消耗主/副手 1 个物品 → `setFoodLevel/Saturation` 应用自定义值 → 调 `onEat` 给 buff。
+
+### 用法示例
+
+```java
+public class MagicBread extends SItem {
+    @Override public String id() { return "magic_bread"; }
+    @Override public String displayName() { return "§6魔力面包"; }
+    @Override public Material material() { return Material.BREAD; }
+
+    @Override public boolean isFood() { return true; }
+    @Override public int foodNutrition() { return 8; }       // 回 8 饥饿
+    @Override public float foodSaturation() { return 1.2f; } // 1.2 饱和
+
+    @Override public void onEat(PlayerItemConsumeEvent e) {
+        Player p = e.getPlayer();
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, 1)); // 30秒速度II
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, 0));
+        p.sendMessage("§a魔力面包让你精神百倍！");
+    }
+}
+
+sf.items().register(new MagicBread());
+```
+
+玩家吃下魔力面包 → 回 8 饥饿 + 1.2 饱和 + 速度 II 30 秒 + 生命恢复 I 10 秒。
+
+---
+
+## 🧰 自定义箱子 GUI（SChestGUI）
+
+`SChestGUI` 是箱子界面 GUI 的 OOP 基类（委托底层 `ChestGUI` 实现）。`extends` 它重写 `build(Builder)` 填格子、`onClick` 处理点击即可做出复杂界面；`command()` 返回命令名（如 `"cd"`）还能用 `/cd` 命令打开。
+
+### 基类方法
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` | 唯一标识 | 必填 |
+| `title()` | GUI 标题 | "容器" |
+| `size()` | 格子数（9 的倍数） | 27 |
+| `readonly()` | 是否只读（禁止玩家拿放） | false |
+| `command()` | 打开命令名（如 `"cd"`）；非空则引擎注册 `/cd` 命令 | null |
+| `build(Builder)` | 填物品（用 Builder 链式 API） | 空 |
+| `onClick(ClickContext)` | 点击钩子 | 空 |
+| `onOpen(Player)` / `onClose(Player)` | 打开/关闭钩子 | 空 |
+| `open(Player)` | 引擎实现，打开 GUI | final |
+
+### Builder API
+
+`SChestGUI.Builder` 封装底层 `ChestGUI`：`item(slot, item)` / `item(slot, item, onClick)` / `fill(mat, name, lore)` / `border(mat, name, lore)` / `fillRange(start, end, item)` / `clear(slot)` / `clear()` / `pagination(items, perPage)`。
+
+### 用法示例
+
+```java
+public class ShopGui extends SChestGUI {
+    @Override public String id() { return "shop"; }
+    @Override public String title() { return "§6商店"; }
+    @Override public int size() { return 27; }
+    @Override public String command() { return "cd"; }   // /cd 命令打开此 GUI
+
+    @Override public void build(Builder b) {
+        b.item(0, new ItemStack(Material.DIAMOND), ctx ->
+            ctx.player().sendMessage("§b你点了钻石"));
+        b.border(Material.GRAY_STAINED_GLASS_PANE, " ");  // 边框
+    }
+}
+
+sf.gui().register(new ShopGui());   // 注册并自动绑定 /cd 命令
+```
+
+玩家输入 `/cd` → 打开商店 GUI；点钻石格 → 提示"你点了钻石"。
+
+---
+
+## 🔧 高级工作台
+
+多方块结构：工作台在上，发射器在下。玩家右击工作台时，检测下方发射器，对其 9 格按已注册 `SRecipe` 匹配——命中则消耗材料、产物放入空槽。
+
+### 搭建与使用
+
+```
+[w]  工作台
+[d]  发射器（放材料）
+```
+
+1. 在发射器内按配方 shape 摆放材料（与原版工作台一致的 3x3 网格）
+2. 右击上方工作台
+3. 发射器内材料被消耗，产物自动放入空槽，播放 `ANVIL_USE` 音效
+
+配方仍用 `sf.recipes().register(new MyRecipe())` 注册——同一配方即可在原版工作台和高级工作台生效。匹配逻辑由 `SRecipe.matchesGrid()` + `RecipeManager.craftAtInventory()` 完成，支持有序/无序、`Material` 与 `SItem` 混合材料。
+
+---
+
+### 加工机器（AdvancedCraftTable 基类）
+
+`AdvancedCraftTable` 是高级工作台的抽象基类，重写 `onRightChest()` 返回 `SChestGUI` 即可把工作台变成加工机器（带自定义 UI 的磨面机/烹饪台等）。引擎通过 chunk PDC 记录工作台位置→tableId 映射。
+
+| 方法 | 说明 | 默认 |
+|------|------|------|
+| `id()` | 唯一标识 | 必填 |
+| `onRightChest()` | 右键工作台返回的 GUI；返回 null 则打开发射器原版界面 | null |
+| `onOpenChest(Player, workbench, dispenser, inv)` | 打开时钩子 | 空 |
+| `onCraft(Player, workbench, dispenser, recipe)` | 合成时钩子 | 空 |
+| `allowDefaultCraft()` | 是否允许无 GUI 时走原 craftAtInventory | true |
+
+```java
+public class MillMachine extends AdvancedCraftTable {
+    @Override public String id() { return "mill"; }
+    @Override public SChestGUI onRightChest() { return new MillGui(); }  // 打开磨面机 UI
+}
+
+// 注册并绑定到某个已放置的工作台方块
+sf.recipes().registerTableIfAbsent(new MillMachine());
+sf.recipes().bindTableAt(workbenchBlock, sf.recipes().getTable("mill"));
+```
+
+右键该工作台 → 打开 `MillGui`（而非直接合成），玩家在 GUI 内放材料 + 点按钮调 `sf.recipes().craftAtInventory(dispenserInv)` 完成加工。未绑定的普通工作台仍走原直接合成逻辑。
+
+---
+
+## 💎 物品获取来源
+
+`SItem.dropSources()` 声明物品的天然获取途径，`ItemListener` 自动监听对应事件触发掉落，无需手写监听器。
+
+### DropSource 四种来源
+
+| 类型 | 触发事件 | 工厂方法 |
+|---|---|---|
+| `BLOCK_BREAK` | `BlockBreakEvent` | `DropSource.block(Material, chance[, min, max])` |
+| `ENTITY_DEATH` | `EntityDeathEvent` | `DropSource.mob(EntityType, chance[, min, max])` |
+| `FISHING` | `PlayerFishEvent`（CAUGHT_FISH） | `DropSource.fishing(chance[, min, max])` |
+| `CHEST_LOOT` | `LootGenerateEvent` | `DropSource.chest(chance[, min, max])` |
+
+- `chance` 自动 clamp 到 [0, 1]
+- `minAmount ~ maxAmount` 数量范围，`rollAmount()` 随机
+- 创造模式挖方块跳过，避免刷物品
+
+### 示例
+
+```java
+public class AncientRelicItem extends SItem {
+    @Override public String id() { return "ancient_relic"; }
+    @Override public String displayName() { return "§6远古遗物"; }
+    @Override public Material material() { return Material.AMETHYST_SHARD; }
+
+    @Override public List<DropSource> dropSources() {
+        return List.of(
+            DropSource.block(Material.STONE, 0.005),
+            DropSource.block(Material.ANCIENT_DEBRIS, 0.5),
+            DropSource.mob(EntityType.WITHER_SKELETON, 0.2),
+            DropSource.mob(EntityType.ENDER_DRAGON, 1.0),
+            DropSource.fishing(0.05),
+            DropSource.chest(0.15)
+        );
+    }
+}
+```
+
+---
+
+## 📝 SFText 文本组件 API
+
+`SFText` 是基于 Adventure Component 的富文本工具类，支持物品精灵图、玩家头颅、交互组件等，全部静态方法调用。
+
+### 物品精灵图
+
+在聊天消息中显示物品图标，鼠标悬停查看物品详情：
+
+```java
+import server.sf.model.api.v2.feature.text.SFText;
+
+// 显示玩家手持物品（hover 弹出物品 NBT 信息）
+Component c = SFText.item(player.getInventory().getItemInMainHand());
+
+// 自定义显示名
+Component c = SFText.item(itemStack, "附魔剑");
+```
+
+### 玩家头颅
+
+```java
+// 按 OfflinePlayer 显示
+Component c = SFText.skull(player);
+
+// 按 UUID + 名称
+Component c = SFText.skull(uuid, "Steve");
+
+// 按 base64 材质
+Component c = SFText.skullByTexture(base64Texture, "自定义头");
+```
+
+### 交互组件
+
+```java
+SFText.url("点击打开", "https://github.com")       // 点击打开链接
+SFText.command("执行", "/spawn")                    // 点击执行命令
+SFText.suggest("填入", "/msg ")                     // 点击填入聊天框
+SFText.copy("复制IP", "mc.example.com")             // 点击复制到剪贴板
+SFText.tooltip("悬停查看", "这是提示文字")            // hover 提示
+```
+
+### Builder 链式拼接
+
+```java
+Component msg = SFText.builder()
+    .append("获得: ", NamedTextColor.GOLD)
+    .appendItem(itemStack)
+    .append("  ")
+    .appendSkull(player)
+    .append("  ")
+    .appendUrl("查看详情", "https://...")
+    .build();
+player.sendMessage(msg);
+```
+
+### 辅助方法
+
+| 方法 | 说明 |
+|------|------|
+| `text(String)` | 纯文本组件 |
+| `text(String, NamedTextColor)` | 带颜色文本 |
+| `text(String, String hexColor)` | HEX 颜色文本 |
+| `newline()` | 换行 |
+| `separator()` | 分隔线 |
+| `plain(Component)` | Component 转纯文本 |
+
+---
+
+## 💬 聊天事件优先级 API
+
+通过 `ChatHandler` 接口注册聊天处理器，按优先级依次执行。插件可以拦截玩家聊天作为输入，或修改消息内容。
+
+### 核心概念
+
+| 方法 | 作用 |
+|------|------|
+| `ctx.consume()` | 消息是插件输入，不广播到聊天 |
+| `ctx.cancel()` | 中断后续 handler 执行 |
+| `ctx.formattedMessage(Component)` | 修改消息内容 |
+| `ctx.channel(ChatChannel)` | 切换消息频道 |
+
+### 注册 Handler
+
+```java
+SF.sf().chat().registerHandler(new ChatHandler() {
+    @Override public int priority() { return 10; }  // 数值越小越先执行
+
+    @Override public void handle(ChatContext ctx) {
+        // 修改消息内容
+        ctx.formattedMessage(
+            SFText.builder()
+                .append("[自定义] ")
+                .append(ctx.formattedMessage())
+                .build()
+        );
+    }
+});
+```
+
+### 插件输入拦截示例
+
+```java
+// 插件等待玩家输入确认
+SF.sf().chat().registerHandler(new ChatHandler() {
+    @Override public int priority() { return 5; }
+
+    @Override public void handle(ChatContext ctx) {
+        if (waitingInput.containsKey(ctx.player().getUniqueId())
+                && ctx.rawMessage().equals("确认")) {
+            ctx.consume();  // 吃掉消息，不广播
+            handleConfirm(ctx.player());
+        }
+    }
+});
+```
+
+### 一次性输入标记
+
+如果插件只需要玩家下一条消息作为输入，可以使用 `markListening` 机制：
+
+```java
+// 标记玩家，下一条聊天消息会被吞掉（不广播）
+SF.sf().chat().markListening(player);
+
+// 判断当前是否在监听
+if (SF.sf().isPluginListenerChat(player)) {
+    // true → 消息不会发出
+}
+
+// 中途取消
+SF.sf().chat().unmarkListening(player);
+```
+
+> `markListening` 是一次性消费：标记后玩家下一条消息被拦截，标记自动清除。
+
+### 处理流程
+
+```
+玩家发消息
+  ↓
+禁言检查 → 过滤词 → 频道格式化
+  ↓
+dispatch（按 priority 顺序）
+  ├─ Handler A (priority=5): 检查是不是插件输入 → consume()
+  ├─ Handler B (priority=10): 修改消息内容
+  └─ Handler C (priority=20): cancel() → C 之后的 handler 不再执行
+  ↓
+consumed == true → 不广播
+consumed == false → 正常广播到频道
+```
+
+---
+
+## 🚀 性能优化系统
+
+通过 `/sfperf` 命令管理，4 大优化模块全部基于 SF Tick 系统异步运行。
+
+### 命令
+
+```
+/sfperf              # 完整状态报告
+/sfperf tps          # TPS + MSPT
+/sfperf mem          # 内存使用
+/sfperf gc           # 手动 GC
+/sfperf chunks       # 手动清理区块
+/sfperf entities     # 手动清理实体
+/sfperf toggle <feature>  # 开关某个模块
+/sfperf help         # 帮助
+```
+
+**权限**：`sf.admin.perf`
+
+### 优化模块
+
+**1. 内存监控**（每 2 秒）
+- 读取 JMX Heap 使用率
+- 85% 告警，90% 自动触发 `System.gc()`
+
+**2. 区块管理**（每 6 秒）
+- 自动卸载无玩家、无实体的空闲区块
+- 每周期最多卸载 50 个，避免卡顿
+
+**3. 实体清理**（每 6 秒）
+- 掉落物超过 60 秒自动清除
+- 无主弹射物超过 10 秒清除
+- 单区块实体超过 50 个时清理多余掉落物/弹射物
+
+**4. TPS 自适应**（每 2 秒）
+- TPS < 15：视距/模拟距离降到最小值
+- TPS < 18：视距 -2，模拟距离 -1
+- TPS 正常：恢复最大值
+
+### API
+
+```java
+PerformanceManager perf = SF.sf().perf();
+
+perf.getTps();           // 获取当前 TPS（double[3]）
+perf.getUsedMemory();    // 已用内存（MB）
+perf.getMaxMemory();     // 最大内存（MB）
+perf.toggle("memory");   // 开关内存监控
+perf.toggle("chunks");   // 开关区块管理
+perf.toggle("entities"); // 开关实体清理
+perf.toggle("throttle"); // 开关 TPS 自适应
+```
+
+---
+
+## 🗄️ SQLite / MySQL 数据库 API
+
+SF 插件内置数据库系统，默认使用 SQLite（零配置），也可切换 MySQL。通过 `sf().database()` 获取 `Database` 接口，直接执行 SQL。
+
+### 获取 Database 实例
+
+```java
+Database db = sf().database();
+```
+
+### Database 接口
+
+```java
+public interface Database {
+    boolean connect();
+    void disconnect();
+    boolean isConnected();
+    Connection connection();
+    int executeUpdate(String sql, Object... params);
+    <T> T executeQuery(String sql, Function<ResultSet, T> mapper, Object... params);
+}
+```
+
+### 建表
+
+```java
+Database db = sf().database();
+
+db.executeUpdate("CREATE TABLE IF NOT EXISTS player_tags (" +
+    "uuid VARCHAR(36) NOT NULL," +
+    "tag_id VARCHAR(64) NOT NULL," +
+    "purchased_at BIGINT NOT NULL," +
+    "PRIMARY KEY (uuid, tag_id)" +
+    ")");
+```
+
+### 插入 / 更新 / 删除
+
+```java
+// 插入
+db.executeUpdate(
+    "INSERT OR IGNORE INTO player_tags (uuid, tag_id, purchased_at) VALUES (?, ?, ?)",
+    player.getUniqueId().toString(), "tag1", System.currentTimeMillis()
+);
+
+// 更新
+db.executeUpdate(
+    "UPDATE player_tags SET tag_id = ? WHERE uuid = ?",
+    "tag2", player.getUniqueId().toString()
+);
+
+// 删除
+db.executeUpdate(
+    "DELETE FROM player_tags WHERE uuid = ? AND tag_id = ?",
+    player.getUniqueId().toString(), "tag1"
+);
+```
+
+### 查询
+
+```java
+// 查询单值
+boolean has = db.executeQuery(
+    "SELECT COUNT(*) AS c FROM player_tags WHERE uuid = ? AND tag_id = ?",
+    rs -> {
+        try {
+            return rs.next() ? rs.getInt("c") > 0 : false;
+        } catch (Exception e) {
+            return false;
+        }
+    },
+    player.getUniqueId().toString(), "tag1"
+);
+
+// 查询列表
+List<String> owned = db.executeQuery(
+    "SELECT tag_id FROM player_tags WHERE uuid = ?",
+    rs -> {
+        List<String> list = new ArrayList<>();
+        try {
+            while (rs.next()) list.add(rs.getString("tag_id"));
+        } catch (Exception ignored) {
+        }
+        return list;
+    },
+    player.getUniqueId().toString()
+);
+```
+
+### 内置数据表
+
+SF 启动时自动创建以下表：
+
+| 表名 | 用途 | 主键 |
+|------|------|------|
+| `homes` | 玩家家园传送点 | (uuid, name) |
+| `warps` | 公共传送点 | name |
+| `last_locations` | 玩家最后位置 | uuid |
+
+第三方插件可通过 `sf().database()` 创建自己的表，与 SF 共享同一个数据库连接。
+
+### 配置切换
+
+默认 SQLite，切换 MySQL 编辑 `config.yml`：
+
+```yaml
+database:
+  mysql:
+    enabled: true        # true=MySQL, false=SQLite
+    host: localhost
+    port: 3306
+    database: minecraft
+    user: root
+    password: "你的密码"
+    prefix: "sf_"
+  sqlite:
+    file: data.db
+```
+
+### 完整示例：前缀购买系统
+
+```java
+public class TagManager {
+    private final Database db = SF.sf().database();
+
+    public void init() {
+        db.executeUpdate("CREATE TABLE IF NOT EXISTS player_tags (" +
+            "uuid VARCHAR(36) NOT NULL," +
+            "tag_id VARCHAR(64) NOT NULL," +
+            "purchased_at BIGINT NOT NULL," +
+            "PRIMARY KEY (uuid, tag_id)" +
+            ")");
+    }
+
+    public boolean has(Player player, String tagId) {
+        Integer count = db.executeQuery(
+            "SELECT COUNT(*) AS c FROM player_tags WHERE uuid = ? AND tag_id = ?",
+            rs -> { try { return rs.next() ? rs.getInt("c") : 0; } catch (Exception e) { return 0; } },
+            player.getUniqueId().toString(), tagId
+        );
+        return count != null && count > 0;
+    }
+
+    public boolean buy(Player player, String tagId, double price) {
+        SF sf = SF.sf();
+        if (sf.balance(player) < price) return false;
+        if (!sf.takeMoney(player, price)) return false;
+        int rows = db.executeUpdate(
+            "INSERT OR IGNORE INTO player_tags (uuid, tag_id, purchased_at) VALUES (?, ?, ?)",
+            player.getUniqueId().toString(), tagId, System.currentTimeMillis()
+        );
+        return rows > 0;
+    }
+}
+```
+
+---
+
+## ⚙️ ZeroEngine 原版操控引擎
+
+ZeroEngine 4.0 核心功能，提供 5 大原版操控模块，全部作为 API 供外部插件调用。引擎本身不参与具体业务逻辑，仅提供操控能力。
+
+### 获取方式
+
+```java
+SF sf = SF.sf();
+
+MonsterAttribute monster = sf.monster();
+DamageSystem damage = sf.damage();
+BlockControl block = sf.block();
+SpawnControl spawn = sf.spawn();
+ResourcePackManager resourcePack = sf.resourcePack();
+```
+
+所有引擎模块均采用懒加载，首次调用时自动初始化并注册事件监听器。
+
+---
+
+### 怪物属性操控
+
+`MonsterAttribute` — 对原版生物的属性进行精确控制。
+
+| 方法 | 说明 |
+|------|------|
+| `setBaseDamage(entity, damage)` | 设置基础攻击伤害 |
+| `setBaseHealth(entity, health)` | 设置基础最大生命值（同时修正当前血量） |
+| `setBaseSpeed(entity, speed)` | 设置基础移动速度 |
+| `setBaseKnockbackResistance(entity, resistance)` | 设置击退抗性 |
+| `setBaseArmor(entity, armor)` | 设置护甲值 |
+| `setBaseArmorToughness(entity, toughness)` | 设置护甲韧性 |
+| `scale(entity, healthMul, damageMul, speedMul)` | 按倍率缩放属性 |
+| `reset(entity)` | 重置所有属性到默认值 |
+| `get(attribute, entity)` | 获取属性当前值 |
+| `set(attribute, entity, value)` | 设置任意属性基础值 |
+| `addModifier(attribute, entity, name, amount, operation)` | 添加属性修饰器 |
+| `removeModifier(attribute, entity, name)` | 移除属性修饰器 |
+| `applyPersistent(entityId, modifiers)` | 持久化属性修饰（跨tick保持） |
+| `getPersistent(entityId)` | 获取持久化属性 |
+| `clearPersistent(entityId)` | 清除持久化属性 |
+
+**使用示例：**
+
+```java
+SF sf = SF.sf();
+MonsterAttribute ma = sf.monster();
+
+// 设置僵尸属性
+Zombie zombie = world.spawn(loc, Zombie.class);
+ma.setBaseHealth(zombie, 100);
+ma.setBaseDamage(zombie, 20);
+ma.setBaseSpeed(zombie, 0.35);
+
+// 按倍率缩放（困难模式）
+ma.scale(zombie, 2.0, 1.5, 1.2);
+
+// 添加自定义修饰器
+ma.addModifier(
+    Attribute.ATTACK_SPEED,
+    zombie,
+    "fast_attack",
+    2.0,
+    AttributeModifier.Operation.ADD_NUMBER
+);
+
+// 重置
+ma.reset(zombie);
+```
+
+---
+
+### 伤害系统操控
+
+`DamageSystem` — 自定义伤害计算公式、PvP 控制、护甲穿透。
+
+| 方法 | 说明 |
+|------|------|
+| `registerDamageModifier(name, priority, fn)` | 注册伤害修改器（按优先级执行） |
+| `unregisterDamageModifier(name)` | 移除伤害修改器 |
+| `calculateDamage(attacker, victim, rawDamage, cause)` | 手动计算伤害 |
+| `setPvpEnabled(enabled)` | 全局 PvP 开关 |
+| `isPvpEnabled()` | 查询全局 PvP 状态 |
+| `setPvpEnabled(worldId, enabled)` | 按世界设置 PvP |
+| `isPvpEnabled(worldId)` | 查询世界 PvP 状态 |
+| `setDamageMultiplier(cause, multiplier)` | 设置伤害类型倍率 |
+| `getDamageMultiplier(cause)` | 获取伤害类型倍率 |
+| `resetDamageMultiplier(cause)` | 重置伤害类型倍率 |
+| `setArmorPenetration(percent)` | 设置护甲穿透百分比（0~1） |
+| `getArmorPenetration()` | 获取护甲穿透 |
+| `setCustomDamage(attacker, victim, damage)` | 对特定目标设置固定伤害 |
+| `clearCustomDamage(attacker)` | 清除自定义伤害 |
+
+**DamageContext 接口：**
+
+```java
+public interface DamageContext {
+    LivingEntity attacker();    // 攻击者
+    LivingEntity victim();      // 受害者
+    double rawDamage();         // 原始伤害
+    DamageCause cause();        // 伤害原因
+    boolean isCritical();       // 是否暴击
+    void setDamage(double d);   // 修改最终伤害
+    void setCancelled(boolean c); // 取消伤害
+    boolean isCancelled();      // 是否已取消
+}
+```
+
+**使用示例：**
+
+```java
+SF sf = SF.sf();
+DamageSystem ds = sf.damage();
+
+// 关闭 PvP
+ds.setPvpEnabled(false);
+
+// 按世界关闭 PvP
+ds.setPvpEnabled(world.getUID(), false);
+
+// 摔伤减半
+ds.setDamageMultiplier(DamageCause.FALL, 0.5);
+
+// 30% 护甲穿透
+ds.setArmorPenetration(0.3);
+
+// 注册自定义伤害修改器（高优先级）
+ds.registerDamageModifier("boss_resist", 100, (ctx, dmg) -> {
+    if (ctx.victim() instanceof Boss) {
+        return dmg * 0.7; // Boss 受到 30% 减伤
+    }
+    return dmg;
+});
+
+// 对特定玩家固定伤害
+ds.setCustomDamage(attacker, victim, 50.0);
+```
+
+---
+
+### 方块/挖掘操控
+
+`BlockControl` — 修改原版方块的挖掘速度、爆炸抗性、掉落物等。
+
+| 方法 | 说明 |
+|------|------|
+| `setBreakSpeed(material, speed)` | 设置挖掘速度倍率 |
+| `getBreakSpeed(material)` | 获取挖掘速度 |
+| `resetBreakSpeed(material)` | 重置挖掘速度 |
+| `setBlastResistance(material, resistance)` | 设置爆炸抗性 |
+| `getBlastResistance(material)` | 获取爆炸抗性 |
+| `resetBlastResistance(material)` | 重置爆炸抗性 |
+| `setDrop(material, drop, chance)` | 设置自定义掉落物和概率 |
+| `getDrop(material)` | 获取自定义掉落物 |
+| `resetDrop(material)` | 重置掉落物 |
+| `setExpDrop(material, minExp, maxExp)` | 设置经验掉落范围 |
+| `resetExpDrop(material)` | 重置经验掉落 |
+| `registerBreakHandler(material, handler)` | 注册方块破坏处理器 |
+| `unregisterBreakHandler(material)` | 移除方块破坏处理器 |
+| `setRequireTool(material, requireTool)` | 设置是否需要工具才能挖掘 |
+| `isRequireTool(material)` | 查询是否需要工具 |
+| `setReplaceOnBreak(material, replaceWith)` | 破坏后替换为其他方块 |
+| `cancelBlockUpdate(location, radius)` | 取消区域内的方块更新 |
+| `getModifiedBreakSpeeds()` | 获取所有已修改的挖掘速度 |
+| `getModifiedBlastResistances()` | 获取所有已修改的爆炸抗性 |
+
+**使用示例：**
+
+```java
+SF sf = SF.sf();
+BlockControl bc = sf.block();
+
+// 钻石矿挖掘速度减半
+bc.setBreakSpeed(Material.DIAMOND_ORE, 0.5f);
+
+// 圆石掉落钻石（10% 概率）
+bc.setDrop(Material.STONE, new ItemStack(Material.DIAMOND), 0.1f);
+
+// 煤矿掉落 1~3 经验
+bc.setExpDrop(Material.COAL_ORE, 1, 3);
+
+// 黑曜石必须用镐子挖
+bc.setRequireTool(Material.OBSIDIAN, true);
+
+// 破坏草方块后替换为泥土
+bc.setReplaceOnBreak(Material.GRASS_BLOCK, Material.DIRT);
+
+// 注册自定义破坏处理器
+bc.registerBreakHandler(Material.SPAWNER, (player, block) -> {
+    if (!player.hasPermission("server.mine.spawner")) {
+        player.sendMessage("§c你没有权限破坏刷怪笼！");
+        return false; // 取消破坏
+    }
+    return true; // 允许破坏
+});
+```
+
+---
+
+### 实体生成操控
+
+`SpawnControl` — 控制原版怪物生成规则、概率、上限、黑名单。
+
+| 方法 | 说明 |
+|------|------|
+| `createRule(name, type, chance, maxPerChunk, worlds)` | 创建生成规则 |
+| `registerRule(rule)` | 注册生成规则 |
+| `unregisterRule(name)` | 移除生成规则 |
+| `getRule(name)` | 获取生成规则 |
+| `allRules()` | 获取全部生成规则 |
+| `blacklistEntity(type, worlds)` | 将实体加入世界黑名单 |
+| `unblacklistEntity(type, worlds)` | 从黑名单移除 |
+| `isBlacklisted(type, worldName)` | 查询是否在黑名单中 |
+| `setSpawnCap(worldId, type, cap)` | 设置世界内实体生成上限 |
+| `getSpawnCap(worldId, type)` | 获取生成上限 |
+| `registerSpawnFilter(filter)` | 注册实体类型过滤器 |
+| `unregisterSpawnFilter(filter)` | 移除实体类型过滤器 |
+| `registerLocationFilter(filter)` | 注册生成位置过滤器 |
+| `unregisterLocationFilter(filter)` | 移除生成位置过滤器 |
+| `forceSpawn(type, location, count)` | 强制在指定位置生成实体 |
+| `clearEntities(worldId, type)` | 清除世界内指定类型实体 |
+| `getEntityCounts(worldId)` | 获取世界内各实体数量统计 |
+
+**SpawnRule 接口：**
+
+```java
+public interface SpawnRule {
+    String name();              // 规则名称
+    EntityType type();          // 实体类型
+    double chance();            // 生成概率 (0~1)
+    int maxPerChunk();          // 每区块最大数量
+    List<String> worlds();      // 生效世界列表
+    boolean enabled();          // 是否启用
+    void setChance(double c);   // 修改概率
+    void setMaxPerChunk(int max); // 修改上限
+    void setEnabled(boolean e); // 启用/禁用
+}
+```
+
+**使用示例：**
+
+```java
+SF sf = SF.sf();
+SpawnControl sc = sf.spawn();
+
+// 创建僵尸生成规则：50% 概率，每区块最多 10 只，仅在 world 生效
+SpawnRule rule = sc.createRule("zombie_rule", EntityType.ZOMBIE, 0.5, 10, List.of("world"));
+sc.registerRule(rule);
+
+// 在主世界禁止苦力怕生成
+sc.blacklistEntity(EntityType.CREEPER, List.of("world"));
+
+// 设置世界内最多 20 只骷髅
+sc.setSpawnCap(world.getUID(), EntityType.SKELETON, 20);
+
+// 注册类型过滤器：禁止所有 boss 类型生成
+sc.registerSpawnFilter(type -> {
+    return type != EntityType.WITHER && type != EntityType.ENDER_DRAGON;
+});
+
+// 注册位置过滤器：出生点 100 格内不生成怪物
+sc.registerLocationFilter((type, loc) -> {
+    return loc.distance(loc.getWorld().getSpawnLocation()) > 100;
+});
+
+// 强制生成 5 只僵尸
+sc.forceSpawn(EntityType.ZOMBIE, location, 5);
+
+// 查看世界实体统计
+Map<EntityType, Integer> counts = sc.getEntityCounts(world.getUID());
+counts.forEach((type, count) -> System.out.println(type + ": " + count));
+```
+
+---
+
+### 资源包管理
+
+`ResourcePackManager` — 管理服务器资源包、自定义模型数据、音乐播放。
+
+| 方法 | 说明 |
+|------|------|
+| `create(name, url, hash, forced, promptMessage)` | 创建资源包定义 |
+| `register(pack)` | 注册资源包 |
+| `unregister(name)` | 移除资源包 |
+| `get(name)` | 获取资源包 |
+| `all()` | 获取全部资源包 |
+| `send(player, name)` | 向玩家发送指定资源包 |
+| `send(player, pack)` | 向玩家发送资源包对象 |
+| `sendAll(player)` | 向玩家发送所有资源包 |
+| `sendAll(player, onComplete)` | 发送所有资源包，完成后回调 |
+| `setCustomModelData(itemId, modelData, texturePath)` | 设置物品自定义模型数据 |
+| `getCustomModelData(itemId)` | 获取自定义模型数据 |
+| `registerMusic(id, soundName, durationTicks)` | 注册自定义音乐 |
+| `playMusic(player, id)` | 为玩家播放指定音乐 |
+| `stopMusic(player)` | 停止玩家所有音乐 |
+| `playMusicAll(id)` | 全服播放音乐 |
+| `stopMusicAll()` | 全服停止音乐 |
+| `setDefaultPack(pack)` | 设置默认资源包 |
+| `getDefaultPack()` | 获取默认资源包 |
+
+**ResourcePack 接口：**
+
+```java
+public interface ResourcePack {
+    String name();           // 资源包名称
+    String url();            // 下载地址
+    byte[] hash();           // SHA1 哈希
+    boolean forced();        // 是否强制
+    String promptMessage();  // 提示消息
+}
+```
+
+**使用示例：**
+
+```java
+SF sf = SF.sf();
+ResourcePackManager rpm = sf.resourcePack();
+
+// 注册资源包
+ResourcePack pack = rpm.create(
+    "sf_textures",
+    "https://example.com/pack.zip",
+    hashBytes,
+    true,
+    "§a请安装资源包以获得最佳体验"
+);
+rpm.register(pack);
+rpm.setDefaultPack(pack);
+
+// 玩家进服自动发送
+@EventHandler
+public void onJoin(PlayerJoinEvent e) {
+    rpm.send(e.getPlayer(), "sf_textures");
+}
+
+// 注册自定义音乐
+rpm.registerMusic("boss_fight", "music.boss_fight", 1200);
+
+// 播放音乐
+rpm.playMusic(e.getPlayer(), "boss_fight");
+
+// 全服停止音乐
+rpm.stopMusicAll();
+
+// 设置自定义模型数据
+rpm.setCustomModelData(Material.DIAMOND_SWORD.ordinal(), 100001, "items/sf_sword");
+```
+
+---
+
+## 🔐 权限列表
+
+### 默认权限
+
+以下权限默认所有玩家都拥有（无需手动赋予）：
+
+| 权限 | 说明 |
+|------|------|
+| `servermanagement.use` | 使用 `/servermanagement` 命令 |
+
+### 管理员权限
+
+| 权限 | 说明 | 默认 |
+|------|------|------|
+| `sf.admin.world` | 世界管理 `/sfworld` | OP |
+| `sf.admin.chat` | 聊天管理 `/sfchat` | OP |
+| `sf.admin.permission` | 权限管理 `/sfperm` | OP |
+| `sf.admin.enchant` | 附魔管理 `/sfenchant` | OP |
+| `sf.admin.item` | 物品管理 `/sfitem` | OP |
+| `sf.admin.perf` | 性能管理 `/sfperf` | OP |
+
+### 系统权限
+
+| 权限 | 说明 | 默认 |
+|------|------|------|
+| `servermanagement.reload` | 重载配置文件 | OP |
+
+### 推荐权限分配（LuckPerms）
+
+**默认组**（所有玩家）：
+```bash
+lp group default permission set servermanagement.use true
+```
+
+**管理员组**：
+```bash
+# 方法 1: 逐个赋予
+lp group admin permission set sf.admin.world true
+lp group admin permission set sf.admin.chat true
+lp group admin permission set sf.admin.permission true
+lp group admin permission set sf.admin.enchant true
+lp group admin permission set sf.admin.item true
+
+# 方法 2: 使用通配符（如果你的权限插件支持）
+lp group admin permission set sf.admin.* true
+lp group admin permission set sf.* true
+```
+
+### 通配符权限
+
+SF 支持以下通配符（需权限插件支持，如 LuckPerms）：
+
+| 通配符 | 包含 |
+|--------|------|
+| `sf.admin.*` | 所有 `sf.admin.xxx` 权限 |
+| `sf.*` | 所有 `sf.xxx` 权限 |
+
+---
+
+## ⚙️ 配置文件
+
+### 完整配置示例
+
+```yaml
+# ====== 数据库配置 ======
+database:
+  # 是否启用 MySQL（false 则使用 SQLite）
+  mysql:
+    enabled: false
+    host: localhost
+    port: 3306
+    database: minecraft
+    user: root
+    password: ""
+    prefix: "sf_"
+  # SQLite 配置（mysql.enabled=false 时使用）
+  sqlite:
+    file: data.db
+
+# ====== 传送系统配置 ======
+teleport:
+  # 冷却时间（秒），0 表示无冷却
+  cooldown:
+    spawn: 5
+    home: 5
+    warp: 5
+    back: 10
+    tpa: 10
+    tpahere: 10
+    tp: 0        # 管理员传送无冷却
+    tphere: 0
+  # 延迟传送（秒），0 表示立即传送
+  delay:
+    spawn: 3
+    home: 3
+    warp: 3
+    back: 3
+    tpa: 3
+    tpahere: 3
+  # TPA 请求超时（秒）
+  tpa:
+    timeout: 60
+```
+
+### 配置项详解
+
+#### `database.mysql.enabled`
+
+是否启用 MySQL。设为 `false` 则使用 SQLite。
+
+#### `database.mysql.host` / `port` / `database` / `user` / `password`
+
+MySQL 连接信息。`database` 是数据库名（需要预先创建）。
+
+#### `database.mysql.prefix`
+
+表名前缀。多服务器共用同一个数据库时有用：
+
+```yaml
+database:
+  mysql:
+    prefix: "sf_survival_"   # 表名会变成 sf_survival_homes 等
+```
+
+#### `database.sqlite.file`
+
+SQLite 数据库文件名。文件位于 `plugins/ZeroCkate_SFServerPlugin/` 目录下。
+
+#### `teleport.cooldown.*`
+
+传送命令的冷却时间（秒）。同一玩家在冷却时间内无法再次使用该命令。
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `spawn` | 5 | `/spawn` 冷却 |
+| `home` | 5 | `/home` 冷却 |
+| `warp` | 5 | `/warp` 冷却 |
+| `back` | 10 | `/back` 冷却 |
+| `tpa` | 10 | `/tpa` 冷却 |
+| `tpahere` | 10 | `/tpahere` 冷却 |
+| `tp` | 0 | `/tp` 冷却（管理员） |
+| `tphere` | 0 | `/tphere` 冷却（管理员） |
+
+> 💡 拥有 `sf.teleport.bypass` 权限的玩家可以跳过冷却。
+
+#### `teleport.delay.*`
+
+传送延迟（秒）。玩家执行命令后不会立即传送，而是等待指定秒数。期间移动会取消传送。
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `spawn` | 3 | `/spawn` 延迟 |
+| `home` | 3 | `/home` 延迟 |
+| `warp` | 3 | `/warp` 延迟 |
+| `back` | 3 | `/back` 延迟 |
+| `tpa` | 3 | `/tpa` 接受后延迟 |
+| `tpahere` | 3 | `/tpahere` 接受后延迟 |
+
+> 💡 设为 `0` 表示立即传送（无延迟）。
+
+#### `teleport.tpa.timeout`
+
+TPA 请求超时时间（秒）。请求发出后，对方在指定时间内未响应则自动失效。
+
+### 修改配置后
+
+修改 `config.yml` 后，执行以下命令热重载（无需重启服务器）：
+
+```
+/servermanagement reload
+# 或
+/sm reload
+```
+
+### 常见配置场景
+
+**场景 1：关闭所有冷却（休闲服）**
+
+```yaml
+teleport:
+  cooldown:
+    spawn: 0
+    home: 0
+    warp: 0
+    back: 0
+    tpa: 0
+    tpahere: 0
+```
+
+**场景 2：长冷却防滥用（生存服）**
+
+```yaml
+teleport:
+  cooldown:
+    spawn: 30
+    home: 30
+    warp: 30
+    back: 60
+    tpa: 60
+    tpahere: 60
+  delay:
+    spawn: 5
+    home: 5
+    warp: 5
+    back: 5
+    tpa: 5
+    tpahere: 5
+```
+
+**场景 3：多服务器共享数据库**
+
+```yaml
+# 服务器 A（生存服）
+database:
+  mysql:
+    enabled: true
+    host: db.example.com
+    port: 3306
+    database: mc_network
+    user: mc_user
+    password: "xxx"
+    prefix: "sf_survival_"
+
+# 服务器 B（小游戏服）—— 仅 prefix 不同
+database:
+  mysql:
+    enabled: true
+    host: db.example.com
+    port: 3306
+    database: mc_network
+    user: mc_user
+    password: "xxx"
+    prefix: "sf_minigame_"
+```
+
+**场景 4：纯立即传送（无延迟）**
+
+```yaml
+teleport:
+  delay:
+    spawn: 0
+    home: 0
+    warp: 0
+    back: 0
+    tpa: 0
+    tpahere: 0
+```
+
+---
+
+## 💻 开发者 API
+
+SF 插件通过 Bukkit `ServicesManager` 对外暴露 `SFApi` 接口，其他插件可以通过它调用 SF 的所有功能。
+
+### Maven 依赖
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.zmb96</groupId>
+        <artifactId>ZeroCkate_ServerManagementPlugin</artifactId>
+        <version>main-SNAPSHOT</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+repositories {
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    compileOnly("com.github.zmb96:ZeroCkate_ServerManagementPlugin:main-SNAPSHOT")
+}
+```
+
+> ⚠️ 使用 `provided` / `compileOnly` 作用域，不要把 SF 打包进你的 jar。
+
+### 在 plugin.yml 中声明依赖
+
+```yaml
+name: MyPlugin
+version: 1.0.0
+main: com.example.myplugin.MyPlugin
+api-version: '1.21.5'
+
+# 声明依赖（让 SF 先加载）
+depend: [ZeroCkate_SFServerPlugin]
+# 或者软依赖（SF 不存在也能加载）
+softdepend: [ZeroCkate_SFServerPlugin]
+```
+
+- 用 `depend`：你的插件**强依赖** SF，SF 必须存在才能启用
+- 用 `softdepend`：你的插件**软依赖** SF，SF 不存在时降级运行
+
+### API 接口文档
+
+#### 接口概览
+
+```java
+package server.sf.model.api.v2;
+
+public interface SFApi {
+    // 子模块访问器
+    SFLogger logger();
+    SFEconomy economy();
+    SFEvents events();
+    SFScheduler scheduler();
+    SFPlayerOps players();
+    SFServerOps server();
+    TickManager tick();
+    ChatManager chat();
+    WorldManager world();
+    PermissionManager permission();
+    Database database();
+
+    // 日志快捷方法
+    void info(String msg);
+    void info(String fmt, Object... args);
+    void warn(String msg);
+    void warn(String fmt, Object... args);
+    void error(String msg);
+    void error(String msg, Throwable t);
+    void error(String fmt, Object... args);
+
+    // 聊天/广播
+    void broadcast(String msg);
+    void broadcast(String perm, String msg);
+    void msg(CommandSender sender, String msg);
+
+    // 玩家查找
+    Player player(String name);
+    Player player(UUID id);
+
+    // 经济系统（便捷方法）
+    boolean giveMoney(OfflinePlayer p, double amount);
+    boolean takeMoney(OfflinePlayer p, double amount);
+    boolean setMoney(OfflinePlayer p, double amount);
+    double balance(OfflinePlayer p);
+    boolean transferMoney(OfflinePlayer from, OfflinePlayer to, double amount);
+    String formatMoney(double amount);
+
+    // 传送
+    boolean teleport(Player p, Location loc);
+
+    // 调度
+    void run(Runnable r);                  // 主线程同步
+    void runAsync(Runnable r);             // 异步
+    void runLater(Runnable r, long ticks); // 延迟
+    void runTimer(Runnable r, long delay, long period);  // 定时
+
+    // 控制台
+    void console(String cmd);
+
+    // 获取 API 实例
+    static SFApi get();
+    static boolean isAvailable();
+}
+```
+
+#### 获取 API 实例
+
+**方法 1：静态方法（推荐）**
+
+```java
+if (SFApi.isAvailable()) {
+    SFApi api = SFApi.get();
+    api.info("成功接入 SF API！");
+}
+```
+
+**方法 2：通过 ServicesManager**
+
+```java
+RegisteredServiceProvider<SFApi> rsp = getServer().getServicesManager().getRegistration(SFApi.class);
+if (rsp != null) {
+    SFApi api = rsp.getProvider();
+}
+```
+
+#### 子模块详解
+
+**SFLogger - 日志**
+
+```java
+SFLogger logger = api.logger();
+
+logger.info("普通信息");
+logger.info("格式化信息: %s 已上线", playerName);  // 支持 String.format
+logger.warn("警告信息");
+logger.error("错误信息");
+logger.error("错误带异常", exception);
+```
+
+**SFEconomy - 经济系统**
+
+```java
+SFEconomy eco = api.economy();
+
+// 状态查询
+eco.ready();              // 经济系统是否就绪
+eco.hasEssentials();      // 是否使用 EssentialsX 后端
+eco.hasVault();           // 是否使用 Vault 后端
+
+// 账户操作（OfflinePlayer 也支持）
+eco.hasAccount(player);
+eco.balance(player);
+eco.give(player, 100);
+eco.take(player, 50);
+eco.set(player, 1000);
+eco.transfer(playerA, playerB, 100);
+eco.format(100.5);        // 格式化为字符串
+
+// 直接访问后端
+eco.essentials();         // EssentialsBackend 实例
+eco.vault();              // VaultBackend 实例
+eco.ops();                // EconomyOps 高级操作
+```
+
+**SFEvents - 事件系统**
+
+```java
+SFEvents events = api.events();
+
+// 通用方法（任意 Bukkit 事件）
+events.on(PlayerJoinEvent.class, e -> {
+    api.broadcast("欢迎 " + e.getPlayer().getName());
+});
+
+// 分类快捷方法
+events.player().join(e -> { ... });
+events.player().quit(e -> { ... });
+events.player().chat(e -> { ... });
+events.player().death(e -> { ... });
+events.player().move(e -> { ... });
+
+events.block().break_(e -> { ... });
+events.block().place(e -> { ... });
+
+events.entity().damage(e -> { ... });
+events.entity().death(e -> { ... });
+
+events.inventory().click(e -> { ... });
+
+events.server().command(e -> { ... });
+events.world().load(e -> { ... });
+
+// 支持指定优先级
+events.on(PlayerChatEvent.class, EventPriority.HIGH, true, e -> {
+    // HIGH 优先级，忽略已取消的事件
+});
+
+// 卸载所有监听器
+events.unregisterAll();
+```
+
+**SFScheduler - 调度**
+
+```java
+SFScheduler scheduler = api.scheduler();
+
+// 主线程同步执行
+scheduler.run(() -> {
+    player.sendMessage("在主线程执行");
+});
+
+// 异步执行（不要在异步中调用 Bukkit API！）
+scheduler.runAsync(() -> {
+    // 数据库查询、HTTP 请求等
+});
+
+// 延迟执行（20 ticks = 1 秒）
+scheduler.runLater(() -> {
+    player.sendMessage("1 秒后执行");
+}, 20L);
+
+// 定时执行
+scheduler.runTimer(() -> {
+    api.broadcast("每 5 秒广播一次");
+}, 0L, 100L);  // delay=0, period=100 ticks
+```
+
+**SFPlayerOps - 玩家查找**
+
+```java
+SFPlayerOps players = api.players();
+
+Player p1 = players.byName("Notch");
+Player p2 = players.byId(uuid);
+```
+
+**SFServerOps - 服务器操作**
+
+```java
+SFServerOps server = api.server();
+
+server.server();                  // 获取 Bukkit Server
+server.broadcast("全服广播");
+server.broadcast("permission.node", "只有特定权限的玩家能看到");
+server.msg(sender, "发送消息给 sender");
+```
+
+**TickManager - SF Tick 系统**
+
+```java
+TickManager tick = api.tick();
+
+tick.runLater(sfTick -> { ... }, 100);        // 1秒后执行
+tick.runTimer(sfTick -> { ... }, 100);         // 每秒执行
+tick.runTimer(sfTick -> { ... }, 200, 100);    // 延迟2秒后每秒执行
+tick.cancel(taskId);                           // 取消任务
+tick.now();                                    // 当前 tick
+tick.toSeconds(500);                           // 5
+tick.fromSeconds(30);                          // 3000
+tick.runSync(() -> { ... });                   // 切回主线程
+tick.runSyncLater(() -> { ... }, 100);         // 1秒后切回主线程
+```
+
+**ChatManager - 聊天系统**
+
+`ChatManager` 提供多频道聊天、禁言、屏蔽词过滤、消息格式化等功能。通过 `SF.sf().chat()` 获取实例。
+
+#### 频道管理 API
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `registerChannel(ChatChannel)` | 频道对象 | `void` | 注册新频道 |
+| `unregisterChannel(String)` | 频道名 | `void` | 删除频道 |
+| `getChannel(String)` | 频道名 | `ChatChannel` | 按名称获取频道 |
+| `getChannel(Player)` | 玩家 | `ChatChannel` | 获取玩家当前所在频道 |
+| `setChannel(Player, String)` | 玩家, 频道名 | `void` | 切换玩家频道 |
+| `allChannels()` | — | `Collection<ChatChannel>` | 获取所有已注册频道 |
+
+#### ChatChannel 构造
+
+```java
+new ChatManager.ChatChannel(name, prefix, range, cooldownTicks)
+```
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `name` | `String` | 频道唯一标识（不区分大小写） |
+| `prefix` | `String` | 频道前缀，支持颜色代码，如 `"§7[§6交易§7] "` |
+| `range` | `Double` | `null` = 全局频道；`100.0` = 同世界 100 格内可见 |
+| `cooldownTicks` | `long` | 发言冷却（SF Tick，100 = 1 秒，0 = 无冷却） |
+
+#### 禁言 API
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `mute(Player, long, String)` | 玩家, 秒数, 原因 | `void` | 禁言，秒数 ≤ 0 为永久 |
+| `unmute(Player)` | 玩家 | `void` | 解除禁言 |
+| `isMuted(Player)` | 玩家 | `boolean` | 是否被禁言（过期自动清除） |
+| `muteReason(Player)` | 玩家 | `String` | 获取禁言原因（未禁言返回 `null`） |
+| `muteRemaining(Player)` | 玩家 | `long` | 剩余禁言秒数（永久禁言返回 `Long.MAX_VALUE`） |
+
+> 禁言基于 SF Tick 系统，服务器重启后禁言状态会丢失（内存存储）。
+
+#### 屏蔽词 API
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `addBlockedWord(String)` | 词语 | `void` | 添加屏蔽词（不区分大小写） |
+| `removeBlockedWord(String)` | 词语 | `void` | 移除屏蔽词 |
+| `blockedWords()` | — | `Set<String>` | 获取所有屏蔽词 |
+| `filterMessage(String)` | 原始消息 | `String` | 过滤消息中的屏蔽词（替换为 `*`） |
+
+#### 消息格式化 API
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `format(Player, String)` | 玩家, 消息 | `String` | 格式化消息，自动读取权限系统的前缀后缀 |
+
+默认格式模板：`<{prefix}{name}{suffix}> {message}`
+
+可通过反射修改 `defaultFormat.template` 来自定义：
+
+```java
+ChatManager chat = SF.sf().chat();
+chat.getDefaultFormat().template = "{prefix}{name}§7: {message}";
+```
+
+#### 收件人获取 API
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `getRecipients(Player, ChatChannel)` | 发送者, 频道 | `Collection<Player>` | 根据频道范围获取可见玩家列表 |
+
+全局频道返回所有在线玩家；范围频道返回同世界指定距离内的玩家。
+
+#### 内置频道
+
+| 频道名 | 前缀 | 范围 | 说明 |
+|--------|------|------|------|
+| `global` | `§7[§a全§7] ` | 全局 | 默认频道，所有人可见 |
+| `local` | `§7[§e附近§7] ` | 100 格 | 同世界 100 格内可见 |
+| `staff` | `§7[§c管理§7] ` | 全局 | 管理员频道（需自行控制权限） |
+
+#### 完整使用示例
+
+```java
+ChatManager chat = SF.sf().chat();
+
+// ===== 频道管理 =====
+// 创建交易频道（全局可见，3秒冷却）
+chat.registerChannel(new ChatManager.ChatChannel(
+    "trade", "§7[§6交易§7] ", null, 300));
+
+// 创建同城频道（500格内可见）
+chat.registerChannel(new ChatManager.ChatChannel(
+    "city", "§7[§a同城§7] ", 500.0, 0));
+
+// 切换玩家频道
+chat.setChannel(player, "trade");
+
+// 获取玩家当前频道
+ChatManager.ChatChannel ch = chat.getChannel(player);
+SF.sf().info("玩家所在频道: " + ch.name + ", 前缀: " + ch.prefix);
+
+// 列出所有频道
+for (ChatManager.ChatChannel c : chat.allChannels()) {
+    SF.sf().info("频道: " + c.name + " 范围: " + c.range);
+}
+
+// 删除频道
+chat.unregisterChannel("city");
+
+// ===== 禁言 =====
+// 临时禁言 60 秒
+chat.mute(player, 60, "刷屏广告");
+
+// 永久禁言
+chat.mute(player, 0, "严重违规");
+
+// 检查禁言状态
+if (chat.isMuted(player)) {
+    SF.sf().info("已禁言，原因: " + chat.muteReason(player)
+        + "，剩余: " + chat.muteRemaining(player) + "秒");
+}
+
+// 解除禁言
+chat.unmute(player);
+
+// ===== 屏蔽词 =====
+// 添加屏蔽词
+chat.addBlockedWord("垃圾");
+chat.addBlockedWord("外挂");
+
+// 过滤消息
+String filtered = chat.filterMessage("你真垃圾，用外挂");  // 你真**，用**
+SF.sf().info(filtered);
+
+// 移除屏蔽词
+chat.removeBlockedWord("垃圾");
+
+// 获取所有屏蔽词
+Set<String> words = chat.blockedWords();
+SF.sf().info("当前屏蔽词: " + words);
+
+// ===== 消息格式化 =====
+// 自动读取权限系统前缀后缀
+String formatted = chat.format(player, "大家好");
+// 输出: <[VIP]玩家名> 大家好
+
+// ===== 获取收件人 =====
+ChatManager.ChatChannel channel = chat.getChannel(player);
+Collection<Player> recipients = chat.getRecipients(player, channel);
+for (Player r : recipients) {
+    r.sendMessage("收到消息");
+}
+```
+
+#### 第三方插件接入示例
+
+```java
+public class TradeChannelPlugin extends JavaPlugin {
+    @Override
+    public void onEnable() {
+        SF sf = getServer().getServicesManager().load(SF.class);
+        if (sf == null) return;
+
+        ChatManager chat = sf.chat();
+
+        // 注册交易频道
+        chat.registerChannel(new ChatManager.ChatChannel(
+            "trade", "§7[§6交易§7] ", null, 200));
+
+        // 注册切换频道命令
+        getCommand("trade").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            chat.setChannel(p, "trade");
+            p.sendMessage("§a已切换到交易频道");
+            return true;
+        });
+    }
+}
+```
+
+**WorldManager - 世界管理**
+
+```java
+WorldManager world = api.world();
+
+world.setDay(world);                    // 白天
+world.setNight(world);                  // 夜晚
+world.setTime(world, 6000);             // 自定义时间
+world.lockTime(world, 6000);            // 锁定时间
+world.unlockTime(world);                // 解锁
+
+world.setStorm(world, false);           // 晴天
+world.setThunder(world, true);          // 雷暴
+world.setDifficulty(world, Difficulty.HARD);
+world.setPvp(world, false);
+world.setBorder(world, 5000);           // 边界 5000 格
+world.setBorderCenter(world, 0, 0);
+world.setMobSpawning(world, false);
+world.setFireSpread(world, false);
+
+// 预设
+world.savePreset("survival", world);
+world.applyPreset("survival", world);
+```
+
+**PermissionManager - 权限系统**
+
+```java
+PermissionManager perm = api.permission();
+
+// 组管理
+perm.registerGroup(new PermissionManager.Group("vip", "§a[VIP] ", "", 10));
+perm.getGroup("vip");
+perm.allGroups();
+
+// 玩家权限
+perm.setGroup(player, "vip");
+perm.getGroup(player);                  // 获取玩家所在组
+perm.getPrefix(player);                 // 获取前缀
+perm.getSuffix(player);                 // 获取后缀
+perm.addPermission(player, "my.perm");
+perm.removePermission(player, "my.perm");
+perm.has(player, "my.perm");            // 检查权限
+perm.getEffectivePermissions(player);   // 获取所有有效权限
+perm.applyPermissions(player);          // 重新应用权限
+```
+
+**EnchantManager - 附魔系统**
+
+```java
+EnchantManager enchant = ((SF) api).enchant();
+
+enchant.register(new MyEnchant());
+enchant.get("my_enchant");
+enchant.all();
+enchant.apply(item, "my_enchant", 2);   // 给物品附魔
+enchant.remove(item, "my_enchant");
+enchant.getEnchants(item);              // 获取物品上的所有附魔
+
+// 附魔书操作
+enchant.createBook("my_enchant");              // 创建满级附魔书
+enchant.createBook("my_enchant", 2);           // 创建指定等级附魔书
+enchant.createBook(enchantObj, 3);             // 传 SEnchantment 对象
+enchant.giveBook(player, "my_enchant");        // 给予满级附魔书
+enchant.giveBook(player, "my_enchant", 2);     // 给予指定等级附魔书
+```
+
+**ItemManager - 物品系统**
+
+```java
+ItemManager item = ((SF) api).item();
+
+item.register(new MyItem());
+item.get("my_item");
+item.all();
+
+// 给予/创建
+item.give(player, "my_item");
+item.give(player, "my_item", 5);
+item.create("my_item");
+item.create("my_item", 3);
+
+// 检查/消耗
+item.has(player, "my_item");
+item.count(player, "my_item");
+item.consume(player, "my_item");
+item.consume(player, "my_item", 3);
+item.find(player, "my_item");           // 查找玩家背包中的物品数量
+```
+
+#### 异常处理
+
+所有 API 方法都会捕获内部异常并通过 logger 输出，不会抛出异常中断调用方代码。
+
+但 `SFApi.get()` 在 API 未注册时会抛出 `IllegalStateException`，建议先检查：
+
+```java
+if (!SFApi.isAvailable()) {
+    getLogger().warning("SF API 不可用，相关功能已禁用");
+    return;
+}
+SFApi api = SFApi.get();
+```
+
+#### 线程安全
+
+| 方法 | 线程安全 | 说明 |
+|------|----------|------|
+| `logger.*` | ✅ | 完全线程安全 |
+| `economy.balance/give/take/set/transfer` | ⚠️ | 读取可异步，写入建议主线程 |
+| `economy.format` | ✅ | 纯计算 |
+| `events.on/register` | ⚠️ | 必须主线程调用 |
+| `scheduler.runAsync` | ✅ | 任何线程可调用 |
+| `scheduler.run/runLater/runTimer` | ⚠️ | 必须主线程调用 |
+| `tick.runLater/runTimer` | ✅ | 独立线程，线程安全 |
+| `tick.runSync/runSyncLater` | ⚠️ | 从 tick 线程切回主线程 |
+| `teleport` | ⚠️ | 必须主线程调用 |
+| `broadcast/msg` | ⚠️ | 必须主线程调用 |
+| `chat.mute/unmute/isMuted` | ✅ | 线程安全 |
+| `permission.setGroup/addPermission` | ⚠️ | 必须主线程调用 |
+| `world.*` | ⚠️ | 必须主线程调用 |
+
+> 💡 不确定时，用 `api.run(() -> { ... })` 包裹代码确保主线程执行。
+
+#### 版本兼容
+
+API 遵循语义化版本：
+
+- **Major**（如 v2 → v3）：破坏性变更
+- **Minor**（如 v2.1 → v2.2）：新增功能，向后兼容
+- **Patch**（如 v2.1.1 → v2.1.2）：Bug 修复
+
+当前 API 版本：**v3**
+
+包名 `server.sf.model.api.v2` 中的 `v2` 即为 Major 版本号。未来如有破坏性变更会新增 `v3` 包并保留 `v2`。
+
+### API 接入示例
+
+#### 最简单的用法
+
+```java
+package com.example.myplugin;
+
+import org.bukkit.plugin.java.JavaPlugin;
+import server.sf.model.api.v2.SFApi;
+
+public class MyPlugin extends JavaPlugin {
+
+    @Override
+    public void onEnable() {
+        if (!SFApi.isAvailable()) {
+            getLogger().warning("SF API 不可用，相关功能已禁用");
+            return;
+        }
+
+        SFApi api = SFApi.get();
+        api.info("MyPlugin 已接入 SF API！");
+    }
+}
+```
+
+#### 缓存 API 实例
+
+```java
+public class MyPlugin extends JavaPlugin {
+
+    private SFApi sf;
+
+    @Override
+    public void onEnable() {
+        if (SFApi.isAvailable()) {
+            sf = SFApi.get();
+            sf.info("MyPlugin 已接入 SF API");
+        } else {
+            getLogger().warning("SF API 不可用");
+        }
+    }
+
+    public SFApi sf() {
+        return sf;
+    }
+}
+```
+
+#### 示例 1：登录奖励
+
+玩家登录时给予 100 金币并广播欢迎消息。
+
+```java
+import org.bukkit.event.Listener;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerJoinEvent;
+import server.sf.model.api.v2.SFApi;
+
+public class LoginBonusListener implements Listener {
+
+    private final SFApi sf;
+
+    public LoginBonusListener(SFApi sf) {
+        this.sf = sf;
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        sf.run(() -> {
+            boolean ok = sf.giveMoney(e.getPlayer(), 100);
+            if (ok) {
+                sf.msg(e.getPlayer(), "§a登录奖励：100 金币");
+            }
+        });
+
+        sf.broadcast("§e" + e.getPlayer().getName() + " §a加入了服务器！");
+    }
+}
+```
+
+注册监听器：
+
+```java
+@Override
+public void onEnable() {
+    SFApi sf = SFApi.get();
+    getServer().getPluginManager().registerEvents(new LoginBonusListener(sf), this);
+}
+```
+
+#### 示例 2：自定义商店
+
+玩家右键牌子时扣钱给物品。
+
+```java
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import server.sf.model.api.v2.SFApi;
+
+public class SignShopListener implements Listener {
+
+    private final SFApi sf;
+
+    public SignShopListener(SFApi sf) {
+        this.sf = sf;
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (e.getClickedBlock() == null) return;
+
+        var sign = (org.bukkit.block.Sign) e.getClickedBlock().getState();
+        if (!sign.getLine(0).equals("[Shop]")) return;
+
+        double price = Double.parseDouble(sign.getLine(1));
+        var player = e.getPlayer();
+
+        if (sf.balance(player) < price) {
+            sf.msg(player, "§c金币不足，需要 " + sf.formatMoney(price));
+            return;
+        }
+
+        if (sf.takeMoney(player, price)) {
+            player.getInventory().addItem(new ItemStack(org.bukkit.Material.DIAMOND, 1));
+            sf.msg(player, "§a购买成功！剩余余额：" + sf.formatMoney(sf.balance(player)));
+        }
+    }
+}
+```
+
+#### 示例 3：定时全服公告
+
+每 10 分钟广播一次。
+
+```java
+@Override
+public void onEnable() {
+    SFApi sf = SFApi.get();
+
+    sf.runTimer(() -> {
+        sf.broadcast("§6===== 服务器公告 =====");
+        sf.broadcast("§a欢迎来到我们的服务器！");
+        sf.broadcast("§a输入 /sh 查看帮助");
+    }, 0L, 12000L);  // 12000 ticks = 10 分钟
+}
+```
+
+#### 示例 4：玩家死亡惩罚
+
+死亡时扣除 10% 金币。
+
+```java
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import server.sf.model.api.v2.SFApi;
+
+public class DeathPenaltyListener implements Listener {
+
+    private final SFApi sf;
+
+    public DeathPenaltyListener(SFApi sf) {
+        this.sf = sf;
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        var player = e.getEntity();
+        double balance = sf.balance(player);
+        if (balance <= 0) return;
+
+        double penalty = balance * 0.10;
+        sf.takeMoney(player, penalty);
+        sf.msg(player, "§c死亡惩罚：扣除 " + sf.formatMoney(penalty) + " 金币");
+    }
+}
+```
+
+#### 示例 5：使用 SF 的事件系统
+
+不用自己实现 Listener，直接用 SF 的链式 API。
+
+```java
+@Override
+public void onEnable() {
+    SFApi sf = SFApi.get();
+
+    sf.events()
+        .on(org.bukkit.event.player.PlayerJoinEvent.class, e -> {
+            sf.info("玩家加入：" + e.getPlayer().getName());
+        })
+        .on(org.bukkit.event.player.PlayerQuitEvent.class, e -> {
+            sf.info("玩家退出：" + e.getPlayer().getName());
+        })
+        .on(org.bukkit.event.entity.EntityDeathEvent.class, e -> {
+            if (e.getEntity() instanceof org.bukkit.entity.Player p) {
+                sf.broadcast("§c" + p.getName() + " 死了！");
+            }
+        });
+
+    sf.events().player().join(e -> {
+        sf.giveMoney(e.getPlayer(), 50);
+    });
+}
+```
+
+> 💡 注意：通过 `sf.events().on()` 注册的监听器由 SF 管理，**不需要** 再调用 `getServer().getPluginManager().registerEvents()`。
+
+#### 示例 6：异步数据库查询 + 主线程更新
+
+```java
+public void showStats(Player player) {
+    SFApi sf = SFApi.get();
+
+    sf.runAsync(() -> {
+        String stats = queryFromDatabase(player.getUniqueId());
+
+        sf.run(() -> {
+            sf.msg(player, "§6===== 你的统计数据 =====");
+            sf.msg(player, stats);
+        });
+    });
+}
+```
+
+#### 示例 7：跨插件传送
+
+```java
+public void teleportToLobby(Player player) {
+    SFApi sf = SFApi.get();
+
+    // 方法 1：直接传送（绕过冷却/延迟）
+    var lobbyLoc = new Location(Bukkit.getWorld("world"), 0, 64, 0);
+    sf.teleport(player, lobbyLoc);
+
+    // 方法 2：通过 TeleportManager 享受完整特性（冷却、延迟、防移动）
+    // 注意：这需要 SF 实现，且 teleportManager 已注册
+    // sf.teleport().teleportDelayed(player, lobbyLoc, "custom", 60);  // 3 秒延迟
+}
+```
+
+#### 示例 8：完整的工资系统
+
+```java
+package com.example.myplugin;
+
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+import server.sf.model.api.v2.SFApi;
+
+public class SalaryPlugin extends JavaPlugin {
+
+    private SFApi sf;
+
+    @Override
+    public void onEnable() {
+        if (!SFApi.isAvailable()) {
+            getLogger().severe("需要 SF 插件！");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        sf = SFApi.get();
+        sf.info("工资系统已启动");
+
+        sf.runTimer(this::paySalary, 0L, 28800L);  // 每 24 分钟
+    }
+
+    private void paySalary() {
+        for (var player : Bukkit.getOnlinePlayers()) {
+            double salary = 100;
+            if (player.isOp()) {
+                salary *= 1.5;
+            }
+
+            if (sf.giveMoney(player, salary)) {
+                sf.msg(player, "§a=========================");
+                sf.msg(player, "§a  日工资到账：" + sf.formatMoney(salary));
+                sf.msg(player, "§a  当前余额：" + sf.formatMoney(sf.balance(player)));
+                sf.msg(player, "§a=========================");
+            }
+        }
+        sf.info("日工资发放完成");
+    }
+}
+```
+
+#### 调试技巧
+
+**1. 检查 API 是否就绪**
+
+```java
+sf.info("Economy ready: " + sf.economy().ready());
+sf.info("Essentials: " + sf.economy().hasEssentials());
+sf.info("Vault: " + sf.economy().hasVault());
+sf.info("Database: " + server.sf.model.api.v2.database.DatabaseManager.ready());
+```
+
+**2. 安全调用**
+
+```java
+public void safeGiveMoney(Player p, double amount) {
+    sf.run(() -> {
+        try {
+            if (sf.economy().ready()) {
+                sf.giveMoney(p, amount);
+            } else {
+                sf.warn("经济系统未就绪，无法给 " + p.getName() + " 发钱");
+            }
+        } catch (Throwable t) {
+            sf.error("给钱失败", t);
+        }
+    });
+}
+```
+
+**3. 监听 SF 的状态**
+
+```java
+sf.events().server().pluginEnable(e -> {
+    if (e.getPlugin().getName().equals("Essentials")) {
+        sf.info("Essentials 已加载，经济系统可能可用");
+    }
+});
+```
+
+#### 扩展 SF 的传送系统
+
+通过 `api.teleport()` 访问 `TeleportManager`：
+
+```java
+SFApi api = SFApi.get();
+TeleportManager tp = ((SF) api).teleport();
+
+tp.teleportNow(player, location, "myplugin");
+tp.teleportDelayed(player, location, "myplugin", 60);  // 3 秒延迟
+tp.back(player);
+```
+
+> ⚠️ 注意：`api.teleport()` 是 `SF` 实现类的方法，不在 `SFApi` 接口中。需要强转或直接使用 `SF.sf()`。
+
+---
+
+### 📦 箱子 GUI 系统（ChestGUI）
+
+ZeroEngine 3.2.1+ 提供纯 Java 的箱子 GUI 系统，无需 YAML 配置，链式调用构建交互式菜单。
+
+#### 核心 API
+
+```java
+public interface GUIManager {
+    ChestGUI create();
+    ChestGUI create(String title, int rows);
+    ChestGUI create(String title, int rows, boolean readonly);
+    void closeAll();
+}
+```
+
+通过 `SFApi.gui()` 获取：
+
+```java
+GUIManager guiMgr = SF.sf().gui();
+ChestGUI myGui = guiMgr.create("我的菜单", 3);
+```
+
+#### ChestGUI 接口能力
+
+| 方法 | 说明 |
+|------|------|
+| `title(String)` | 设置标题 |
+| `rows(int)` / `size(int)` | 设置行数（1-6）或格数 |
+| `item(slot, ItemStack)` | 在指定格子放物品 |
+| `item(slot, ItemStack, onClick)` | 放物品并绑定点击回调 |
+| `item(row, col, ...)` | 按行列坐标放置 |
+| `fill(ItemStack)` | 填充所有空位 |
+| `border(ItemStack)` | 填充边框 |
+| `fillRange(start, end, ItemStack)` | 填充指定范围 |
+| `clear(slot)` / `clear()` | 清除指定格 / 全部 |
+| `onOpen(Consumer<Player>)` | 打开回调 |
+| `onClose(Consumer<Player>)` | 关闭回调 |
+| `onAnyClick(Consumer<ClickContext>)` | 任意点击回调 |
+| `readonly(boolean)` | 是否禁止拿取物品（默认 true） |
+| `pagination(items, perPage)` | 分页显示物品列表 |
+| `page(int)` / `nextPage()` / `prevPage()` | 翻页 |
+| `refresh()` / `refresh(Player)` | 刷新界面 |
+| `open(Player)` / `close(Player)` / `closeAll()` | 打开/关闭 |
+
+#### ClickContext
+
+```java
+interface ClickContext {
+    Player player();          // 点击的玩家
+    int slot();               // 原始槽位
+    int row();                // 行（0-5）
+    int col();                // 列（0-8）
+    ItemStack cursor();       // 鼠标上的物品
+    ItemStack current();      // 被点击的物品
+    boolean isShiftClick();   // 是否 Shift 点击
+    boolean isRightClick();   // 是否右键
+    ClickType type();         // 点击类型枚举
+    ChestGUI gui();           // 所属 GUI
+}
+```
+
+#### 完整示例：服务器选择菜单
+
+```java
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import server.sf.model.api.v3.SF;
+import server.sf.model.api.v3.feature.gui.ChestGUI;
+import server.sf.model.api.v3.feature.gui.GUIManager;
+
+public class ServerMenu {
+
+    public static void open(Player player) {
+        GUIManager mgr = SF.sf().gui();
+
+        ChestGUI gui = mgr.create("§8» §b选择服务器 §8«", 3);
+
+        // 边框
+        gui.border(Material.GRAY_STAINED_GLASS_PANE, " ");
+
+        // 生存服
+        gui.item(1, 2, Material.GRASS_BLOCK, "§a生存服", ctx -> {
+            player.sendMessage("§a正在传送到生存服...");
+            player.performCommand("server survival");
+            ctx.gui().close(player);
+        }, "§7点击进入", "§7在线: 42人");
+
+        // 小游戏服
+        gui.item(1, 4, Material.DIAMOND_SWORD, "§b小游戏服", ctx -> {
+            player.sendMessage("§b正在传送到小游戏服...");
+            player.performCommand("server games");
+            ctx.gui().close(player);
+        }, "§7点击进入", "§7在线: 18人");
+
+        // 创造服
+        gui.item(1, 6, Material.BRICKS, "§e创造服", ctx -> {
+            player.sendMessage("§e正在传送到创造服...");
+            player.performCommand("server creative");
+            ctx.gui().close(player);
+        }, "§7点击进入", "§7在线: 7人");
+
+        // 关闭按钮
+        gui.item(2, 4, Material.BARRIER, "§c关闭菜单", ctx -> {
+            ctx.gui().close(player);
+        });
+
+        gui.onClose(p -> p.sendMessage("§7菜单已关闭"));
+
+        gui.open(player);
+    }
+}
+```
+
+#### 分页示例：物品浏览器
+
+```java
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import server.sf.model.api.v3.SF;
+import server.sf.model.api.v3.feature.gui.ChestGUI;
+import server.sf.model.api.v3.feature.gui.GUIManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ItemBrowser {
+
+    public static void open(Player player, List<ItemStack> allItems) {
+        GUIManager mgr = SF.sf().gui();
+
+        ChestGUI gui = mgr.create("§8物品浏览器 §7(第1页)", 6);
+        gui.readonly(true);
+
+        // 分页：每页 45 格（前5行），最后一行放导航
+        gui.pagination(allItems, 45);
+
+        // 底部导航栏
+        gui.item(5, 0, Material.ARROW, "§a上一页", ctx -> {
+            if (gui.currentPage() > 0) {
+                gui.page(gui.currentPage() - 1);
+                gui.refresh(player);
+            }
+        });
+        gui.item(5, 8, Material.ARROW, "§a下一页", ctx -> {
+            if (gui.currentPage() < gui.totalPages() - 1) {
+                gui.page(gui.currentPage() + 1);
+                gui.refresh(player);
+            }
+        });
+        gui.item(5, 4, Material.BARRIER, "§c关闭", ctx -> {
+            ctx.gui().close(player);
+        });
+
+        gui.open(player);
+    }
+}
+```
+
+#### 动态刷新示例
+
+```java
+// 创建一个可动态刷新的商店界面
+ChestGUI shop = SF.sf().gui().create("§6商店", 3);
+
+// 放置商品（价格随时可变）
+shop.item(1, 1, Material.IRON_INGOT, "§f铁锭 §7(10金币)", ctx -> {
+    if (SF.sf().takeMoney(ctx.player(), 10)) {
+        ctx.player().getInventory().addItem(new ItemStack(Material.IRON_INGOT, 1));
+        ctx.player().sendMessage("§a购买成功！");
+        shop.refresh(ctx.player());  // 刷新界面
+    } else {
+        ctx.player().sendMessage("§c金币不足！");
+    }
+});
+
+// 定时刷新价格
+SF.sf().runTimer(() -> {
+    shop.item(1, 1, Material.IRON_INGOT, "§f铁锭 §7(" + getRandomPrice() + "金币)");
+    shop.refresh();
+}, 0L, 1200L);  // 每60秒刷新一次
+```
+
+#### 要点
+
+- **纯 Java**：无 YAML，所有配置通过链式 API 完成
+- **readonly 模式**：默认开启，玩家无法拿走 GUI 中的物品
+- **自动事件监听**：`GUIManager.create()` 内部自动注册 Listener
+- **自动清理**：玩家退出/关服时自动注销监听器、关闭界面
+- **线程安全**：支持多玩家同时打开同一个 GUI 实例
+- **分页内置**：`pagination()` 自动切页，配合 `prevPage()/nextPage()` 导航
+
+---
+
+### 玩法功能 API（v3 新增）
+
+v3 新增 4 大玩法模块，均通过 `SFApi` 暴露，采用接口 + 实现分离模式，懒加载（首次调用自动注册事件并启动 tick 线程）。
+
+| 玩法 | 入口方法 | 包路径 |
+|------|---------|--------|
+| 起床战争 | `api.bedwars()` | `server.sf.model.api.v3.feature.gameplay.bedwars` |
+| PVP 竞技 | `api.pvp()` | `server.sf.model.api.v3.feature.gameplay.pvp` |
+| 惊变尸潮 | `api.horde()` | `server.sf.model.api.v3.feature.gameplay.horde` |
+| 保卫村庄 | `api.villageDefense()` | `server.sf.model.api.v3.feature.gameplay.village` |
+
+> 💡 以下示例均假设已获取 API 实例：`SFApi api = SFApi.get();`
+
+#### 🛏️ 起床战争（Bedwars）
+
+**核心概念**：玩家分为多支队伍，每队拥有一张床。床被破坏后该队玩家死亡即淘汰，最后存活的队伍获胜。地图中设有资源生成器（铁锭/金锭/钻石/绿宝石），玩家用资源在商店购买装备。
+
+**枚举**
+
+```java
+Bedwars.GameState  // WAITING, COUNTDOWN, PLAYING, ENDING
+Bedwars.TeamColor  // RED, BLUE, GREEN, YELLOW, AQUA, WHITE, PINK, GRAY
+```
+
+**注册竞技场**
+
+```java
+Bedwars bw = api.bedwars();
+
+Map<Bedwars.TeamColor, Location> spawns = new HashMap<>();
+spawns.put(Bedwars.TeamColor.RED,   new Location(world, 100, 64, 0));
+spawns.put(Bedwars.TeamColor.BLUE,  new Location(world, -100, 64, 0));
+
+Map<Bedwars.TeamColor, Location> beds = new HashMap<>();
+beds.put(Bedwars.TeamColor.RED,  new Location(world, 105, 64, 5));
+beds.put(Bedwars.TeamColor.BLUE, new Location(world, -105, 64, 5));
+
+List<Map<String, Object>> generators = new ArrayList<>();
+Map<String, Object> ironGen = new HashMap<>();
+ironGen.put("location", new Location(world, 0, 65, 0));
+ironGen.put("material", Material.IRON_INGOT);
+ironGen.put("interval", 20); // 每 20 tick 掉落一次
+generators.add(ironGen);
+
+bw.registerArena(
+    "bw1",              // arenaId
+    "起床战争-1",        // 显示名
+    "world",            // 世界名
+    2,                  // 最少玩家
+    4,                  // 每队最大人数
+    spawns,             // 各队出生点
+    beds,               // 各队床位置
+    lobbyLoc,           // 等待大厅
+    spectatorLoc,       // 观战出生点
+    generators,         // 资源生成器配置
+    new ArrayList<>()   // 商店配置（可空）
+);
+```
+
+**玩家加入 / 离开**
+
+```java
+bw.join(player, "bw1", Bedwars.TeamColor.RED);  // 加入红队
+bw.leave(player);                                 // 离开游戏
+```
+
+**开始 / 结束游戏**
+
+```java
+bw.startCountdown("bw1", 10);        // 10 秒倒计时
+bw.forceStart("bw1");                 // 强制开始
+bw.forceEnd("bw1", TeamColor.RED);    // 强制结束，指定红队获胜（null = 平局）
+```
+
+**床破坏 & 方块保护**
+
+```java
+bw.breakBed(player, Bedwars.TeamColor.BLUE);  // 玩家破坏蓝队床
+bw.isProtected("bw1", x, y, z);               // 检查坐标是否受保护
+bw.placeBlock(player, x, y, z, Material.WOOL); // 放置方块（需在竞技场内）
+bw.breakBlock(player, x, y, z);                 // 破坏方块
+```
+
+**资源生成器控制**
+
+```java
+bw.dropGenerator("bw1", Bedwars.TeamColor.RED, Material.IRON_INGOT, 1, 40);
+// 在红队出生点附近每 40 tick 掉落 1 个铁锭
+
+bw.setResourceDrop(new Location(world, 0, 65, 0), Material.DIAMOND, 1);
+// 在指定位置设置资源掉落
+```
+
+**注册商店物品**
+
+```java
+bw.registerShopItem(
+    Material.IRON_SWORD,        // 图标
+    "铁剑",                      // 名称
+    10,                          // 价格
+    Material.IRON_INGOT,         // 货币类型
+    List.of(new ItemStack(Material.IRON_SWORD)),  // 奖励物品
+    p -> p.sendMessage("你购买了铁剑！")  // 购买回调
+);
+```
+
+**事件监听**
+
+```java
+bw.onEvent(e -> {
+    switch (e.type()) {
+        case GAME_START    -> api.broadcast("起床战争开始！");
+        case BED_BROKEN    -> {
+            Bedwars.TeamColor broken = (Bedwars.TeamColor) e.data();
+            api.broadcast(e.player().getName() + " 破坏了 " + broken.name + " 队的床！");
+        }
+        case PLAYER_DEATH  -> e.player().sendMessage("你死亡了");
+        case TEAM_ELIMINATED -> {
+            Bedwars.Team t = (Bedwars.Team) e.data();
+            api.broadcast(t.color().name + " 队被淘汰！");
+        }
+        case GAME_END      -> {
+            Bedwars.Team winner = (Bedwars.Team) e.data();
+            if (winner != null) api.broadcast(winner.color().name + " 队获胜！");
+        }
+    }
+});
+```
+
+**玩家统计**
+
+```java
+int kills     = bw.getKills(player, "bw1");
+int beds      = bw.getBedsBroken(player, "bw1");
+int deaths    = bw.getDeaths(player, "bw1");
+int wins      = bw.getWins(player, "bw1");
+bw.resetStats("bw1", player);  // 重置统计
+```
+
+---
+
+#### ⚔️ PVP 竞技（PvPArena）
+
+**核心概念**：支持多种对战模式（1v1、团队战、FFA、排位赛等），含 Kit 系统、ELO 等级、自动匹配队列。
+
+**枚举**
+
+```java
+PvPArena.GameState    // WAITING, COUNTDOWN, FIGHTING, ENDING
+PvPArena.Mode         // DUEL_1V1, TEAM_2V2, TEAM_3V3, TEAM_5V5, FFA, BATTLE_ROYALE, RANKED, PARTY
+PvPArena.MatchResult  // WIN_A, WIN_B, DRAW, CANCELLED
+```
+
+**注册竞技场**
+
+```java
+PvPArena pvp = api.pvp();
+
+pvp.registerArena(
+    "arena1",
+    "竞技场-1",
+    List.of(new Location(world, 50, 64, 0)),   // spawnsA 队A出生点
+    List.of(new Location(world, -50, 64, 0)),   // spawnsB 队B出生点
+    lobbyLoc,     // 等待大厅
+    specLoc,      // 观战点
+    10,           // 最大人数
+    List.of("DUEL_1V1", "TEAM_2V2", "FFA"),  // 允许的模式
+    false,        // 是否允许建造
+    false,        // 是否允许交互
+    30            // 比赛结束后重置秒数
+);
+```
+
+**注册 Kit（装备包）**
+
+```java
+pvp.registerKit(new PvPArena.Kit() {
+    @Override public String id() { return "warrior"; }
+    @Override public String name() { return "战士"; }
+    @Override public String permission() { return "sf.kit.warrior"; }
+    @Override public int price() { return 0; }
+    @Override public List<ItemStack> armor() {
+        return List.of(
+            new ItemStack(Material.IRON_HELMET),
+            new ItemStack(Material.IRON_CHESTPLATE),
+            new ItemStack(Material.IRON_LEGGINGS),
+            new ItemStack(Material.IRON_BOOTS)
+        );
+    }
+    @Override public List<ItemStack> inventory() {
+        return List.of(new ItemStack(Material.IRON_SWORD), new ItemStack(Material.GOLDEN_APPLE, 3));
+    }
+    @Override public List<String> effects() { return List.of("SPEED:1:600"); }
+    @Override public double healthScale() { return 20.0; }
+    @Override public double walkSpeed() { return 0.2; }
+});
+```
+
+**玩家加入 / 匹配**
+
+```java
+// 手动加入队伍
+pvp.joinTeamA(player, "arena1");
+pvp.joinTeamB(player, "arena1");
+pvp.joinFFA(player, "arena1");  // FFA 模式
+
+// 自动匹配队列
+pvp.queuePlayer(player, PvPArena.Mode.DUEL_1V1);
+pvp.dequeuePlayer(player);
+
+// 启动自动匹配器（定时检查队列并创建比赛）
+pvp.startAutoMatchmaking();
+pvp.setMatchmakerInterval(100); // 每 100 tick 检查一次
+
+// 设置 Kit
+pvp.setKit(player, "warrior");
+pvp.giveKit(player, "warrior");  // 直接发放 Kit 物品
+```
+
+**开始 / 结束比赛**
+
+```java
+pvp.startCountdown("arena1", 5);     // 5 秒倒计时
+pvp.forceStart("arena1");             // 强制开始
+pvp.forceEnd("arena1", PvPArena.MatchResult.WIN_A);  // 强制结束，A 队获胜
+```
+
+**击杀 / 死亡记录**
+
+```java
+PvPArena.Match m = pvp.matchOf(player);
+if (m != null) {
+    pvp.addKill(m, killer, victim);
+    pvp.addDeath(m, victim);
+    boolean pvpAllowed = pvp.isPvPAllowedInMatch(m);
+    pvp.damageMatchPlayer(m, attacker, victim, 10.0, EntityType.PLAYER);
+}
+```
+
+**ELO 等级系统**
+
+```java
+int elo = pvp.getElo(player);                    // 获取总 ELO
+int rankedElo = pvp.getElo(player, PvPArena.Mode.RANKED);  // 获取排位 ELO
+pvp.addElo(player, PvPArena.Mode.RANKED, 25);    // 增加 ELO
+pvp.setElo(player, PvPArena.Mode.RANKED, 1500);  // 设置 ELO
+
+PvPArena.Rank rank = pvp.getRank(elo);           // 获取段位
+// rank.tier(), rank.name(), rank.prefix(), rank.requiredElo()
+```
+
+**观战系统**
+
+```java
+pvp.registerSpectator(spectator, match);
+pvp.removeSpectator(spectator, match);
+List<Player> specs = pvp.spectators(match);
+```
+
+**事件监听**
+
+```java
+pvp.onEvent(e -> {
+    switch (e.type()) {
+        case START      -> api.broadcast("比赛开始！");
+        case KILL       -> {
+            Player killer = e.player();
+            Player victim = (Player) e.data();
+            api.broadcast(killer.getName() + " 击杀了 " + victim.getName());
+        }
+        case MATCH_END  -> {
+            PvPArena.MatchResult r = (PvPArena.MatchResult) e.data();
+            api.broadcast("比赛结束: " + r.name());
+        }
+        case ELO_CHANGE -> {
+            int newElo = (int) e.data();
+            e.player().sendMessage("你的 ELO 变更为: " + newElo);
+        }
+    }
+});
+```
+
+**玩家统计**
+
+```java
+int wins      = pvp.getWins(player, PvPArena.Mode.RANKED);
+int losses    = pvp.getLosses(player, PvPArena.Mode.RANKED);
+int streak    = pvp.getWinStreak(player, PvPArena.Mode.RANKED);
+int bestStreak = pvp.getBestWinStreak(player, PvPArena.Mode.RANKED);
+int kills     = pvp.getKills(player, PvPArena.Mode.RANKED);
+int deaths    = pvp.getDeaths(player, PvPArena.Mode.RANKED);
+pvp.resetStats(player);
+```
+
+---
+
+#### 🧟 惊变尸潮（Horde）
+
+**核心概念**：类似"尸潮"玩法，玩家作为幸存者在波次中对抗大量怪物。支持难度系统、精英怪/Boss、倒地/复活机制、血月事件。
+
+**枚举**
+
+```java
+Horde.GameState   // WAITING, COUNTDOWN, PREPARING, WAVE_ACTIVE, WAVE_INTERVAL, BOSS_WAVE, ENDING
+Horde.Difficulty  // EASY, NORMAL, HARD, NIGHTMARE, APOCALYPSE
+Horde.SpawnType   // NORMAL, ELITE, BOSS, SWARM, SPECIAL
+```
+
+**注册竞技场**
+
+```java
+Horde horde = api.horde();
+
+horde.registerArena(
+    "horde1",
+    "尸潮生存-1",
+    "world",
+    1,                   // 最少玩家
+    8,                   // 最大玩家
+    List.of(spawn1, spawn2),        // 玩家出生点
+    lobbyLoc,            // 大厅
+    specLoc,             // 观战点
+    List.of(mobSpawn1, mobSpawn2),  // 怪物出生点
+    100,                 // 边界半径
+    centerLoc,           // 边界中心
+    Horde.Difficulty.NORMAL,        // 默认难度
+    20,                  // 最大波次
+    30,                  // 准备时间（秒）
+    15,                  // 波次间隔（秒）
+    false                // 是否允许建造
+);
+```
+
+**玩家加入 / 开始**
+
+```java
+horde.join(player, "horde1");
+horde.startCountdown("horde1", 10);
+horde.forceStart("horde1");
+horde.forceEnd("horde1");
+```
+
+**创建指定难度的游戏**
+
+```java
+Horde.Game g = horde.createGame("horde1", Horde.Difficulty.NIGHTMARE);
+```
+
+**波次怪物规则**
+
+```java
+horde.addWaveMobRule("horde1", 1, new Horde.MobRule() {
+    @Override public EntityType type() { return EntityType.ZOMBIE; }
+    @Override public SpawnType spawnType() { return SpawnType.NORMAL; }
+    @Override public int weight() { return 100; }
+    @Override public int minCount() { return 5; }
+    @Override public int maxCount() { return 10; }
+    @Override public double healthMul() { return 1.0; }
+    @Override public double damageMul() { return 1.0; }
+    @Override public double speedMul() { return 1.0; }
+    @Override public List<String> effects() { return List.of(); }
+    @Override public Map<EntityType, Double> equipmentChance() { return Map.of(); }
+});
+
+horde.removeWaveMobRule("horde1", 1, EntityType.ZOMBIE);  // 移除规则
+```
+
+**难度倍率配置**
+
+```java
+horde.setDifficultyMultiplier(Horde.Difficulty.HARD, "health", 1.5);
+horde.setDifficultyMultiplier(Horde.Difficulty.HARD, "damage", 1.3);
+horde.setDifficultyMultiplier(Horde.Difficulty.HARD, "spawnCount", 2.0);
+double hpMul = horde.getDifficultyMultiplier(Horde.Difficulty.HARD, "health");
+```
+
+**注册精英怪 / Boss**
+
+```java
+horde.registerElite(
+    EntityType.ZOMBIE,       // 基础实体
+    "elite_zombie",          // 精英 ID
+    "精英僵尸",               // 显示名
+    3.0,                     // 血量倍率
+    2.0,                     // 伤害倍率
+    1.2,                     // 速度倍率
+    List.of("SPEED:2:99999", "STRENGTH:1:99999"),  // 永久药水效果
+    Map.of("skill_explosion", true)  // 技能配置
+);
+
+horde.registerBoss(
+    EntityType.WITHER,       // 基础实体
+    "boss_necromancer",      // Boss ID
+    "死灵法师",               // 显示名
+    5.0,                     // 血量倍率
+    3.0,                     // 伤害倍率
+    0.8,                     // 速度倍率
+    List.of("REGENERATION:2:99999"),
+    Map.of("skill_summon", true, "skill_teleport", true),
+    List.of(new ItemStack(Material.NETHER_STAR)),  // 掉落物
+    500                      // 击杀得分
+);
+```
+
+**倒地 / 复活机制**
+
+```java
+horde.downPlayer(player, 30);        // 玩家倒地，30 秒倒计时
+boolean downed = horde.isPlayerDowned(player);
+horde.revivePlayer(deadPlayer, reviver);  // 另一玩家复活倒地玩家
+```
+
+**波次奖励 / 击杀奖励**
+
+```java
+horde.registerWaveReward(
+    5,                                    // 第 5 波
+    List.of(new ItemStack(Material.DIAMOND, 2)),  // 物品奖励
+    100.0,                                // 每人金钱
+    200                                   // 每人得分
+);
+
+horde.registerKillReward(
+    EntityType.ZOMBIE,
+    10,                                   // 得分
+    5.0,                                  // 金钱
+    List.of(new ItemStack(Material.ROTTEN_FLESH))  // 掉落
+);
+```
+
+**血月事件**
+
+```java
+horde.setBloodMoonChance("horde1", 0.1);  // 10% 概率触发血月
+boolean bloodMoon = horde.isBloodMoon(game);  // 当前是否血月
+```
+
+**手动生成波次怪物**
+
+```java
+Horde.Game g = horde.getGame("horde1");
+Horde.Wave w = g.currentWave();
+int spawned = horde.spawnWaveMobs(g, w);
+horde.clearArenaMobs("horde1");  // 清空竞技场怪物
+```
+
+**事件监听**
+
+```java
+horde.onEvent(e -> {
+    switch (e.type()) {
+        case WAVE_START       -> api.broadcast("第 " + e.game().currentWave().number() + " 波开始！");
+        case BOSS_WAVE_START  -> api.broadcast("Boss 波次来袭！");
+        case PLAYER_DOWN      -> {
+            int timer = (int) e.data();
+            e.player().sendMessage("你倒地了！" + timer + " 秒内需要队友复活");
+        }
+        case PLAYER_REVIVE    -> api.broadcast(e.player().getName() + " 复活了一名队友");
+        case MOB_KILL         -> {
+            LivingEntity mob = (LivingEntity) e.data();
+            e.player().sendMessage("击杀 " + mob.getType().name());
+        }
+        case SURVIVOR_WIN     -> api.broadcast("幸存者胜利！");
+        case GAME_END         -> {
+            int wave = e.game().currentWave().number();
+            api.broadcast("游戏结束，存活到第 " + wave + " 波");
+        }
+    }
+});
+```
+
+**玩家统计**
+
+```java
+int waves    = horde.getWavesSurvived(player, "horde1");
+int kills    = horde.getTotalKills(player, "horde1");
+int deaths   = horde.getTotalDeaths(player, "horde1");
+int bestWave = horde.getBestWave(player, "horde1");
+int bestScore = horde.getBestScore(player, "horde1");
+int played   = horde.getGamesPlayed(player, "horde1");
+int won      = horde.getGamesWon(player, "horde1");
+horde.resetStats("horde1", player);
+```
+
+---
+
+#### 🏰 保卫村庄（VillageDefense）
+
+**核心概念**：玩家保卫村庄核心建筑（CORE），通过建造防御塔/城墙/资源建筑、招募单位来抵御一波又一波的敌人进攻。核心血量归零即失败，存活到最后一波即胜利。
+
+**枚举**
+
+```java
+VillageDefense.GameState    // WAITING, COUNTDOWN, BUILD_PHASE, WAVE_ACTIVE, WAVE_INTERVAL, ENDING
+VillageDefense.BuildingType // CORE, TOWER_ARROW, TOWER_MAGIC, TOWER_CANNON, WALL, GATE,
+                            // GOLD_MINE, LUMBER_CAMP, BARRACKS, BLACKSMITH, WELL, FARM, VILLAGER_HOUSE
+VillageDefense.UnitType     // VILLAGER, GUARD, ARCHER, KNIGHT, MAGE, HEALER, WORKER
+VillageDefense.EnemyType    // RAIDER, ARCHER, GRUNT, BRUTE, SHAMAN, BOSS_WARCHIEF, BOSS_BEHEMOTH
+```
+
+**注册竞技场**
+
+```java
+VillageDefense vd = api.villageDefense();
+
+vd.registerArena(
+    "vd1",
+    "村庄保卫-1",
+    "world",
+    1,                   // 最少玩家
+    8,                   // 最大玩家
+    lobbyLoc,            // 大厅
+    specLoc,             // 观战点
+    coreLoc,             // 核心建筑位置
+    List.of(spawn1, spawn2),            // 玩家出生点
+    List.of(enemySpawn1, enemySpawn2),  // 敌人生成点
+    80,                  // 地图半径
+    30,                  // 最大波次
+    180,                 // 建造阶段时间（秒）
+    30,                  // 波次间隔（秒）
+    400.0,               // 核心最大血量
+    true                 // 是否允许建造
+);
+```
+
+**玩家加入 / 开始**
+
+```java
+vd.join(player, "vd1");
+vd.startCountdown("vd1", 10);
+vd.forceStart("vd1");       // 跳过倒计时直接进入建造阶段
+vd.forceEnd("vd1", true);   // true=胜利, false=失败
+```
+
+**建造建筑**
+
+```java
+VillageDefense.Building core = vd.build(player, VillageDefense.BuildingType.CORE, coreLoc);
+VillageDefense.Building tower = vd.build(player, VillageDefense.BuildingType.TOWER_ARROW, towerLoc);
+VillageDefense.Building wall  = vd.build(player, VillageDefense.BuildingType.WALL, wallLoc);
+VillageDefense.Building mine  = vd.build(player, VillageDefense.BuildingType.GOLD_MINE, mineLoc);
+
+// 升级建筑
+vd.upgradeBuilding(player, tower);
+
+// 修复建筑
+vd.repairBuilding(player, tower, 50.0);
+
+// 拆除建筑（核心不可拆除）
+vd.demolish(player, tower);
+```
+
+**建筑属性查询**
+
+```java
+Building b = vd.build(player, VillageDefense.BuildingType.TOWER_CANNON, loc);
+b.type();           // TOWER_CANNON
+b.level();          // 当前等级
+b.maxLevel();       // 最大等级
+b.health();         // 当前血量
+b.maxHealth();      // 最大血量
+b.attackRange();    // 攻击范围
+b.attackDamage();   // 攻击伤害
+b.attackSpeedTicks(); // 攻击间隔（tick）
+b.resourcePerTick();  // 每 tick 产出资源（金矿/伐木场等）
+b.upgrade();          // 升级
+b.repair(100);        // 修复
+b.setEnabled(false);  // 禁用
+```
+
+**生成单位**
+
+```java
+VillageDefense.Unit guard = vd.spawnUnit(game, VillageDefense.UnitType.GUARD, spawnLoc, barracksBuilding);
+VillageDefense.Unit archer = vd.spawnUnit(game, VillageDefense.UnitType.ARCHER, spawnLoc, barracksBuilding);
+
+// 单位操作
+guard.attack(targetEntity);
+guard.moveTo(newLoc);
+guard.heal(20.0);
+guard.isAlive();
+vd.removeUnit(guard);
+```
+
+**资源系统**
+
+```java
+vd.grantResource(player, "gold", 100);    // 给予资源
+boolean ok = vd.spendResource(player, "gold", 50);  // 消耗资源
+int gold = vd.getResource(player, "gold"); // 查询资源
+// 资源类型: gold, wood, stone, iron
+```
+
+**建筑 / 单位 / 敌人属性配置**
+
+```java
+// 设置建筑花费（1 级）
+vd.setBuildingCost(VillageDefense.BuildingType.TOWER_ARROW, Map.of("gold", 100, "wood", 50));
+
+// 获取指定等级花费（自动按 1.5^level 递增）
+Map<String, Integer> cost = vd.getBuildingCost(VillageDefense.BuildingType.TOWER_ARROW, 3);
+
+// 设置建筑属性
+vd.setBuildingStats(VillageDefense.BuildingType.TOWER_ARROW, 2, Map.of("health", 150.0, "damage", 8));
+
+// 设置单位花费 / 属性
+vd.setUnitCost(VillageDefense.UnitType.KNIGHT, Map.of("gold", 100, "iron", 20));
+vd.setUnitStats(VillageDefense.UnitType.KNIGHT, Map.of("health", 60.0, "damage", 10, "armor", 5, "speed", 1.0));
+
+// 设置敌人属性
+vd.setEnemyStats(VillageDefense.EnemyType.BRUTE, Map.of("health", 100.0, "damage", 10.0, "speed", 0.8));
+```
+
+**自定义波次敌人**
+
+```java
+vd.addWaveSpawn("vd1", 5, new VillageDefense.EnemySpawn() {
+    @Override public EnemyType type() { return EnemyType.BRUTE; }
+    @Override public int count() { return 5; }
+    @Override public int intervalTicks() { return 60; }
+    @Override public double healthMul() { return 1.5; }
+    @Override public double damageMul() { return 1.2; }
+    @Override public double speedMul() { return 0.9; }
+});
+
+vd.removeWaveSpawns("vd1", 5);  // 移除第 5 波所有自定义生成
+```
+
+**波次奖励 / 击杀奖励**
+
+```java
+vd.registerWaveReward(
+    10,                                    // 第 10 波
+    Map.of("gold", 100, "wood", 50),       // 每人资源
+    500                                    // 每人得分
+);
+
+vd.registerKillReward(
+    VillageDefense.EnemyType.BOSS_WARCHIEF,
+    200,                                   // 得分
+    50,                                    // 金币
+    List.of(new ItemStack(Material.DIAMOND))  // 掉落
+);
+```
+
+**核心操作**
+
+```java
+vd.damageCore("vd1", 50.0, enemyEntity);  // 对核心造成伤害
+vd.healAllBuildings("vd1", 0.5);           // 修复所有建筑 50% 血量
+
+// 查询附近实体
+List<LivingEntity> enemies = vd.findEnemiesNear(centerLoc, 20.0);
+List<Building> towers = vd.findBuildingsNear(centerLoc, 30.0, VillageDefense.BuildingType.TOWER_ARROW);
+```
+
+**建造限制**
+
+```java
+vd.setBuildLimitPerPlayer("vd1", VillageDefense.BuildingType.TOWER_ARROW, 5);
+int limit = vd.getBuildLimitPerPlayer("vd1", VillageDefense.BuildingType.TOWER_ARROW);
+```
+
+**事件监听**
+
+```java
+vd.onEvent(e -> {
+    switch (e.type()) {
+        case BUILD_START       -> api.broadcast("建造阶段开始！抓紧时间建设防御");
+        case WAVE_START        -> {
+            VillageDefense.Wave w = (VillageDefense.Wave) e.data();
+            api.broadcast("第 " + w.number() + " 波敌人来袭！");
+        }
+        case BUILDING_BUILT    -> {
+            VillageDefense.Building b = (VillageDefense.Building) e.data();
+            e.player().sendMessage("建造了 " + b.type().name());
+        }
+        case BUILDING_DESTROYED -> {
+            VillageDefense.Building b = (VillageDefense.Building) e.data();
+            api.broadcast("建筑被摧毁: " + b.type().name());
+        }
+        case CORE_DAMAGED      -> {
+            double hp = e.game().coreHealth();
+            api.broadcast("核心受到攻击！剩余血量: " + (int) hp);
+        }
+        case CORE_DESTROYED    -> api.broadcast("核心被摧毁！村庄陷落！");
+        case ENEMY_KILL        -> {
+            int score = (int) e.data();
+            e.player().sendMessage("击杀敌人 + " + score + " 分");
+        }
+        case VICTORY           -> api.broadcast("村庄保卫成功！全员胜利！");
+        case DEFEAT            -> api.broadcast("村庄陷落...游戏失败");
+    }
+});
+```
+
+**玩家统计**
+
+```java
+int waves     = vd.getWavesSurvived(player, "vd1");
+int bestWave  = vd.getBestWave(player, "vd1");
+int bestScore = vd.getBestScore(player, "vd1");
+int buildings = vd.getBuildingsBuilt(player, "vd1");
+int units     = vd.getUnitsSpawned(player, "vd1");
+int played    = vd.getGamesPlayed(player, "vd1");
+int won       = vd.getGamesWon(player, "vd1");
+int kills     = vd.getTotalKills(player, "vd1");
+vd.resetStats("vd1", player);
+```
+
+---
+
+#### 玩法 API 通用说明
+
+**生命周期**
+
+所有玩法模块均为懒加载，首次调用 `api.bedwars()` / `api.pvp()` / `api.horde()` / `api.villageDefense()` 时自动：
+1. 实例化实现类
+2. 注册 Bukkit 事件监听器
+3. 启动 tick 定时任务（1 tick/tick 频率）
+
+插件卸载时 `SF.shutdown()` 会自动调用各模块的 `shutdown()` / `stop()` 方法清理资源。
+
+**线程安全**
+
+| 操作 | 线程安全 | 说明 |
+|------|----------|------|
+| 注册竞技场 / Kit / 规则 | ⚠️ | 建议在 `onEnable` 主线程调用 |
+| 玩家加入 / 离开 | ⚠️ | 必须主线程 |
+| 游戏状态查询 | ✅ | `ConcurrentHashMap` / `CopyOnWriteArrayList` 保证安全 |
+| 事件监听注册 | ⚠️ | 建议主线程 |
+| 统计数据查询 | ✅ | 线程安全 |
+| `forceStart` / `forceEnd` | ⚠️ | 建议主线程 |
+
+> 💡 不确定时，用 `api.run(() -> { ... })` 包裹代码确保主线程执行。
+
+**数据持久化**
+
+玩法模块的统计数据（击杀/死亡/胜率/ELO/最高波次等）存储在内存中的 `ConcurrentHashMap`，插件重启后重置。如需持久化，可通过 `SFApi.database()` 将数据写入 SQLite/MySQL。
+
+**自定义扩展**
+
+每个玩法模块均支持通过事件回调（`onEvent`）进行二次开发，无需继承实现类。如需更深度的定制（如自定义怪物 AI、特殊技能），可直接实例化对应 Impl 类并覆写方法。
+
+```java
+// 直接获取实现类进行高级操作
+SF sf = (SF) SFApi.get();
+BedwarsImpl bwImpl = (BedwarsImpl) sf.bedwars();
+// 可访问实现类内部方法
+```
+
+---
+
+## ❓ 常见问题
+
+### 安装相关
+
+**Q: 启动后报错 `java.lang.NoClassDefFoundError: server/sf/model/api/v2/SFApi`**
+
+A：你的服务器没有正确加载 SF 插件。检查：
+
+1. jar 文件是否在 `plugins/` 目录下
+2. 启动顺序：SF 应该在其他依赖它的插件之前加载（在 `plugin.yml` 中声明 `depend: [ZeroCkate_SFServerPlugin]`）
+3. 控制台日志中是否有 SF 启动失败的错误
+
+**Q: 经济系统显示 `Economy ready: false`**
+
+A：SF 没有检测到任何经济后端。检查：
+
+1. 是否安装了 [EssentialsX](https://essentialsx.net/) 或 [Vault](https://www.spigotmc.org/resources/vault.34315/)
+2. `plugin.yml` 中 `softdepend` 是否包含 `Essentials, Vault`（默认已配置）
+3. 重启服务器，看启动日志中是否显示 `Essentials=true` 或 `Vault=true`
+
+**Q: 数据库报错 `SQLException: database is locked`**
+
+A：SQLite 在并发写入时会锁定。解决方案：
+
+1. 切换到 MySQL（在 `config.yml` 中 `database.mysql.enabled: true`）
+2. 或减少异步数据库操作
+
+**Q: 切换到 MySQL 后报错 `Communications link failure`**
+
+A：检查 MySQL 连接：
+
+1. MySQL 服务是否在运行
+2. 主机/端口是否正确
+3. 用户名/密码是否正确
+4. 数据库是否存在（需要手动创建）
+5. 防火墙是否放行 3306 端口
+
+```sql
+CREATE DATABASE minecraft CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 命令相关
+
+**Q: `/home` 提示家不存在**
+
+A：检查家的名称。如果不指定名称，默认使用 `default`：
+
+```
+/home           # 访问名为 "default" 的家
+/home myhome    # 访问名为 "myhome" 的家
+/sethome myhome # 创建名为 "myhome" 的家
+```
+
+用 `/homes` 查看所有家。
+
+**Q: `/tpa` 请求没反应**
+
+A：检查：
+
+1. 对方是否在线（`/tpa` 只能发给在线玩家）
+2. 对方是否已经有待处理请求（一次只能有一个）
+3. 是否被对方用 `/tpdeny` 拒绝
+4. 请求是否已超时（默认 60 秒）
+
+**Q: 传送提示 "你移动了，传送已取消"**
+
+A：这是**延迟传送**机制。在传送延迟期间移动会取消传送。
+
+- 修改 `config.yml` 中的 `teleport.delay.*` 为 `0` 可以禁用延迟
+- 拥有 `sf.teleport.bypass` 权限可以跳过延迟
+
+**Q: `/vanish` 后 OP 也看不到我**
+
+A：需要给 OP 玩家单独赋予权限：
+
+```bash
+lp user 你的名字 permission set sf.admin.seevanished true
+```
+
+**Q: `/gm` 命令的参数是什么**
+
+A：支持以下所有写法：
+
+| 数字 | 缩写 | 全名 | 模式 |
+|------|------|------|------|
+| 0 | s | survival | 生存 |
+| 1 | c | creative | 创造 |
+| 2 | a | adventure | 冒险 |
+| 3 | sp | spectator | 旁观 |
+
+例如 `/gm 1` 和 `/gm creative` 等价。
+
+### API 相关
+
+**Q: `SFApi.get()` 抛出 `IllegalStateException`**
+
+A：SF API 没有被注册。可能原因：
+
+1. SF 插件未启用（检查 `/plugins` 命令）
+2. 你的插件先于 SF 加载（在 `plugin.yml` 中添加 `depend: [ZeroCkate_SFServerPlugin]`）
+3. SF 启动失败（检查控制台日志）
+
+正确做法：
+
+```java
+if (!SFApi.isAvailable()) {
+    getLogger().warning("SF API 不可用");
+    return;
+}
+SFApi api = SFApi.get();
+```
+
+**Q: 调用 `giveMoney` 返回 `false`**
+
+A：可能原因：
+
+1. 经济系统未就绪（先检查 `api.economy().ready()`）
+2. 玩家没有经济账户（先检查 `api.economy().hasAccount(player)`）
+3. 金额为负数（SF 会拒绝负数操作）
+4. 操作在异步线程执行但 Essentials 不支持（改用 `api.run(() -> api.giveMoney(p, 100))`）
+
+**Q: 异步线程中调用 API 报错**
+
+A：Bukkit 的大部分 API 都**不是线程安全**的。在异步线程中：
+
+- ✅ 可以调用：`logger.*`, `economy.balance/format`, `scheduler.runAsync`
+- ❌ 不可调用：`teleport`, `broadcast`, `msg`, `events.on`, `economy.give/take/set`
+
+正确做法：异步中查询数据，主线程中修改游戏状态：
+
+```java
+api.runAsync(() -> {
+    double balance = api.balance(player);
+    api.run(() -> {
+        api.giveMoney(player, 100);
+        api.msg(player, "钱到账了");
+    });
+});
+```
+
+**Q: 通过 `sf.events().on()` 注册的监听器不生效**
+
+A：检查：
+
+1. 是否在 `onEnable()` 中注册（不要在 `onLoad()` 中）
+2. 事件类是否正确导入（例如 `AsyncPlayerChatEvent` vs `PlayerChatEvent`）
+3. 是否被其他插件取消（设置更高优先级 `EventPriority.HIGH`）
+4. 控制台是否有异常日志
+
+**Q: 编译报错找不到 `SFApi` 类**
+
+A：Maven/Gradle 依赖配置问题。检查：
+
+1. 是否添加了 JitPack 仓库
+2. 依赖 scope 是否正确（`provided` 或 `compileOnly`）
+3. 是否执行了 `mvn clean install` 刷新依赖
+
+### 性能相关
+
+**Q: 服务器 TPS 下降**
+
+A：排查步骤：
+
+1. 使用 `/tps` 查看当前 TPS
+2. 检查是否有大量异步数据库操作（改为批量操作）
+3. 检查 `sf.events().on()` 注册的监听器是否过多或过重
+4. 切换到 MySQL 避免 SQLite 锁争用
+
+**Q: 数据库查询慢**
+
+A：
+
+1. SQLite：启用 WAL 模式（默认已启用）
+2. MySQL：确保 `homes(uuid, name)` 和 `warps(name)` 有索引（建表时已添加 PRIMARY KEY）
+3. 避免在循环中频繁查询，用 `getHomes(uuid)` 一次获取所有
+
+### 其他
+
+**Q: 如何卸载插件而不丢失数据**
+
+A：
+
+1. 停止服务器
+2. 备份 `plugins/ZeroCkate_SFServerPlugin/data.db`（SQLite）或导出 MySQL 数据库
+3. 删除 jar 文件
+4. 数据保留在备份中，下次安装时恢复即可
+
+**Q: 多个服务器能共享家数据吗**
+
+A：可以。所有服务器连同一个 MySQL 数据库，并使用相同的 `prefix`：
+
+```yaml
+database:
+  mysql:
+    enabled: true
+    host: shared.db.example.com
+    database: mc_network
+    prefix: "sf_shared_"
+```
+
+如果想让数据相互独立，使用不同的 `prefix`。
+
+**Q: 如何向作者反馈 bug**
+
+A：在 [GitHub Issues](https://github.com/zmb96/ZeroEngine/issues) 提交 issue，附上：
+
+- SF 插件版本
+- 服务器类型（Paper/Spigot）和版本
+- 完整的错误日志（堆栈跟踪）
+- 复现步骤
+
+**Q: 可以商用吗**
+
+A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必须同样以 GPLv3 开源。详见 [LICENSE](LICENSE)。
+
+---
+
+## 📝 变更日志
+
+本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.3.3-LTS] - 2026-08-29
+
+- **热加载/卸载 API 补齐** —— 支持第三方插件（如 zmb96_GamePlugin）优雅地热插拔注册对象
+  - `RecipeManager` 新增 `unregisterTable(String id)` / `unregisterAllTables()` —— 加工机器（AdvancedCraftTable）运行时注销，避免 `/sfaddons reload` 等热更命令重复注册或残留
+  - `GUIManager` 新增 `unregister(SChestGUI gui)` —— SChestGUI 从注册表 & 命令绑定中移除，方便 GUI 代码改动后原地替换
+  - 配套 Screen/Crop/Item 的 `unregister(id)` 已在早前版本存在，现在整套 v3 玩法功能 API 全部具备「注册 + 注销」对称能力
+- **注册健壮性增强** —— ScreenManager.register() 重复注册抛出 `IllegalStateException` 的历史问题：新增 `registerIfAbsent` 安全写法并贯穿所有 Manager（Screens/Crops/Items/Recipes/Tables）均提供 `registerIfAbsent` 返回 boolean
+- **SChestGUI.command() 空值防护建议** —— 第三方插件若 SChestGUI 子类 `command()` 返回 null，应在注册检查阶段先做非空判断（推荐第三方插件按示例写法比较 command）；ZeroEngine 侧 GUIManager.register() 对 command==null 不再自动注册命令（仅注册 GUI，需代码手动 open）
+- **SFAttr.ensureLoaded() 属性别名双向兼容** —— 注册 Attribute 别名时同时写入「原名」「去前缀名」「GENERIC_前缀名」三种写法，第三方插件即使使用字符串裸名也能命中（缓解 1.21.7+ 枚举→接口变动后的跨插件字符串属性不匹配）
+
+### [3.3.2-LTS] - 2026-08-29
+
+- **SCrop 双生长模式细化** —— 阶段模式（`stages()`）行为补全 + 文档详尽化
+  - 阶段模式位置索引 `plantedCrops` Set + `BukkitRunnable` 每 5 秒按 `growthChance` 推进（不依赖 vanilla 随机刻）
+  - `ChunkLoadEvent` → `scanChunk` 扫 chunk PDC 恢复索引，清理空气位置失效记录，重启不丢失
+  - 阶段模式骨粉：取消原版 `BlockFertilizeEvent`，直接 `growOneStep` 推进 1 阶段
+  - 收获判断兼容阶段模式：`instanceof Ageable || isStageCrop()`
+  - README 新增：双模式玩家操作流程对照表、阶段模式行为细节表、CropManager 管理 API 表、钩子触发时机表
+
+### [3.3.1-LTS] - 2026-08-29
+
+- **自定义农作物系统（SCrop）** —— 继承 `SCrop`（extends SItem，物品形式即种子），双生长模式
+  - **Ageable 模式**（默认）：`cropBlock()` 用 vanilla Ageable Material（WHEAT/CARROTS/POTATOES/BEETROOTS/NETHER_WART/SWEET_BERRY_BUSH 等）+ `Ageable.setAge` 推进，依赖 vanilla 随机刻
+  - **阶段模式**（新）：`stages()` 返回各阶段 Material 列表，生长时 `setType` 切换方块；**不依赖 vanilla 随机刻**，引擎 `BukkitRunnable` 每 5 秒按 `growthChance` 推进，任意 Material 可用（不再限于 Ageable）
+  - chunk PDC 标记 cropId 区分；`maxStage()` / `growthChance()` / `harvestDrops()` / `min-maxSeedsOnHarvest()` / `requireFarmland()` / `minLightLevel()` / `onBonemeal()` 可重写
+  - `onPlant/onGrow/onHarvest` 钩子；`canGrowAt` 种植条件校验
+  - `CropManager` 位置映射 + 内存位置索引 + 定时生长任务 + `scanChunk` 恢复 + `CropListener`（种植/生长/骨粉/收获/破坏/ChunkLoad 恢复）+ `/sfcrop` 命令（alias `/sfcr` `/sfcrops`，避开 `/sfchat` 的 `/sfc`）
+  - `SF.crops()` 懒加载注册
+- **物品食物方法** —— `SItem` 新增 5 个食物钩子
+  - `isFood()` / `foodNutrition()` / `foodSaturation()` / `canAlwaysEat()` / `onEat(PlayerItemConsumeEvent)`
+  - `ItemListener` 监听 `PlayerItemConsumeEvent`：取消原版营养 → 手动消耗 → 应用自定义营养/饱和 → 调 `onEat` 给 buff
+- **自定义箱子 GUI（SChestGUI）** —— OOP 箱子界面基类（委托底层 ChestGUI）
+  - `id()` / `title()` / `size()` / `readonly()` / `command()`（返回命令名如 `"cd"`，引擎注册 `/cd` 打开）
+  - `build(Builder)` 填物品 / `onClick` / `onOpen` / `onClose` / `open(Player)` final
+  - `GUIManager.register(SChestGUI)` 按 `command()` 自动用 `SFCommandOps.regCommand` 注册命令
+- **加工机器（AdvancedCraftTable 基类）** —— 高级工作台抽象基类
+  - `onRightChest()` 返回 SChestGUI 打开自定义加工机器 UI；返回 null 默认打开发射器原版界面
+  - `RecipeManager.registerTable/bindTableAt/findTableAt/unbindTableAt`（chunk PDC `sfact_` 位置映射）
+  - `AdvancedCraftTableListener` 改：右键工作台先查绑定的 table → 调 onRightChest；无绑定走原 craftAtInventory 直接合成
+
+### [3.3.0-LTS] - 2026-08-28
+
+#### ⚠️ 破坏性变更
+
+- **Paper API 升级 1.21.1 → 1.21.8** —— 最低运行环境提升至 Paper 1.21.7+（Dialog API 要求）
+  - 1.21.8 将 `org.bukkit.attribute.Attribute` 从枚举改为接口，移除所有 `GENERIC_*` 常量
+  - 引擎内 7 个文件 34 处 `Attribute.GENERIC_ARMOR` 等已改为去前缀的 `Attribute.ARMOR`
+
+#### ✨ 新增
+
+- **自定义方块系统（SBlock）** —— 继承 `SBlock` 基类（继承自 `SItem`，物品形式自动注册到 `/sfitem`）
+  - 用 chunk PersistentDataContainer 持久化，重启不丢失
+  - 覆盖 Bukkit 方块全部能力：基础材质、右键/左键监听、掉落物（VANILLA/CUSTOM/NONE）、红石通电响应（`redstoneRadius`）、放置限制、20+ 方块事件钩子（onPlace/onBreak/onBurn/onPhysics/onPistonExtend/onExplode/...）
+  - `BlockManager` 位置映射 + `BlockListener` 事件分发 + `/sfblock` 命令（list/give/info/look）
+- **自定义屏幕系统（SScreen）** —— 基于 Paper 1.21.8 Dialog API 的进服弹窗基类
+  - 玩家进服 configuration phase（未进入世界）时弹 Dialog，`CompletableFuture` 阻塞直到响应
+  - `accept()` 放行进世界，`deny(msg)` 踢出，超时自动 deny
+  - 支持 `DialogType.confirmation/notice/multiAction`、`DialogBody.plainMessage/item`、`DialogInput.bool/singleOption/text/numberRange`
+  - 多屏按 `priority` 顺序依次弹出，按钮 Key 自动生成 `namespace:screenId/action`
+- **高级工作台** —— 工作台 + 发射器多方块结构
+  - 右击工作台检测下方发射器，对 9 格按已注册 `SRecipe` 匹配（`SRecipe.matchesGrid` + `RecipeManager.craftAtInventory`）
+  - 消耗材料、产物放入空槽，支持有序/无序、Material 与 SItem 混合材料
+
+#### 🛠️ 修复
+
+- **SFAttr 属性字符串解析兼容 1.21.8** —— `ensureLoaded()` 改用 `Registry.ATTRIBUTE` 遍历 + 对每个 Attribute 注册三种别名（原样 + 去前缀 + `GENERIC_` 前缀）
+  - 修复第三方插件（如 zmb96）传 `"GENERIC_ARMOR"` 字符串在 1.21.8 因 `Attribute.name()` 返回去前缀名导致解析为 null 的问题
+  - 第三方插件无需改代码即可兼容
+
+### [3.2.8-LTS] - 2026-08-26
+
+#### ✨ 新增
+
+- **自定义物品「获取来源」系统** —— `SItem.dropSources()` 方法返回 `List<DropSource>`，ItemListener 自动监听对应事件触发掉落
+  - 新增 `DropSource` 独立类，支持 4 种获取途径：
+    - `BLOCK_BREAK` —— 监听 `BlockBreakEvent`，挖掉指定 Material 方块按几率掉落（创造模式跳过避免刷物品）
+    - `ENTITY_DEATH` —— 监听 `EntityDeathEvent`，杀指定 EntityType 怪物按几率掉落
+    - `FISHING` —— 监听 `PlayerFishEvent` (CAUGHT_FISH)，钓鱼按几率替换钓上来的物品
+    - `CHEST_LOOT` —— 监听 `LootGenerateEvent`，自然生成的战利品箱子按几率塞入
+  - `DropSource` 静态工厂方法：`block(Material, chance)` / `block(Material, chance, min, max)` / `mob(EntityType, chance)` / `mob(EntityType, chance, min, max)` / `fishing(chance)` / `fishing(chance, min, max)` / `chest(chance)` / `chest(chance, min, max)`
+  - 支持数量范围 `minAmount ~ maxAmount`，自动 `rollAmount()` 随机
+  - `chance` 自动 clamp 到 [0, 1]
+- **示例物品 `AncientRelicItem` 远古遗物** —— 演示全部 4 种获取途径
+  - 挖石头 0.5%、挖深板岩 1%、挖远古残骸 50%、凋零骷髅 20%、末影龙 100%、远古守卫者 80%、钓鱼 5%、战利品箱子 15%
+  - 右键：抗性 III + 力量 II + 急迫 I 共 10 秒
+  - 左键：速度 IV + 跳跃提升 IV 共 10 秒
+
+#### 📚 文档
+
+- README 新增「获取来源（DropSource）」章节
+- 版本徽章 `3.2.7-LTS` → `3.2.8-LTS`
+
+#### 📦 版本
+
+- `pom.xml` 版本：`3.2.7-LTS` → `3.2.8-LTS`
+
+---
+
+### [3.2.7-LTS] - 2026-08-24
+
+> 写在前面：这次主要补完「自定义生物群系」模块。之前群里有人问我「能不能让玩家走出已探索区域时遇到一片全新的群系」，搞了一晚上总算跑通了。
+
+#### ✨ 新增
+
+- **全新的自定义生物群系模块（`sf.biomes()`）** —— 监听 `ChunkPopulateEvent`，只对**第一次生成的 chunk** 触发，刚好对应「存档已经存在但还没被玩家探索到的区块」。玩家靠近、服务端生成新 chunk 时就会插一片你定义的群系进去。
+  - `SBiome` 抽象基类：基础元信息（id/displayName/targetBiome）+ 分布条件（worlds/replaces/weight/yRange）+ 内容钩子（onChunkPopulate/onPlayerEnter/onPlayerLeave/onPerSecond）
+  - `BiomeManager`：注册中心 + chunk 应用逻辑 + 用 PDC 标记已处理 chunk 防重复
+  - `BiomeListener`：监听 chunk 生成 + 玩家跨 chunk 移动 + 每秒持续效果
+  - 用 `world.setBiome(x, y, z, targetBiome)` 覆盖原版 biome，客户端草色/水色按底子走
+- **独立的 `PerlinNoise` 工具类**（放在 `v3/main/`） —— 玩了几种噪声实现，最后还是回到了 Ken Perlin 原版算法 + Fisher-Yates 洗牌置换表这套老配方
+  - 支持 2D/3D 单层采样
+  - 支持 fbm 多 octave 叠加（1-8 层可调），让噪声有层次更自然
+  - 可调参数：seed / scale / octaves / persistence / lacunarity
+  - 线程安全（无状态实例）
+- **SBiome 升级用 PerlinNoise**：新增 5 个可重写方法（`noiseOctaves` / `noisePersistence` / `noiseLacunarity` / `createNoise` / `sampleNoiseAt` / `sampleNoise3D`）
+- **示例 1：`MysticForestBiome` 神秘森林** —— 用 DARK_FOREST 做底子，地表撒发光浆果+凋零玫瑰，1% 概率宝箱，进入上发光效果，每秒 +1 饱食度
+- **示例 2：`EmberWastesBiome` 炽焰荒原** —— 这次的重点示例。用 PerlinNoise 在 chunk 生成时**大量改造地表方块**（下界岩/黑石/岩浆池混搭），撒玄武岩尖刺+营火祭坛，进入上火抗+速度 II+雷鸣音效，每秒脚下冒岩浆滴+头顶冒烟雾，让玩家几乎认不出原版的「平原」底子。试了半天才搞定地表方块的判断 —— 不能直接看最顶层是 AIR 就跳过，得往下找实心块（不然屋顶下方空间会被错过）
+
+#### 🛠 修复
+
+- `EntityListener` 的 tick 调度对 `Collections.unmodifiableMap()` 调 `iterator.remove()` 抛 `UnsupportedOperationException` —— 这个 bug 上个版本就有，今天开服测试才发现日志一直被刷屏。改成显式调 `manager.removeActive(uuid)` 移除，并给 `EntityManager` 加了 `removeActive(UUID)` + `clearActive()` 两个方法。
+
+#### 📚 文档
+
+- README 新增「🌲 自定义生物群系系统」完整章节（约 400 行）：注册用法 / SBiome 抽象基类 / 分布条件表 / 内容钩子说明 / PerlinNoise 工具类 / 两个完整示例 / 调试建议
+- 版本徽章 `3.2.6-LTS` → `3.2.7-LTS`
+
+#### 📦 版本
+
+- `pom.xml` 版本：`3.2.6-LTS` → `3.2.7-LTS`
+
+---
+
+### [3.2.6-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+- **v3 EnchantManager.registerIfAbsent()**：不存在才注册，已存在静默返回 false；用于懒加载内置示例附魔时避免与第三方插件预注册冲突
+- **v3 SF.init() 允许多插件重复调用**：已初始化时不再抛 `IllegalStateException`，改为 info 日志并复用现有实例；避免加载顺序问题打断入口插件 onEnable
+- **v3 SFCommandOps.regCommand() 跨插件命令 fallback**：当 `plugin.getCommand(name)` 拿不到（SF.init 被第三方插件先初始化，plugin 字段不是 ZeroEngine）时，自动反射 `SimplePluginManager.commandMap.knownCommands` 查同名 `PluginCommand`（含 `namespace:name` 前缀）并覆盖 setExecutor / setTabCompleter
+
+#### 🔄 变更
+
+- **v3 SF.enchant() 懒加载**：新增 `/sfenchant` 命令绑定（v3 SFEnchantCommand）+ 自动 registerIfAbsent 内置 LifestealEnchant / AncestralMightEnchant；日志从 `System initialized` 改为 `System initialized (v3 /sfenchant command ready; N enchants loaded)`
+- **v1 main（Deprecated 入口）**：移除 v2 SFEnchantCommand 的 `/sfenchant` 注册；改为在 onEnable 末尾调用 `v3 SF.init(this).enchant()` 确保 v3 附魔命令一定会被落位
+- **v3 EnchantAnvilListener**：extraCost 写入优先走 `ItemMeta instanceof Repairable` 并做「追加」而非「覆盖」，避免干扰其他插件对经验消耗的写入；只有 extraCost>0 时才 setResult，避免误覆盖他插件/原版 result
+
+#### 🛠 修复
+
+- **跨插件附魔注册后 /sfenchant book 只显示内置 2 个**：v2 SF / v3 SF 是两套独立单例；v2 SFEnchantCommand 被 v1/main 先绑到 /sfenchant，第三方插件用 v3 SF.register 的附魔完全看不到 — 通过"v3.enchant() 懒加载用 SFCommandOps 新 fallback 强覆盖命令执行器 + v1/main 不再占坑"的组合修复，第三方插件注册的附魔、内置附魔现在都能在 `/sfenchant book` 中正确列出
+- **SItem.id() 为中文时在 Paper 26.x 抛 IllegalArgumentException**（NamespacedKey 新严格校验 `[a-z0-9_-.\/]`）：新增 itemKey() slug 化算法（合法字符保留 + 8 位 SHA-1 哈希后缀）；读路径做「新 key 优先、旧 key 回退」兼容，已存在玩家背包里的中文 id 老物品仍能被 is() / getLevel() 正确识别
+- **EnchantAnvilListener 可能覆盖其他插件 result/经验消耗**：Repairable meta 路径做追加写入
+- `pom.xml` 版本：`3.2.5-LTS` → `3.2.6-LTS`
+
+### [3.2.5-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+**自定义配方系统（v3/feature/recipe/）**
+
+- `SRecipe` 抽象基类：继承实现 `id()` / `mode()`（SHAPED / SHAPELESS）/ `ingredients()` / `result()`；可选 `shape()`（有序）/ `resultAmount()` / `unlockedByDefault()`
+- `ingredients()` 与 `result()` 同时支持两种返回：`org.bukkit.Material` 枚举（原版物品）或 `cn.ZeroEngine.Engine.api.v3.feature.item.SItem` 实例（自定义物品）
+- 自动选择匹配策略：Material → `RecipeChoice.MaterialChoice`；SItem → `RecipeChoice.ExactChoice(sItem.create(1))`，精确匹配 PDC / displayName / lore，防止伪造材料
+- 注册到原版工作台：`RecipeManager.register(SRecipe)` 内部调用 `Bukkit.addRecipe()`，玩家在原版 3×3 合成台可直接合成
+- `SFRecipeCommand`（`/sfrecipe` 别名 `/sfr`，权限 `sf.admin.recipe`）：`list` / `info <id>` / `give <id> [玩家]` / `remove <id>` / `reload` / `help`
+- 幂等：shutdown 自动 `unregisterAll()`；重复 key 拒绝注册并 warn；按 tag 名自动生成 `NamespacedKey(plugin, "sf_" + id)`
+- 内置示例 `MagicScepterRecipe`：END_EYE + 2×GOLD_INGOT + BLAZE_ROD + DIAMOND → `MagicScepterItem` × 1
+
+#### 🔄 变更
+
+**附魔通配符增强（v3 SEnchantment.canEnchantItem）**
+
+- 新增后缀匹配：`"*_SWORD"` 匹配所有以 `_SWORD` 结尾的材质
+- 新增包含匹配：`"*AXE*"` 匹配包含 `AXE` 的材质
+- 新增简写匹配：无 `*` 且完全相等不命中时，自动尝试 `"_" + pattern` 后缀匹配 —— 填 `"SWORD"` 即命中所有剑（DIAMOND_SWORD / IRON_SWORD / NETHERITE_SWORD 等）
+- 前缀匹配 `DIAMOND_*`、完全相等、`*` 全部匹配（原有）保留不变
+- 示例 `LifestealEnchant.applicableItems()` 从 6 种剑长列表改为 `Set.of("SWORD")`；`AncestralMightEnchant` 从 24 种盔甲长列表改为 `Set.of("HELMET","CHESTPLATE","LEGGINGS","BOOTS")`，语义不变
+
+**铁砧合并严格化（v3 EnchantAnvilListener）**
+
+- 首次附魔（装备无该附魔，current==0）：写入 `bookLevel`（正常）
+- 同等级合并：升级到 `bookLevel + 1`，但 `bookLevel >= maxLevel` 时跳过（最高等级禁止合并）
+- 不同等级合并：严格跳过（不再像原版那样取 max）
+
+#### 🛠 修复
+
+- `SFEntityCommand` 别名 `sfe` 与 `SFEnchantCommand` 的 `sfe` 冲突 → 改为 `sfee`
+- `Plugin.yml` 新增 `sfrecipe` 命令与 `sf.admin.recipe` 权限
+- `pom.xml` 版本：`3.2.4-LTS` → `3.2.5-LTS`
+
+### [3.2.4-LTS] - 2026-08-24
+
+#### ✨ 新增
+
+**自定义生物系统（v3/feature/entity/）**
+
+全新模块，继承 `SEntity` 抽象基类即可定义自定义生物，覆盖完整生命周期：
+
+- `SEntity` 抽象基类：`id()` / `displayName()` / `entityType()` 必须实现；属性方法（HP / 攻击 / 速度 / 护甲 / 韧性 / 击退抗性 / 追踪范围 / 飞行速度）带默认值可重写
+- `Hostility` 枚举：`HOSTILE`（主动攻击）/ `NEUTRAL`（被攻击反击）/ `PASSIVE`（永不攻击），`EntityListener.onTarget` 自动按阵营取消目标事件
+- `SpawnCondition`：链式构造生成条件 —— 几率 / 世界 / 群系 / Y 范围 / 光照范围 / 怕光照白天燃烧 / 仅夜晚 / 替换原版生物 / 每区块上限
+- `EquipmentEntry`：生成时按几率穿戴物品 / 盔甲，可配置死亡掉率
+- 7 个事件钩子：`onSpawn` / `onDeath` / `onAttack`（攻击玩家）/ `onDamaged` / `onTarget` / `onTick`（每 5 SFTick）/ `onPerSecond`（每秒）
+- `EntityManager`：注册 / 查询 / 强生成 `spawn(id, loc)` / 按条件生成 `trySpawn(id, loc)` / PDC 反查 `find(living)` / 活动实例追踪
+- `EntityListener`：监听 `CreatureSpawnEvent` / `EntityDamageByEntityEvent` / `EntityDamageEvent` / `EntityDeathEvent` / `EntityTargetEvent` / `EntityCombustEvent`，自动调度 SFTick 任务
+- `SFEntityCommand`（`/sfentity` 别名 `/sfe`，权限 `sf.admin.entity`）：`list` / `spawn` / `info` / `count` / `cleanup` / `reload` / `help`
+- `SF.java` 新增 `entities()` 懒加载装配方法，自动注册监听 + 启动 tick 调度 + 绑定命令
+- 内置示例 `ShadowStalkerEntity`（`shadow_stalker`）：HUSK 材质，40 HP / 6 攻击，夜晚生成 / 怕光照 / 光照 0~7，50% 铁剑 + 30% 铁头盔，攻击附毒 III，每 20 SFTick 拖紫色粒子，1% 几率每秒回 1 血
+
+**SFAttr 属性常量库扩展**
+
+- 新增 `BLOCK_BREAK_SPEED`（方块破坏速度，Bukkit 1.21+）
+- 新增 `JUMP_STRENGTH`（跳跃强度，Bukkit 1.21+）
+- 新增 `EXPLOSION_KNOCKBACK_RESISTANCE`（爆炸击退抗性，Bukkit 1.21+ 正确名）
+- 保留 `EXPLOSION_KNOCKBACK_REDUCTION` 作为兼容旧名（运行时仍可命中）
+- 新增同名 `GENERIC_BLOCK_BREAK_SPEED` / `GENERIC_JUMP_STRENGTH` / `GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE` 兼容前缀
+- DISPLAY 中文名表补全 3 项：方块破坏速度 / 跳跃强度 / 爆炸击退抗性
+- 新增快捷构造方法：`blockBreakSpeed(base, perLevel)` / `jumpStrength(base, perLevel)` / `explosionKnockbackResistance(base, perLevel)` / `spawnReinforcements(base, perLevel)`（修复 `SPAWN_REINFORCEMENTS` 唯一缺快捷构造的缺口）
+
+#### 🔄 变更
+
+- `pom.xml` 版本：`3.2.3-LTS` → `3.2.4-LTS`
+- `plugin.yml` 注册 `sfentity` 命令 + `sf.admin.entity` 权限
+- `SF.java` 添加 `entity()` 懒加载方法 + shutdown 清理逻辑
+- README 新增「🧟 自定义生物系统」章节、SFAttr 表格补充 3 个新属性、特性列表加入生物注册系统
+
+### [3.2.1] - 2026-08-16
+
+#### ✨ 新增
+
+**箱子 GUI 系统（ChestGUI）**
+- 新增 `feature/gui/` 模块：`ChestGUI` 接口 + `GUIManager` 管理器
+- `SFApi` 新增 `gui()` 方法，返回 `GUIManager`
+- 支持链式调用：title / rows / item / fill / border / fillRange / clear
+- 点击回调系统：`Consumer<ClickContext>`，支持 8 种 ClickType
+- 分页支持：`pagination(items, perPage)` + `page() / nextPage() / prevPage()`
+- 生命周期回调：`onOpen / onClose / onAnyClick`
+- readonly 模式：默认禁止拿取物品
+- 动态刷新：`refresh() / refresh(Player)`
+- 自动事件监听 + 玩家退出/关服自动清理
+
+### [3.2.0] - 2026-08-15
+
+#### 🔄 重大变更
+
+**项目更名为 ZeroEngine**
+- artifactId: `ZeroCkate_ServerApiPlugin` → `ZeroEngine`
+- 插件从「服务器 API 插件」升级为「服务器引擎」
+- GitHub 仓库迁移至 `zmb96/ZeroEngine`
+- 保留全部旧功能，无破坏性变更
+
+#### ✨ 新增
+
+**ZeroEngine 原版操控引擎（v2/feature/engine/）**
+
+5 大引擎模块，全部作为 API 供外部插件调用，引擎本身不参与业务逻辑：
+
+1. **MonsterAttribute（怪物属性操控）**
+   - 设置/获取/重置生物的攻击伤害、生命值、移动速度、护甲、击退抗性、护甲韧性
+   - 按倍率缩放属性（`scale`）
+   - 添加/移除属性修饰器（`addModifier` / `removeModifier`）
+   - 持久化属性修饰（跨 tick 保持，`applyPersistent` / `getPersistent` / `clearPersistent`）
+
+2. **DamageSystem（伤害系统操控）**
+   - 自定义伤害计算公式（`registerDamageModifier`，按优先级链式执行）
+   - 全局/按世界 PvP 开关（`setPvpEnabled`）
+   - 伤害类型倍率（`setDamageMultiplier`，如摔伤减半、火焰免疫）
+   - 护甲穿透（`setArmorPenetration`，0~1 百分比）
+   - 对特定目标设置固定伤害（`setCustomDamage`）
+   - `DamageContext` 接口提供攻击者/受害者/原始伤害/伤害原因/暴击/取消
+
+3. **BlockControl（方块/挖掘操控）**
+   - 修改挖掘速度（`setBreakSpeed`）
+   - 修改爆炸抗性（`setBlastResistance`）
+   - 自定义掉落物和概率（`setDrop`）
+   - 自定义经验掉落范围（`setExpDrop`）
+   - 注册方块破坏处理器（`registerBreakHandler`，可取消破坏）
+   - 工具要求（`setRequireTool`）
+   - 破坏后替换方块（`setReplaceOnBreak`）
+   - 取消区域内方块更新（`cancelBlockUpdate`）
+
+4. **SpawnControl（实体生成操控）**
+   - 创建/注册/移除生成规则（`SpawnRule`：概率、每区块上限、生效世界）
+   - 实体黑名单（`blacklistEntity`，按世界）
+   - 生成上限（`setSpawnCap`，按世界按类型）
+   - 实体类型过滤器（`registerSpawnFilter`）
+   - 生成位置过滤器（`registerLocationFilter`，如出生点保护）
+   - 强制生成（`forceSpawn`）
+   - 清除世界内指定类型实体（`clearEntities`）
+   - 世界实体数量统计（`getEntityCounts`）
+
+5. **ResourcePackManager（资源包管理）**
+   - 创建/注册/发送资源包（`ResourcePack`：URL、SHA1、强制、提示消息）
+   - 批量发送所有资源包（`sendAll`，支持完成回调）
+   - 自定义模型数据注册（`setCustomModelData`）
+   - 自定义音乐注册和播放（`registerMusic` / `playMusic` / `stopMusic`）
+   - 全服音乐控制（`playMusicAll` / `stopMusicAll`）
+   - 默认资源包设置（`setDefaultPack` / `getDefaultPack`）
+
+**API 入口**
+- `SFApi` 新增 5 个方法：`monster()` / `damage()` / `block()` / `spawn()` / `resourcePack()`
+- `SF` 实现懒加载，首次调用时自动初始化并注册事件监听器
+- 全部模块均在 `feature/engine/` 和 `feature/engine/impl/` 目录下
+
+#### 🔧 优化
+
+**代码风格统一**
+- 全项目 `SF.sf().method()` 链式调用改为 `SF sf = SF.sf(); sf.method()` 局部变量写法
+- 涉及 30+ 文件、300+ 处调用点
+- 减少重复方法调用开销，提升可读性
+
+### [3.0.0] - 2026-08-07
+
+#### ✨ 新增
+
+**SFText 文本组件 API（v2/feature/text/）**
+- `SFText`：基于 Adventure Component 的富文本工具类
+- 物品精灵图：`item(ItemStack)` / `item(ItemStack, String)` — hover 显示物品详情
+- 玩家头颅：`skull(OfflinePlayer)` / `skull(UUID, String)` / `skullByTexture(String, String)`
+- 交互组件：`url()` / `command()` / `suggest()` / `copy()` / `tooltip()`
+- `Builder` 链式拼接，支持 appendItem / appendSkull / appendUrl 等
+- 辅助方法：`text()` / `newline()` / `separator()` / `plain()`
+
+**聊天事件优先级 API（v2/feature/chat/）**
+- `ChatHandler` 接口：按 priority 依次执行，数值越小越先执行
+- `ChatContext`：`consume()` 不广播、`cancel()` 中断链、`formattedMessage()` 修改内容、`channel()` 切换频道
+- `markListening` / `unmarkListening` / `isPluginListening` — 一次性输入拦截
+- `SF.isPluginListenerChat(Player)` — 判断玩家是否被标记
+- `ChatManager.registerHandler()` / `unregisterHandler()` — 线程安全注册
+
+**性能优化系统（v2/feature/perf/）**
+- `PerformanceManager`：4 大优化模块，基于 SF Tick 异步运行
+- 内存监控：JMX Heap 读取，85% 告警，90% 自动 GC
+- 区块管理：自动卸载空闲区块，每周期最多 50 个
+- 实体清理：掉落物 60 秒、弹射物 10 秒、单区块 50 实体阈值
+- TPS 自适应：TPS < 15 降最小视距，TPS < 18 降 2，正常恢复
+- `PerformanceCommand`：`/sfperf`（`/sfp`）命令
+- `PerformanceListener`：事件追踪
+
+#### 🛠️ 变更
+- `SF.java` 新增 `perf()` 入口方法和 `isPluginListenerChat()` 方法
+- `ChatManager` 新增 `pluginListening` Set 和 handler 注册/分发机制
+- `ChatListener` 重构：先检查 `markListening`，再走禁言/过滤/handler 链
+- `ChatHandler.ChatContext` 拆分 `consume`（不广播）和 `cancel`（中断链）两个概念
+- `pom.xml` 版本号升级到 3.0.0
+- README.md 新增 SFText / 聊天优先级 / 性能优化三个章节
+
+### [2.0.0] - 2026-08-05
+
+#### ✨ 新增
+
+**附魔书被动获取**
+- `EnchantChestListener`：打开箱子有概率生成附魔书（默认 5%，每箱最多 2 本）
+- `EnchantTableListener`：附魔台附魔时有概率获得自定义附魔（默认 15% + 书架加成）
+- `EnchantManager.createBook()` / `giveBook()`：API 创建和给予附魔书
+
+**物品被动获取**
+- `ItemChestListener`：打开箱子有概率生成自定义物品（默认 3%，每箱最多 1 件）
+
+**交互距离系统**
+- `ReachManager`：动态调整玩家方块/实体交互距离
+- `ReachCommand`：`/sfreach`（`/sfre`）命令
+- 属性查找改用反射兼容不同 Paper 版本
+
+**属性查找日志**
+- 附魔和物品系统 `findAttribute()` 添加详细日志输出
+- 匹配成功：INFO 级别显示匹配的属性名
+- 匹配失败：WARN 级别显示尝试的候选列表
+
+**SF 注册修复**
+- SF 类同时注册 `SF.class` 和 `SFApi.class` 到 ServicesManager
+- 两种 `load()` 写法都能正常获取实例
+
+### [1.1.0] - 2026-08-04
+
+#### ✨ 新增
+
+**SF Tick 系统（v2/feature/tick/）**
+- `TickManager`：独立线程运行，1 秒 = 100 tick，不干扰原版 20tick/秒
+- `TickTask`：函数式接口，支持 lambda
+- `runLater` / `runTimer` / `cancel` 任务调度
+- `runSync` / `runSyncLater` 主线程切换
+- 时间换算：`toSeconds` / `fromSeconds` / `toBukkitTicks` / `fromBukkitTicks`
+- 所有新 API 的定时功能基于此系统
+
+**世界管理（v2/feature/world/）**
+- `WorldManager`：时间/天气/难度/PVP/边界/生物/火焰/预设
+- `WorldCommand`：`/sfworld`（`/sfw`）命令
+- 支持 15+ 子命令，含 Tab 补全
+- 世界预设保存/加载
+
+**聊天系统（v2/feature/chat/）**
+- `ChatManager`：多频道、禁言、屏蔽词、格式化
+- `ChatListener`：拦截聊天，频道分发
+- `ChatCommand`：`/sfchat`（`/sfc`）命令
+- 内置频道：global（全局）、local（附近 100 格）、staff（管理）
+- 支持动态创建/删除频道
+- 禁言基于 SF Tick 系统，支持临时/永久
+- 脏话过滤，自动替换屏蔽词
+- 与权限系统集成，自动读取前缀后缀
+
+**权限系统（v2/feature/permission/）**
+- `PermissionManager`：权限组、继承、前缀后缀、个人权限
+- `PermissionListener`：登录应用权限，退出清理
+- `PermissionCommand`：`/sfperm`（`/sfp`）命令
+- 内置组：default / vip / mod / admin / owner
+- 组继承链，权限自动传递
+- 通过 `PermissionAttachment` 注入 Bukkit 权限
+- 支持 `-` 前缀权限（否定权限）
+
+**附魔系统（v2/feature/enchant/）**
+- `SEnchantment` 抽象基类，继承即可注册自定义附魔
+- `EnchantManager` 管理注册/附魔/移除/创建附魔书
+- `EnchantAnvilListener` 铁砧附魔监听
+- `EnchantAttributeListener` 属性加成自动应用
+- `EnchantChestListener` 箱子战利品生成附魔书
+- `EnchantTableListener` 附魔台获取自定义附魔
+- `AncestralMightEnchant` 示例："祖宗之力"
+- `SFEnchantCommand`：`/sfenchant`（`/sfe`）命令
+- 使用 `PersistentDataContainer` 存储，不依赖原版附魔注册表
+
+**物品系统（v2/feature/item/）**
+- `SItem` 抽象基类，继承即可注册自定义物品
+- `ItemManager` 管理注册/给予/消耗/查询
+- `ItemListener` 交互监听（右键/左键/装备）
+- `ItemChestListener` 箱子战利品生成自定义物品
+- `MagicScepterItem` 示例："魔法权杖"
+- `SFItemCommand`：`/sfitem`（`/sfi`）命令
+
+#### 🛠️ 变更
+- `SF.java` 新增 `tick()` / `chat()` / `world()` / `permission()` / `enchant()` / `item()` 入口方法
+- `SFApi` 接口新增 `tick()` / `chat()` / `world()` / `permission()` 方法
+- `plugin.yml` 新增 6 个命令和 6 个权限节点
+- README.md 全面更新，新增第二阶段文档
+
+---
+
+### [1.0.0] - 2026-08-02
+
+首个正式版本发布！
+
+#### ✨ 新增
+
+**核心架构**
+- 建立 `server.sf.model.api.v2` 包结构，分离 v1 主入口与 v2 API
+- 实现门面模式 `SF` 类，统一对外暴露所有功能
+- 通过 Bukkit `ServicesManager` 注册 `SFApi` 接口供第三方插件接入
+
+**子模块（v2/main/）**
+- `SFLogger`：分级日志（info/warn/error），支持格式化参数
+- `SFScheduler`：同步/异步/延迟/定时任务调度
+- `SFPlayerOps`：玩家查找（按名/按 UUID）
+- `SFCommandOps`：命令与事件注册，支持链式调用
+- `SFServerOps`：广播、消息发送
+
+**经济系统（v2/economy/）**
+- 双后端支持：EssentialsX 优先，Vault 回退
+- `EconomyBackend` 接口抽象，`EssentialsBackend` / `VaultBackend` 独立实现
+- `EconomyOps` 高级操作：余额检查、负数校验、转账自动回滚
+- 修复 BigDecimal 精度问题
+- 支持 `hasAccount`、`give`、`take`、`set`、`transfer`、`format` 完整 API
+
+**事件系统（v2/event/）**
+- 12 个分类文件，覆盖 120+ Bukkit 事件
+- 通用 `on()` 方法支持任意自定义事件
+- 支持指定优先级和忽略已取消事件
+- 单监听器异常隔离，不影响其他监听器
+
+**数据库基础（v2/database/）**
+- `Database` 接口 + `SQLiteDatabase` / `MySQLDatabase` 双实现
+- SQLite 启用 WAL 模式提升并发性能
+- `DatabaseManager` 全局管理，自动建表
+- 支持表名前缀，便于多服务器共享数据库
+
+**传送系统（v2/feature/teleport/）**
+- `TeleportManager` 核心：冷却 / 延迟 / 防移动取消 / 跨世界
+- `/spawn` `/setspawn`：出生点管理
+- `/home` `/sethome` `/delhome` `/homes`：个人家（数据库持久化）
+- `/warp` `/setwarp` `/delwarp` `/warps`：公共传送点
+- `/back`：返回上次位置
+- `/tp` `/tphere`：管理员传送
+
+**TPA 系统（v2/feature/tpa/）**
+- `/tpa` `/tpahere` `/tpaccept` `/tpdeny` `/tpcancel`
+- 请求超时自动清理（默认 60 秒，可配置）
+- 互斥机制：同时只能有一个请求
+
+**管理员工具（v2/feature/admin/）**
+- `/gm` `/fly` `/heal` `/feed` `/god` `/vanish`
+- `/ec` `/wb` `/clear` `/speed` `/suicide`
+- `AdminStateManager` 管理状态持久化
+- god/vanish 状态在重登后保持
+
+#### 🛠️ 配置
+- `plugin.yml`：28+ 命令注册，完整权限节点，别名支持
+- `config.yml`：数据库配置 / 传送冷却 / 传送延迟 / TPA 超时
+- 支持 SQLite / MySQL 一键切换
+- 配置热重载（`/servermanagement reload`）
+
+#### ⚙️ 技术规格
+- **Java 版本**：21+
+- **API 版本**：Bukkit 1.21.5
+- **构建工具**：Maven 3.9+
+- **依赖**：Paper API, Vault（可选）, EssentialsX（可选）
+
+---
+
+## 🤝 贡献指南
+
+感谢你对 ZeroCkate ServerManagementPlugin 项目的兴趣！
+
+### 环境要求
+
+- JDK 21+
+- Maven 3.9+
+- Git
+- IDE（推荐 IntelliJ IDEA）
+
+### 本地开发
+
+```bash
+# 1. Fork 仓库并克隆
+git clone https://github.com/你的用户名/ZeroCkate_ServerManagementPlugin.git
+cd ZeroCkate_ServerManagementPlugin
+
+# 2. 添加上游远程
+git remote add upstream https://github.com/zmb96/ZeroCkate_ServerManagementPlugin.git
+
+# 3. 构建项目
+mvn clean package
+
+# 4. 将 target/ 下的 jar 文件放入测试服务器 plugins/ 目录测试
+```
+
+### 报告 Bug
+
+1. 在 [Issues](https://github.com/zmb96/ZeroCkate_ServerManagementPlugin/issues) 搜索是否已有相同问题
+2. 如果没有，创建新 Issue，包含以下信息：
+   - **环境**：服务器类型（Paper/Spigot）、版本、Java 版本
+   - **插件版本**：可在 `/plugins` 中查看
+   - **复现步骤**：详细步骤
+   - **预期行为**：你期望发生什么
+   - **实际行为**：实际发生了什么
+   - **完整日志**：相关堆栈跟踪
+
+### 提交代码
+
+1. **Fork** 本仓库
+2. 基于最新 `main` 分支创建特性分支：
+   ```bash
+   git checkout main
+   git pull upstream main
+   git checkout -b feature/你的特性名
+   ```
+3. 编写代码，遵循以下规范：
+   - 不写注释（项目作者偏好）
+   - 一个文件只负责一个小块功能
+   - 使用包结构组织代码
+   - 命令类实现 `CommandExecutor` 和 `TabCompleter`
+   - 监听器类实现 `Listener`
+4. 本地测试通过：`mvn clean package`
+5. 在测试服务器中验证功能正常
+6. 提交修改并推送
+7. 在 GitHub 上创建 **Pull Request** 到 `main` 分支
+
+### 代码规范
+
+**包结构**
+
+```
+server.sf.model.api.v2/
+├── SF.java              # 门面类
+├── SFApi.java           # API 接口
+├── database/            # 数据库相关
+├── economy/             # 经济系统
+├── event/               # 事件系统
+├── main/                # 核心工具
+└── feature/             # 功能模块
+    ├── teleport/        # 传送系统
+    ├── tpa/             # TPA 系统
+    ├── admin/           # 管理员工具
+    ├── tick/            # SF Tick 系统 (100tick/秒)
+    ├── world/           # 世界管理
+    ├── chat/            # 聊天系统
+    ├── permission/      # 权限系统
+    ├── enchant/         # 附魔注册系统
+    ├── item/            # 物品注册系统
+    ├── text/            # SFText 文本组件 API
+    └── perf/            # 性能优化系统
+```
+
+**命名约定**
+
+| 类型 | 命名规则 | 示例 |
+|------|----------|------|
+| 类 | PascalCase | `TeleportManager` |
+| 方法 | camelCase | `teleportNow()` |
+| 常量 | UPPER_SNAKE | `DEFAULT_TIMEOUT` |
+| 包 | 全小写 | `server.sf.model.api.v2.event` |
+| 命令类 | XxxCommand | `HomeCommand` |
+| 监听器 | XxxListener | `AdminListener` |
+| 管理器 | XxxManager | `TpaManager` |
+
+**Commit 规范**
+
+| 前缀 | 用途 |
+|------|------|
+| `feat:` | 新功能 |
+| `fix:` | Bug 修复 |
+| `docs:` | 文档变更 |
+| `refactor:` | 重构（不影响功能） |
+| `perf:` | 性能优化 |
+| `chore:` | 构建/工具变更 |
+
+### 手动测试清单
+
+提交 PR 前，请确保以下功能正常：
+
+- [ ] `mvn clean package` 构建成功
+- [ ] 插件能在 Paper 1.21.5 启动
+- [ ] 新功能在游戏内测试通过
+- [ ] 没有引入新的异常日志
+- [ ] `/servermanagement reload` 仍然可用
+- [ ] 卸载插件不报错
+
+### 维护者
+
+- **zmb96** - 项目创建者与主要维护者
+
+---
+
+## 📄 License
+
+GNU General Public License v3.0 - 详见 [LICENSE](LICENSE)
