@@ -45,11 +45,11 @@ public class tycon implements CommandExecutor {
         if (sender instanceof Player) {
             uuid = ((Player) sender).getUniqueId().toString();
         } else {
-            // 控制台执行
+            
             uuid = "CONSOLE";
         }
 
-        // ========== 5. 拼接用户输入的完整意见 ==========
+        
         StringBuilder opinion = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
             opinion.append(args[i]);
@@ -58,13 +58,13 @@ public class tycon implements CommandExecutor {
             }
         }
 
-        // ========== 6. 保存到配置 ==========
+        
         String path = "ty." + playerName;
         config.set(path + ".uuid", uuid);
         config.set(path + ".opinion", opinion.toString());
         config.set(path + ".time", System.currentTimeMillis());
 
-        // ========== 7. 写入文件 ==========
+        
         try {
             config.save(file);
         } catch (IOException e) {
@@ -75,7 +75,7 @@ public class tycon implements CommandExecutor {
             return true;
         }
 
-        // ========== 8. 成功消息 ==========
+        
         sender.sendMessage(ChatColor.translateAlternateColorCodes(
                 '&', "&a✅ 你的意见已保存！"
         ));

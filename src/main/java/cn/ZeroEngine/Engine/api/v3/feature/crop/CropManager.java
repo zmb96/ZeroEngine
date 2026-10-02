@@ -18,15 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 自定义农作物注册中心 + 位置映射。
- *
- * 作物方块用 vanilla Ageable Material，通过 chunk PDC 记录 "relX,relY,relZ -> cropId"
- * 区分不同自定义作物，重启后自动恢复。
- *
- * 注册：sf.crops().register(new TomatoCrop())
- * 查找：sf.crops().findAt(block)  O(1) 查作物身份
- */
 public class CropManager {
 
     private static final String PDC_PREFIX = "sfcrop_";

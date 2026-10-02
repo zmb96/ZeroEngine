@@ -11,26 +11,6 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 自定义农作物基类（继承 SItem，物品形式即种子）。
- *
- * 作物方块用 vanilla Ageable Material（WHEAT/CARROTS/POTATOES/BEETROOTS 等），
- * 通过 chunk PDC 标记 cropId 区分不同自定义作物。生长沿用原版随机刻，
- * 成熟后右键收获掉落产物与种子。
- *
- * 用法：
- *   public class TomatoCrop extends SCrop {
- *       @Override public String id() { return "tomato"; }
- *       @Override public String displayName() { return "§c番茄种子"; }
- *       @Override public Material material() { return Material.WHEAT_SEEDS; }   // 物品形式（种子）
- *       @Override public Material cropBlock() { return Material.WHEAT; }        // 方块形式
- *       @Override public List<ItemStack> harvestDrops() {
- *           return List.of(new ItemStack(Material.APPLE, 2));                   // 成熟产物
- *       }
- *   }
- *
- *   sf.crops().register(new TomatoCrop());
- */
 public abstract class SCrop extends SItem {
 
     public abstract Material cropBlock();

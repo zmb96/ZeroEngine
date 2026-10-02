@@ -28,13 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-/**
- * 自定义屏幕注册中心 + 进服阻塞分发器。
- *
- * 玩家进服处于 configuration phase 时，按 priority 顺序对每个 shouldShow 的 SScreen
- * 弹出 Dialog，用 CompletableFuture 阻塞等待玩家点击或超时。
- * accept() 放行下一个屏幕，deny() 踢出。
- */
 public class ScreenManager implements Listener {
 
     private static final int PROTOCOL_1_21_7 = 772;
@@ -101,6 +94,10 @@ public class ScreenManager implements Listener {
         future.completeOnTimeout(false, Math.max(1, screen.timeoutSeconds()), TimeUnit.SECONDS);
         Pending p = new Pending(screen, future);
         pending.put(uuid, p);
+        future.whenComplete((result, ex) -> {
+            pending.remove(uuid);
+            try { player.closeDialog(); } catch (Throwable ignore) {}
+        });
 
         try {
             player.showDialog(screen.buildDialog());

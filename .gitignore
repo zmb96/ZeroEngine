@@ -21,3 +21,10 @@ target/
 dependency-reduced-pom.xml
 log.txt
 log.txt
+
+# Backups
+.backup_*/
+*.bak_*
+
+# SSH known_hosts leaked by PowerShell profile error
+*known_hosts*

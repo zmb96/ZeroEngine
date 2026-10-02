@@ -25,7 +25,7 @@ public class ItemChestListener implements Listener {
     private double defaultChance = 0.03;
     private int maxLootPerChest = 1;
     private final Set<String> lootedChests = Collections.synchronizedSet(new HashSet<>());
-    /** 全局掉率缩放因子（1.0=不变，越小越稀有），由外部插件按装备等级动态调整 */
+    
     private static double chanceScale = 1.0;
 
     public ItemChestListener(ItemManager itemManager) {
@@ -98,7 +98,7 @@ public class ItemChestListener implements Listener {
         lootedChests.clear();
     }
 
-    /** 设置全局掉率缩放（1.0=不变，0.1=十分之一），供外部插件按装备等级动态调整 */
+    
     public static void setChanceScale(double scale) {
         chanceScale = Math.max(0.01, Math.min(1.0, scale));
     }

@@ -15,17 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * /sfrecipe 命令（别名 /sfr），权限 sf.admin.recipe
- *
- * 子命令：
- *   /sfrecipe list                          列出全部自定义配方
- *   /sfrecipe info <id>                     查看配方形状/材料/产物
- *   /sfrecipe give <id> [玩家]              给玩家发一份配方产物（用于测试）
- *   /sfrecipe reload                        重注册所有配方
- *   /sfrecipe remove <id>                   移除一个配方
- *   /sfrecipe help                          帮助
- */
 public class SFRecipeCommand implements CommandExecutor, TabCompleter {
 
     private final RecipeManager manager;

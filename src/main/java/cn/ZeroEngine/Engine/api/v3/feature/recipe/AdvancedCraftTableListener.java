@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Dispenser;
+import org.bukkit.block.Barrel;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -40,13 +40,13 @@ public class AdvancedCraftTableListener implements Listener {
         if (!TOP_MATERIALS.contains(top)) return;
 
         Block below = clicked.getRelative(BlockFace.DOWN);
-        if (below.getType() != Material.DISPENSER) return;
-        if (!(below.getState() instanceof Dispenser dispenser)) return;
+        if (below.getType() != Material.BARREL) return;
+        if (!(below.getState() instanceof Barrel barrel)) return;
 
         Player p = e.getPlayer();
         e.setCancelled(true);
 
-        Inventory inv = dispenser.getInventory();
+        Inventory inv = barrel.getInventory();
         AdvancedCraftTable table = manager.findTableAt(clicked);
         if (table != null) {
             Material expectedBottom = table.bottomBlock();
@@ -55,6 +55,7 @@ public class AdvancedCraftTableListener implements Listener {
                 return;
             }
             SChestGUI gui = table.onRightChest();
+            if (gui == null) gui = table.craftGUI(manager);
             table.onOpenChest(p, clicked, below, inv);
             if (gui != null) {
                 gui.open(p);
@@ -64,17 +65,6 @@ public class AdvancedCraftTableListener implements Listener {
             return;
         }
 
-        if (top == Material.CRAFTING_TABLE) {
-            SRecipe recipe = manager.craftAtInventory(inv);
-            if (recipe != null) {
-                p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.4f);
-                p.sendMessage("§a合成成功 §7→ §f" + recipe.id());
-                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.6f, 1.6f);
-            } else {
-                p.openInventory(inv);
-            }
-            return;
-        }
 
         p.openInventory(inv);
     }

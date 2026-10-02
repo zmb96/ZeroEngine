@@ -17,16 +17,6 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.ItemManager;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 自定义配方注册中心
- *
- * 注册：sf.recipes().register(new MyRecipe())
- * 查找：sf.recipes().get("my_recipe")
- * 列出：sf.recipes().all()
- *
- * 通过 `Bukkit.addRecipe()` 注册到原版工作台 —— 玩家直接在工作台就能合成。
- * 自定义物品作 ingredient 时用 `RecipeChoice.ExactChoice` 精确匹配 PDC/lore。
- */
 public class RecipeManager {
 
     private final Map<String, SRecipe> registry = new HashMap<>();
@@ -37,7 +27,7 @@ public class RecipeManager {
     private ItemManager itemManager;
     private Plugin plugin;
 
-    /** 注册一个配方。advancedOnly=true 时跳过 Bukkit.addRecipe，仅加入内部 registry 供高级工作台使用 */
+    
     public boolean register(SRecipe r) {
         SF sf = SF.sf();
         String id = r.id();
@@ -94,7 +84,7 @@ public class RecipeManager {
 
     public boolean registerTableIfAbsent(AdvancedCraftTable table) {
         if (tables.containsKey(table.id())) {
-            // refresh defaultByMaterial if absent
+            
             if (table.baseBlock() != null) defaultByMaterial.putIfAbsent(table.baseBlock(), tables.get(table.id()));
             return false;
         }
@@ -120,7 +110,7 @@ public class RecipeManager {
 
     public Collection<AdvancedCraftTable> allTables() { return Collections.unmodifiableCollection(tables.values()); }
 
-    /** 默认按顶部方块 Material 匹配到的机器 */
+    
     public AdvancedCraftTable defaultTableFor(Material topBlock) {
         if (topBlock == null) return null;
         return defaultByMaterial.get(topBlock);
@@ -170,7 +160,7 @@ public class RecipeManager {
         return tableKeyCache.computeIfAbsent(k, key -> new NamespacedKey(plugin, key));
     }
 
-    /** 从 Bukkit 移除一个自定义配方；同时清空注册表记录 */
+    
     public boolean remove(String id) {
         NamespacedKey k = registeredKeys.get(id);
         if (k == null) return false;
@@ -227,7 +217,7 @@ public class RecipeManager {
         return mr.recipe;
     }
 
-    /** 清空所有已注册配方（Bukkit 层一并移除，包括 advancedOnly 的内部 registry） */
+    
     public void unregisterAll() {
         for (String id : new ArrayList<>(registeredKeys.keySet())) remove(id);
         int advancedOnlyLeft = registry.size();
@@ -244,7 +234,7 @@ public class RecipeManager {
         return String.valueOf(res);
     }
 
-    /** 插件生命周期：Server 重启 / reload 前，调用本方法刷新 Bukkit 中的配方（通常不需要，除非 DataPack 热重载） */
+    
     public void resetRecipes(Plugin plugin) {
         SF sf = SF.sf();
         int n = 0;

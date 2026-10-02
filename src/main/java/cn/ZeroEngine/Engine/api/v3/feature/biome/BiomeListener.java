@@ -12,7 +12,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkPopulateEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-
 public class BiomeListener implements Listener {
 
     private final JavaPlugin plugin;

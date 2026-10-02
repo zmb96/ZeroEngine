@@ -12,17 +12,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * 按钮点击上下文。SScreen.onClick(ctx) 里调用 ctx.accept() 放行，ctx.deny(...) 踢出。
- * 多次调用只生效第一次。
- *
- * 同时支持两种打开模式：
- *   - 配置阶段（玩家未进服）：connection 是 PlayerConfigurationConnection
- *   - 在世玩家（已进服）：connection 是 PlayerGameConnection，可通过 player() 拿 Player
- * deny() 走 connection.disconnect(Component)，两种模式都踢出连接。
- *
- * 输入框取值：ctx.inputText(key) / inputBool(key) / inputFloat(key)，从 DialogResponseView 取。
- */
 public class ClickContext {
 
     private final String action;

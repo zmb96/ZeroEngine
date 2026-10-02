@@ -13,20 +13,6 @@ import cn.ZeroEngine.Engine.api.v3.SF;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * /sfentity 命令 —— 列出/生成/查看/清理 自定义生物
- *
- * 子命令：
- *   /sfentity list                       列出所有已注册自定义生物
- *   /sfentity spawn <id> [数量]          在脚下生成
- *   /sfentity info <id>                  查看属性/装备/生成条件
- *   /sfentity count [id]                 查看当前活动实例数
- *   /sfentity cleanup                    清理无效引用
- *   /sfentity reload                     清空注册表（需代码重新注册）
- *   /sfentity help                       帮助
- *
- * 别名 /sfe，权限 sf.admin.entity
- */
 public class SFEntityCommand implements CommandExecutor, TabCompleter {
 
     private final EntityManager manager;

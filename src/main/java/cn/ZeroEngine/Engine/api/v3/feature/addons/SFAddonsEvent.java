@@ -3,10 +3,6 @@ package cn.ZeroEngine.Engine.api.v3.feature.addons;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-/**
- * SFAddons 热加载事件。ZeroEngine 的 /sfaddons 命令触发，
- * 第三方插件监听此事件完成自身的 load / reload 注册。
- */
 public class SFAddonsEvent extends Event {
 
     public static final String UNLOAD = "unload";

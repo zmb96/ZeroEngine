@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class SFAttr {
 
-    // ===================== 玩家通用属性 =====================
+    
     public static final String MAX_HEALTH                    = "MAX_HEALTH";
     public static final String FOLLOW_RANGE                  = "FOLLOW_RANGE";
     public static final String KNOCKBACK_RESISTANCE          = "KNOCKBACK_RESISTANCE";
@@ -40,14 +40,14 @@ public final class SFAttr {
     public static final String SCALE                         = "SCALE";
     public static final String STEP_HEIGHT                   = "STEP_HEIGHT";
     public static final String EXPLOSION_KNOCKBACK_REDUCTION = "EXPLOSION_KNOCKBACK_REDUCTION";
-    public static final String EXPLOSION_KNOCKBACK_RESISTANCE = "EXPLOSION_KNOCKBACK_RESISTANCE"; // 1.21+ 正确名（REDUCTION 为旧错名兼容保留）
+    public static final String EXPLOSION_KNOCKBACK_RESISTANCE = "EXPLOSION_KNOCKBACK_RESISTANCE"; 
     public static final String BLOCK_BREAK_SPEED              = "BLOCK_BREAK_SPEED";
     public static final String JUMP_STRENGTH                   = "JUMP_STRENGTH";
 
-    // ===================== 生物专属属性 =====================
+    
     public static final String SPAWN_REINFORCEMENTS           = "SPAWN_REINFORCEMENTS";
 
-    // ===================== 旧版 GENERIC_ 兼容名 =====================
+    
     public static final String GENERIC_MAX_HEALTH                    = "GENERIC_MAX_HEALTH";
     public static final String GENERIC_FOLLOW_RANGE                  = "GENERIC_FOLLOW_RANGE";
     public static final String GENERIC_KNOCKBACK_RESISTANCE          = "GENERIC_KNOCKBACK_RESISTANCE";
@@ -202,7 +202,7 @@ public final class SFAttr {
         return d != null ? d : name;
     }
 
-    // ==================== AttributeBonus 快捷构造（仅实例方法，支持 sf().attr().xxx()） ====================
+    
 
     public SEnchantment.AttributeBonus add(String name, String attr, double base, double perLevel) {
         return SEnchantment.AttributeBonus.add(name, attr, base, perLevel);

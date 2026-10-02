@@ -496,7 +496,7 @@ public class HordeImpl implements Horde, Listener {
         return g instanceof GameImpl && ((GameImpl) g).bloodMoon;
     }
 
-    // ==== Internal impl classes ====
+    
 
     static class ArenaImpl implements Arena {
         final String id, name, world;

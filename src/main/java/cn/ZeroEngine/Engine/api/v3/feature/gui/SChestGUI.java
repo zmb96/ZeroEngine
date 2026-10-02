@@ -1,27 +1,33 @@
 package cn.ZeroEngine.Engine.api.v3.feature.gui;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-/**
- * 自定义箱子 GUI 基类（OOP 风格，委托底层 ChestGUI 实现）。
- *
- * 用法：
- *   public class MillGui extends SChestGUI {
- *       @Override public String id() { return "mill"; }
- *       @Override public String title() { return "磨面机"; }
- *       @Override public int size() { return 27; }
- *       @Override public String command() { return "cd"; }  // /cd 命令打开此 GUI
- *       @Override public void build(Builder b) {
- *           b.item(0, new ItemStack(Material.WHEAT), ctx -> ctx.player().sendMessage("放入小麦"));
- *           b.border(Material.GRAY_STAINED_GLASS_PANE, " ");
- *       }
- *   }
- *
- *   sf.guis().register(new MillGui());   // 注册并自动绑定 /cd 命令
- *   // 或右键 AdvancedCraftTable.onRightChest() 返回此实例直接打开
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class SChestGUI {
+
+    public static ItemStack named(Material mat, String name, String... lore) {
+        ItemStack item = new ItemStack(mat);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (name != null) meta.setDisplayName(color(name));
+            if (lore != null && lore.length > 0) {
+                List<String> colored = new ArrayList<>(lore.length);
+                for (String s : lore) colored.add(color(s));
+                meta.setLore(colored);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static String color(String s) {
+        return s == null ? null : s.replace('&', '§');
+    }
 
     public abstract String id();
 
@@ -62,6 +68,12 @@ public abstract class SChestGUI {
         }
         public Builder item(int slot, org.bukkit.Material mat, String name, java.util.function.Consumer<ChestGUI.ClickContext> onClick, String... lore) {
             gui.item(slot, mat, name, onClick, lore); return this;
+        }
+        public Builder item(int slot, org.bukkit.Material mat, String name, String... lore) {
+            gui.item(slot, mat, name, lore); return this;
+        }
+        public Builder item(int row, int col, org.bukkit.Material mat, String name, String... lore) {
+            gui.item(row, col, mat, name, lore); return this;
         }
         public Builder fill(ItemStack item) { gui.fill(item); return this; }
         public Builder fill(org.bukkit.Material mat, String name, String... lore) { gui.fill(mat, name, lore); return this; }

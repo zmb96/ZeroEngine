@@ -24,16 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * /sfaddons 命令 —— ZeroEngine 全局热加载管理。
- *
- * 子命令：
- *   unload  — 清空所有第三方注册的物品/GUI/作物/屏幕/配方/附魔，重置掉率
- *   load    — 发送 SFAddonsEvent(LOAD)，第三方插件监听后重新注册
- *   reload  — unload → load
- *   status  — 显示各系统当前注册数量
- *   help    — 帮助
- */
 public class SFAddonsCommand implements CommandExecutor, TabCompleter {
 
     @Override
@@ -65,35 +55,35 @@ public class SFAddonsCommand implements CommandExecutor, TabCompleter {
         SF sf = SF.sf();
         int n = 0;
 
-        // 物品
+        
         ItemManager im = sf.item();
         if (im != null) { im.unregisterAll(); im.registerIfAbsent(new MagicScepterItem()); n += im.all().size(); }
 
-        // 附魔
+        
         EnchantManager em = sf.enchant();
         if (em != null) { em.unregisterAll(); em.registerIfAbsent(new LifestealEnchant()); em.registerIfAbsent(new AncestralMightEnchant()); }
 
-        // GUI
+        
         GUIManager gm = sf.gui();
         if (gm != null) gm.closeAll();
 
-        // 作物
+        
         CropManager cm = sf.crops();
         if (cm != null) cm.unregisterAll();
 
-        // 屏幕
+        
         ScreenManager sm = sf.screens();
         if (sm != null) sm.unregisterAll();
 
-        // 配方 + 机器
+        
         RecipeManager rm = sf.recipes();
         if (rm != null) { rm.unregisterAllTables(); rm.unregisterAll(); }
 
-        // 重置掉率缩放
+        
         ItemChestListener.setChanceScale(1.0);
         EnchantChestListener.setChanceScale(1.0);
 
-        // 通知第三方插件
+        
         Bukkit.getPluginManager().callEvent(new SFAddonsEvent(SFAddonsEvent.UNLOAD));
 
         s.sendMessage(ChatColor.GREEN + "[SFAddons] 已卸载所有第三方注册，掉率已重置为 100%");

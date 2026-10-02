@@ -25,14 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * 自定义生物事件监听器 —— 处理生成/攻击/死亡/燃烧/目标/tick
- *
- * 装配时：
- *   EntityListener listener = new EntityListener(manager);
- *   sf.regEvent(listener, plugin);
- *   listener.startTick(plugin, sf);   // 启动 SFTick 调度
- */
 public class EntityListener implements Listener {
 
     private final EntityManager manager;
@@ -43,28 +35,28 @@ public class EntityListener implements Listener {
         this.manager = manager;
     }
 
-    // ==================== 生成拦截 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCreatureSpawn(CreatureSpawnEvent e) {
         if (!(e.getEntity() instanceof LivingEntity living)) return;
 
-        // 已经是自定义生物（来自 manager.spawn），不拦截
+        
         if (manager.isCustom(living)) return;
 
-        // 对原版同类型生物，按 replaceVanillaSpawns + chance 转换
+        
         for (SEntity def : manager.all()) {
             if (!def.spawnCondition().replaceVanillaSpawns) continue;
             if (def.entityType() != living.getType()) continue;
             if (!def.spawnCondition().matches(e.getLocation())) continue;
 
-            // 转换：打标签 + 应用属性装备
+            
             manager.convert(def, living, e.getLocation(), e.getSpawnReason());
             return;
         }
     }
 
-    // ==================== 攻击玩家监听 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onAttack(EntityDamageByEntityEvent e) {
@@ -72,7 +64,7 @@ public class EntityListener implements Listener {
         SEntity def = manager.find(attacker);
         if (def == null) return;
 
-        // 敌对生物才会触发 onAttack
+        
         if (e.getEntity() instanceof Player) {
             try {
                 def.onAttack(attacker, e.getEntity() instanceof LivingEntity ? (LivingEntity) e.getEntity() : null,
@@ -83,7 +75,7 @@ public class EntityListener implements Listener {
         }
     }
 
-    // ==================== 受伤监听 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamaged(EntityDamageEvent e) {
@@ -98,7 +90,7 @@ public class EntityListener implements Listener {
         }
     }
 
-    // ==================== 死亡掉落 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent e) {
@@ -106,13 +98,13 @@ public class EntityListener implements Listener {
         SEntity def = manager.find(living);
         if (def == null) return;
 
-        // 追加额外掉落
+        
         List<ItemStack> extra = def.deathDrops();
         if (extra != null && !extra.isEmpty()) {
             e.getDrops().addAll(extra);
         }
 
-        // 清理活动表 + 触发回调
+        
         manager.onEntityDeath(living.getUniqueId());
         try {
             def.onDeath(living, e);
@@ -121,7 +113,7 @@ public class EntityListener implements Listener {
         }
     }
 
-    // ==================== 目标 / 阵营 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onTarget(EntityTargetEvent e) {
@@ -129,19 +121,19 @@ public class EntityListener implements Listener {
         SEntity def = manager.find(living);
         if (def == null) return;
 
-        // 中立 / 和平生物：除非被攻击，否则取消目标
+        
         switch (def.hostility()) {
             case PASSIVE -> {
                 if (e.getTarget() instanceof Player) e.setCancelled(true);
             }
             case NEUTRAL -> {
-                // 只允许在受伤后追踪（Player最近攻击过）—— 简化：仅取消自然生成导致的追踪
+                
                 if (e.getReason() == EntityTargetEvent.TargetReason.CLOSEST_PLAYER
                         || e.getReason() == EntityTargetEvent.TargetReason.RANDOM_TARGET) {
                     e.setCancelled(true);
                 }
             }
-            case HOSTILE -> { /* 敌对：让原版逻辑跑 */ }
+            case HOSTILE -> {  }
             default -> {}
         }
 
@@ -152,7 +144,7 @@ public class EntityListener implements Listener {
         }
     }
 
-    // ==================== 光照燃烧（怕光照） ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCombust(EntityCombustEvent e) {
@@ -160,26 +152,22 @@ public class EntityListener implements Listener {
         SEntity def = manager.find(living);
         if (def == null) return;
 
-        // burnInDaylight=false 的自定义生物：取消燃烧
+        
         if (!def.spawnCondition().burnInDaylight) {
             e.setCancelled(true);
         }
     }
 
-    // ==================== SFTick 调度 ====================
+    
 
-    /**
-     * 启动周期调度
-     * @param sfTicks 每 N 个 SFTick 触发一次 onTick（默认 5 = 1 Bukkit tick / 50ms）
-     * @param perSecondTicks 每 N 个 SFTick 触发一次 onPerSecond（默认 100 = 1 秒）
-     */
+    
     public void startTick(JavaPlugin plugin, SF sf, long sfTicks, long perSecondTicks) {
         long bukkitTick = Math.max(1, sfTicks / 5);
         long bukkitSecond = Math.max(1, perSecondTicks / 5);
 
-        // onTick —— 每 bukkitTick 个 Bukkit tick 跑一次
-        // 用 keySet 副本迭代，避免 UnmodifiableMap 不支持 iterator.remove()
-        // 移除已死亡实体走 manager.removeActive(uuid) 显式调用
+        
+        
+        
         tickTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (UUID id : new java.util.ArrayList<>(manager.activeMap().keySet())) {
                 Entity ent = sf.bukkit().getEntity(id);
@@ -197,7 +185,7 @@ public class EntityListener implements Listener {
             }
         }, 1L, bukkitTick);
 
-        // onPerSecond —— 每 bukkitSecond 个 Bukkit tick 跑一次
+        
         perSecondTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (UUID id : new java.util.ArrayList<>(manager.activeMap().keySet())) {
                 Entity ent = sf.bukkit().getEntity(id);
@@ -216,7 +204,7 @@ public class EntityListener implements Listener {
         }, 20L, bukkitSecond);
     }
 
-    /** 默认调度：onTick 每 5 SFTick（1 Bukkit tick），onPerSecond 每 100 SFTick（1 秒） */
+    
     public void startTick(JavaPlugin plugin, SF sf) {
         startTick(plugin, sf, 5L, 100L);
     }

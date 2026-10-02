@@ -39,13 +39,6 @@ import cn.ZeroEngine.Engine.api.v3.SF;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 自定义方块事件分发器。
- *
- * 放置：玩家手里是 SBlock 物品形式 -> BlockPlaceEvent -> manager.placeAt() + onPlace()
- * 破坏：BlockBreakEvent -> findAt() -> onBreak() + 按 dropMode() 处理掉落 + removeAt()
- * 红石：每秒扫描所有已放置且 redstoneRadius()>0 的方块，状态变化触发 onRedstonePowered/Unpowered
- */
 public class BlockListener implements Listener {
 
     private final Plugin plugin;
@@ -149,7 +142,7 @@ public class BlockListener implements Listener {
         redstoneDefs.remove(loc);
     }
 
-    // ==================== 放置 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent e) {
@@ -175,7 +168,7 @@ public class BlockListener implements Listener {
         watchForRedstone(placed, def);
     }
 
-    // ==================== 破坏 + 掉落 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent e) {
@@ -208,7 +201,7 @@ public class BlockListener implements Listener {
         manager.removeAt(broken);
     }
 
-    // ==================== 右键 / 左键方块 ====================
+    
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
@@ -227,7 +220,7 @@ public class BlockListener implements Listener {
         if (handled) e.setCancelled(true);
     }
 
-    // ==================== 通用方块事件分发 ====================
+    
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(BlockDamageEvent e) {

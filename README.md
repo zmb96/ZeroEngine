@@ -4,7 +4,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Bukkit](https://img.shields.io/badge/Bukkit-1.21.8-green)
-![Version](https://img.shields.io/badge/Version-3.3.3--LTS-blue)
+![Version](https://img.shields.io/badge/Version-3.4.0-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 
 ## 目录
@@ -2719,6 +2719,185 @@ sf.gui().register(new ShopGui());   // 注册并自动绑定 /cd 命令
 ```
 
 玩家输入 `/cd` → 打开商店 GUI；点钻石格 → 提示"你点了钻石"。
+
+### 放物品的 4 种写法
+
+**写法 1（最简，推荐）—— 直接 Material + 名字 + lore：**
+
+```java
+b.item(13, Material.IRON_INGOT, "&a铁锭", "&7一种基础金属", "&7用于合成装备");
+```
+
+第一个参数是 slot，第二个是 Material，第三个是显示名（支持 `&` 或 `§` 颜色码），后面是任意条 lore。`&` 会自动转 `§`。
+
+**写法 2 —— 加点击事件：**
+
+```java
+b.item(13, Material.IRON_INGOT, "&a铁锭", ctx -> {
+    ctx.player().sendMessage("&a你点了铁锭！");
+}, "&7一种基础金属", "&7用于合成装备");
+```
+
+注意：带点击事件的版本，`onClick` 参数必须放在 lore 前面。
+
+**写法 3 —— 用 ItemStack（已有物品）：**
+
+```java
+ItemStack myItem = ...; // 别处构造好的
+b.item(13, myItem);
+```
+
+**写法 4 —— 用 `SChestGUI.named()` 辅助方法：**
+
+```java
+import static cn.ZeroEngine.Engine.api.v3.feature.gui.SChestGUI.named;
+
+ItemStack iron = named(Material.IRON_INGOT, "&a铁锭", "&7一种基础金属", "&7用于合成装备");
+b.item(13, iron);
+b.item(14, iron);  // 同一个物品可以放多个槽
+```
+
+`named()` 自动处理 `&` → `§` 颜色码转换 + 设置 displayName + setLore。返回的是新 ItemStack，可以复用。
+
+> **常见坑**：直接写 `b.item(1, new ItemStack(Material.IRON_INGOT))` 不会有名字和 lore——必须用上面 4 种写法之一，或自己手动 `meta.setDisplayName` + `meta.setLore`。
+
+### 颜色码
+
+所有名字 / lore 字符串都支持 `&` 颜色码（自动转 `§`）：
+
+| 代码 | 颜色 | 代码 | 颜色 |
+|---|---|---|---|
+| `&0` | 黑 | `&6` | 金 |
+| `&1` | 深蓝 | `&7` | 灰 |
+| `&2` | 深绿 | `&8` | 深灰 |
+| `&3` | 青 | `&9` | 蓝 |
+| `&4` | 红 | `&a` | 亮绿 |
+| `&5` | 紫 | `&b` | 亮青 |
+| `&c` | 红 | `&d` | 粉 |
+| `&e` | 黄 | `&f` | 白 |
+
+格式码：`&l` 粗体、`&o` 斜体、`&n` 下划线、`&m` 删除线、`&k` 乱码、`&r` 重置。
+
+### slot 布局参考
+
+54 格 GUI（6 行 × 9 列），内容区避开边框（第 0 列和第 8 列）：
+
+```
+行0:  0  1  2  3  4  5  6  7  8   ← 边框 + 头部(slot 4)
+行1:  9 10 11 12 13 14 15 16 17   ← 内容区：10-16
+行2: 18 19 20 21 22 23 24 25 26   ← 内容区：19-26
+行3: 27 28 29 30 31 32 33 34 35   ← 内容区：29-35
+行4: 36 37 38 39 40 41 42 43 44   ← 内容区：38-44
+行5: 45 46 47 48 49 50 51 52 53   ← 边框 + 底部(slot 49)
+```
+
+内容区按钮建议**连续排列**，不留空格。27 / 36 / 45 格以此类推。
+
+### 常用布局方法
+
+```java
+b.border(Material.LIME_STAINED_GLASS_PANE, " ");          // 给四周一圈填玻璃
+b.border(Material.LIME_STAINED_GLASS_PANE, "&7", "&a边框"); // 带名字+lore
+b.fill(Material.BLACK_STAINED_GLASS_PANE, " ");          // 填满所有槽
+b.fillRange(9, 18, named(Material.GRAY_STAINED_GLASS_PANE, " ")); // 填 slot 9-17
+b.clear(13);  // 清空 slot 13
+b.clear();    // 清空所有
+b.pagination(items, 7);  // 分页，每页 7 个
+```
+
+### ClickContext 事件
+
+```java
+public void onClick(ChestGUI.ClickContext ctx) {
+    Player player = ctx.player();
+    int slot = ctx.slot();
+    ItemStack clicked = ctx.current();    // 被点击槽位的物品
+    ItemStack cursor = ctx.cursor();     // 鼠标上的物品
+    boolean shift = ctx.isShiftClick();
+    boolean right = ctx.isRightClick();
+
+    ctx.cancelled(true);                 // 取消事件（只读 GUI 必加）
+
+    if (slot == 13) {
+        player.sendMessage("&a你点了铁锭！");
+    }
+}
+```
+
+也可以在 `b.item()` 里直接传 `Consumer<ClickContext>`，那个 callback 不会拦截其他点击。
+
+### 子页面跳转
+
+```java
+public class MainPage extends SChestGUI {
+    @Override public String id() { return "main"; }
+    @Override public int size() { return 27; }
+
+    @Override
+    public void build(Builder b) {
+        b.border(Material.LIME_STAINED_GLASS_PANE, " ");
+        b.item(13, Material.BOOK, "&a子页面",
+            ctx -> new SubPage().open(ctx.player()),
+            "&7点击进入子页面");
+    }
+}
+
+public class SubPage extends SChestGUI {
+    @Override public String id() { return "sub"; }
+    @Override public int size() { return 27; }
+
+    @Override
+    public void build(Builder b) {
+        b.border(Material.LIME_STAINED_GLASS_PANE, " ");
+        b.item(13, Material.ARROW, "&f← 返回",
+            ctx -> {
+                ctx.player().closeInventory();
+                new MainPage().open(ctx.player());
+            });
+    }
+}
+```
+
+### 完整示例：可读可点的物品列表
+
+```java
+public class ItemListPage extends SChestGUI {
+
+    @Override public String id()    { return "item_list"; }
+    @Override public String title() { return "&a&l物品列表"; }
+    @Override public int size()     { return 54; }
+    @Override public boolean readonly() { return true; }
+    @Override public String command() { return "items"; }
+
+    @Override
+    public void build(Builder b) {
+        b.border(Material.LIME_STAINED_GLASS_PANE, " ");
+
+        b.item(4, Material.FIRE_CHARGE, "&a&l物品列表",
+            "&7这里展示所有自定义物品", "&7点击物品查看详情");
+
+        b.item(19, Material.IRON_INGOT, "&a铁锭",
+            ctx -> ctx.player().sendMessage("&a铁锭：基础金属"),
+            "&7一种基础金属", "&7用于合成装备");
+
+        b.item(20, Material.DIAMOND, "&b钻石",
+            ctx -> ctx.player().sendMessage("&b钻石：稀有矿物"),
+            "&7稀有矿物", "&7用于高级装备");
+
+        b.item(21, Material.NETHERITE_INGOT, "&6下界合金锭",
+            ctx -> ctx.player().sendMessage("&6下界合金锭：顶级材料"),
+            "&7顶级材料", "&7用于顶级装备");
+
+        b.item(49, Material.ARROW, "&f← 关闭",
+            ctx -> ctx.player().closeInventory());
+    }
+
+    @Override
+    public void onClick(ChestGUI.ClickContext ctx) {
+        ctx.cancelled(true);
+    }
+}
+```
 
 ---
 
@@ -5882,6 +6061,19 @@ A：SF 使用 GPLv3 协议，允许商用、修改、分发，但衍生作品必
 ## 📝 变更日志
 
 本项目版本变更记录遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+### [3.4.0] - 2026-10-02
+
+- **SChestGUI 基类大幅增强** —— 修复第三方插件「写了 `b.item(1, new ItemStack(Material.IRON_INGOT))` 但物品没名字没 lore」的常见痛点
+  - 新增静态辅助方法 `SChestGUI.named(Material, name, lore...)` —— 一行构造带名字+lore 的 ItemStack，自动处理 `&` → `§` 颜色码转换，返回的物品可复用（同一物品可放多个槽）
+  - 新增静态方法 `SChestGUI.color(String)` —— `&` → `§` 颜色码转换工具
+  - `Builder` 新增 2 个便捷重载：
+    - `item(int slot, Material mat, String name, String... lore)` —— 不带 onClick 的简化版
+    - `item(int row, int col, Material mat, String name, String... lore)` —— 行列版本
+  - 现在放物品有 4 种写法（详见 README SChestGUI 章节）：Material+name+lore / 带 onClick / ItemStack / `named()` 辅助
+- **README 大幅扩充 SChestGUI 章节** —— 加入颜色码表、slot 布局参考、常用布局方法、ClickContext 事件、子页面跳转、完整示例
+- **高级工作台改造** —— 抽象基类 `AdvancedCraftTable` 新增 `craftGUI(RecipeManager)` 扩展点，允许下游插件提供自定义合成 GUI（之前硬编码在引擎内的 GUI 已移出，由下游插件 `ZeroTech` 通过 `DefaultCraftTable.craftGUI()` 提供）
+- **高级工作台下方容器改用 BARREL 木桶** —— `AdvancedCraftTable.bottomBlock()` 由 `DISPENSER` 改为 `BARREL`，所有工作方块下方需放木桶（之前是发射器）
 
 ### [3.3.3-LTS] - 2026-08-29
 

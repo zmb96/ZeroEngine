@@ -16,33 +16,6 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 自定义屏幕基类 —— 基于 Paper 1.21.8 Dialog API。
- *
- * 玩家进服时处于 configuration phase（尚未进入世界），此时弹出 Dialog，
- * 用 CompletableFuture 阻塞直到玩家点击按钮或超时。accept() 放行，deny() 踢出。
- *
- * 用法：
- *   public class RulesScreen extends SScreen {
- *       @Override public String id() { return "server_rules"; }
- *       @Override public Component title() { return Component.text("服务器规则").color(NamedTextColor.GOLD); }
- *       @Override public List<DialogBody> body() {
- *           return List.of(DialogBody.plainMessage(Component.text("1. 禁止作弊\n2. 友好交流")));
- *       }
- *       @Override public DialogType type() {
- *           return DialogType.confirmation(
- *               button(Component.text("同意"), "agree"),
- *               button(Component.text("拒绝"), "deny")
- *           );
- *       }
- *       @Override public void onClick(ClickContext ctx) {
- *           if (ctx.action().equals("agree")) ctx.accept();
- *           else ctx.deny(Component.text("你拒绝了规则"));
- *       }
- *   }
- *
- *   sf.screens().register(new RulesScreen());
- */
 public abstract class SScreen {
 
     private String namespace;

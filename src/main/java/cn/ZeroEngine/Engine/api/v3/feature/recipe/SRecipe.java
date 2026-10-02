@@ -13,80 +13,43 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
 
 import java.util.*;
 
-/**
- * 自定义配方抽象基类
- *
- * 用法：
- *   public class MyRecipe extends SRecipe {
- *       @Override public String id() { return "magic_scepter"; }
- *       @Override public RecipeMode mode() { return RecipeMode.SHAPED; }
- *       @Override public List<String> shape() { return Arrays.asList(" E ","GBG"," D "); }
- *       @Override public Map<Character, Object> ingredients() {
- *           return Map.of(
- *               'E', Material.ENDER_EYE,            // 原版物品
- *               'G', Material.GOLD_INGOT,
- *               'B', new BlazeRodItem(),             // 自定义物品（会走 ExactChoice 精确匹配）
- *               'D', Material.DIAMOND
- *           );
- *       }
- *       @Override public Object result() { return new MagicScepterItem(); } // 自定义物品作为产物
- *       @Override public int resultAmount() { return 1; }
- *   }
- *
- *   sf.recipes().register(new MyRecipe());
- */
 public abstract class SRecipe {
 
     private static Plugin plugin;
 
     public static void init(Plugin p) { plugin = p; }
 
-    // ==================== 必须实现 ====================
+    
 
-    /** 唯一标识（Bukkit Recipe 的 NamespacedKey 后半段） */
+    
     public abstract String id();
 
-    /** SHAPED = 有序配方（需要 shape()）；SHAPELESS = 无序配方（只需 ingredients） */
+    
     public abstract RecipeMode mode();
 
-    /**
-     * 合成材料映射表。value 支持两种类型：
-     *   - org.bukkit.Material → 原版物品（匹配任意同 Material 物品）
-     *   - cn.ZeroEngine.Engine.api.v3.feature.item.SItem 实例 → 自定义物品（走 ExactChoice 精确匹配，必须带完整 PDC）
-     *
-     * 注：有序配方用 Character 做 key；无序配方 key 用任意字母也可以，实际只统计每种 ingredient 的份数。
-     */
+    
     public abstract Map<Character, Object> ingredients();
 
-    /**
-     * 合成产物。支持：
-     *   - org.bukkit.Material → 原版物品（枚举）
-     *   - cn.ZeroEngine.Engine.api.v3.feature.item.SItem 实例 → 自定义物品（create(resultAmount())）
-     */
+    
     public abstract Object result();
 
-    /** 产物数量（默认 1） */
+    
     public int resultAmount() { return 1; }
 
-    /** 有序配方的形状（3 行字符串，每行 1~3 个字符）；无序配方忽略 */
+    
     public List<String> shape() { return Collections.emptyList(); }
 
-    /** 铁砧/砂轮等是否允许在合成台上解锁 —— 默认 true */
+    
     public boolean unlockedByDefault() { return true; }
 
-    /**
-     * 是否仅限高级工作台（AdvancedCraftTable）合成。
-     * 默认 false —— 注册时同时注册到 Bukkit 原版工作台。
-     * 子类重写返回 true 时，RecipeManager.register() 跳过 Bukkit.addRecipe()，
-     * 仅加入内部 registry 供高级工作台 matchesGrid() 匹配，普通工作台无法合成。
-     */
+    
     public boolean advancedOnly() { return false; }
 
     public enum RecipeMode { SHAPED, SHAPELESS }
 
-    // ==================== 内部工具 ====================
+    
 
-    /** 把 Object（Material / SItem）转成对应的 RecipeChoice */
+    
     public static RecipeChoice choiceOf(Object ingredient) {
         if (ingredient instanceof Material m) {
             return new RecipeChoice.MaterialChoice(m);
@@ -98,7 +61,7 @@ public abstract class SRecipe {
         throw new IllegalArgumentException("Unknown ingredient type: " + (ingredient == null ? "null" : ingredient.getClass().getName()));
     }
 
-    /** 把 result Object（Material / SItem）转成 ItemStack */
+    
     public ItemStack resultItem() {
         Object r = result();
         int amount = Math.max(1, resultAmount());
@@ -111,7 +74,7 @@ public abstract class SRecipe {
         throw new IllegalArgumentException("Unknown result type: " + (r == null ? "null" : r.getClass().getName()));
     }
 
-    /** 把本实例转换成 Bukkit Recipe；对有序配方会自动校验 shape */
+    
     public Recipe toBukkitRecipe() {
         NamespacedKey key = new NamespacedKey(plugin, "sf_" + id());
         ItemStack out = resultItem();

@@ -33,30 +33,9 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.SItem;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 自定义方块基类 —— 继承 SItem，物品形式自动复用 SItem 的 PDC 识别机制。
- *
- * 用法：
- *   public class MyBlock extends SBlock {
- *       @Override public String id() { return "magic_core"; }
- *       @Override public String displayName() { return "魔力核心"; }
- *       @Override public Material material() { return Material.LODESTONE; }
- *
- *       @Override public int redstoneRadius() { return 2; }
- *       @Override public void onRedstonePowered(Block b, int power) { ... }
- *
- *       @Override public DropMode dropMode() { return DropMode.CUSTOM; }
- *       @Override public List<ItemStack> drops() { return List.of(new ItemStack(Material.EMERALD, 2)); }
- *
- *       @Override public void onBlockRightClick(PlayerInteractEvent e) { ... }
- *   }
- *
- *   sf.blocks().register(new MyBlock());     // 物品形式同步进入 ItemManager
- *   sf.items().give(player, "magic_core");   // 给予物品形式，玩家放置后即生效
- */
 public abstract class SBlock extends SItem {
 
-    // ==================== 方块属性配置 ====================
+    
 
     public boolean isOpaque() { return true; }
 
@@ -72,7 +51,7 @@ public abstract class SBlock extends SItem {
 
     public float blastResistance() { return -1f; }
 
-    // ==================== 红石 ====================
+    
 
     public int redstoneRadius() { return 0; }
 
@@ -84,7 +63,7 @@ public abstract class SBlock extends SItem {
 
     public void onRedstoneUnpowered(Block block) {}
 
-    // ==================== 掉落 ====================
+    
 
     public DropMode dropMode() { return DropMode.CUSTOM; }
 
@@ -98,11 +77,11 @@ public abstract class SBlock extends SItem {
         NONE
     }
 
-    // ==================== 放置限制 ====================
+    
 
     public boolean canPlaceAt(Block block, BlockFace against) { return true; }
 
-    // ==================== 方块事件钩子 ====================
+    
 
     public void onPlace(BlockPlaceEvent e) {}
 

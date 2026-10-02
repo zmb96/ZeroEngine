@@ -18,17 +18,17 @@ import java.util.*;
 
 public abstract class SItem {
 
-    // 外部（插件）可注入每个物品的 CustomModelData，用于资源包下发后客户端显示自定义纹理。
-    // key = SItem.id()；非 null 的值会在 create() 时写入 ItemMeta 的 setCustomModelData。
+    
+    
     private static final java.util.Map<String,Integer> CUSTOM_MODEL_DATA = new java.util.concurrent.ConcurrentHashMap<>();
 
-    /** 给指定物品 id 注入 CustomModelData；传入 null 会清除。线程安全。 */
+    
     public static void setCustomModelData(String id, Integer modelData) {
         if (id == null) return;
         if (modelData == null) CUSTOM_MODEL_DATA.remove(id); else CUSTOM_MODEL_DATA.put(id, modelData);
     }
 
-    /** 读当前已注入的 CustomModelData；未设置返回 null。 */
+    
     public static Integer peekCustomModelData(String id) { return id == null ? null : CUSTOM_MODEL_DATA.get(id); }
 
     private static Plugin plugin;
@@ -133,12 +133,12 @@ public abstract class SItem {
         return UUID.nameUUIDFromBytes(("sf_item_" + id() + "_" + name).getBytes());
     }
 
-    // NamespacedKey 在 Paper 26.x 严格只允许 [a-z0-9_-.\/]（Bukkit NamespacedKey.lambda$checkError$0）
-    // 对中文/非 ASCII 的 id() 做安全 slug：合法字符保留 + 8 位 SHA-1 哈希兜底；前缀 "item_"。
-    // —— 兼容策略：
-    //    * 写入（create）：只用新 key（安全 slug 版）
-    //    * 读取（is/getLevel/getAttribute）：先查新 key，未命中再回退旧 key（"item_"+id()），防止已存在
-    //      玩家背包里的老 SItem（比如旧版中文 id 直接拼 NamespacedKey）突然识别不到。
+    
+    
+    
+    
+    
+    
     private NamespacedKey itemKey() {
         String raw = id();
         StringBuilder valid = new StringBuilder();
@@ -154,8 +154,8 @@ public abstract class SItem {
         return new NamespacedKey(plugin, "item_" + tail);
     }
 
-    // 旧 key（Paper 26.x 之前直接拼 id()；如果 id 包含中文，在 Paper 26.x 会抛异常）
-    // 仅用于读取路径的回退；如果构造时会抛就返回 null，调用方会忽略这个回退。
+    
+    
     private NamespacedKey itemKeyLegacyOrNull() {
         try {
             return new NamespacedKey(plugin, "item_" + id());
@@ -202,7 +202,7 @@ public abstract class SItem {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        // 读：先新 key，再回退旧 key（兼容中文 id 的老玩家物品）
+        
         String val = readPdc(pdc, itemKey(), itemKeyLegacyOrNull());
         return id().equals(val);
     }

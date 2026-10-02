@@ -2,7 +2,6 @@ package cn.ZeroEngine.Engine.api.v3.main;
 
 import java.util.Random;
 
-
 public class PerlinNoise {
 
     private final int[] perm = new int[512];

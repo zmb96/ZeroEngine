@@ -14,13 +14,6 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.ItemManager;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 自定义方块注册中心 + 放置位置映射。
- *
- * 物品形式：SBlock 继承 SItem，注册时同步进入 ItemManager，玩家可用 /sfitem give 拿到。
- * 方块形式：放置后用 chunk 的 PersistentDataContainer 记录「区块内相对坐标 -> SBlock id」，
- *          运行期在内存中缓存，findAt(block) O(1) 查回。
- */
 public class BlockManager {
 
     private static final String CHUNK_KEY = "sf_sblocks";
