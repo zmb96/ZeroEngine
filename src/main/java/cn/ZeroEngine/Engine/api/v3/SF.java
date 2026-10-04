@@ -23,6 +23,10 @@ import cn.ZeroEngine.Engine.api.v3.feature.enchant.EnchantAttributeListener;
 import cn.ZeroEngine.Engine.api.v3.feature.enchant.EnchantManager;
 import cn.ZeroEngine.Engine.api.v3.feature.enchant.SEnchantment;
 import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.AchievementManager;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.AchievementListener;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.SAchievement;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.SFAchievementCommand;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars.Bedwars;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars.impl.BedwarsImpl;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.horde.Horde;
@@ -110,6 +114,7 @@ public final class SF implements SFApi {
     private HordeImpl hordeImpl;
     private VillageDefense villageDef;
     private VillageDefenseImpl villageDefImpl;
+    private AchievementManager achievementManager;
 
     private SF(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -165,6 +170,7 @@ public final class SF implements SFApi {
             if (instance.pvpImpl != null) instance.pvpImpl.shutdown();
             if (instance.hordeImpl != null) instance.hordeImpl.shutdown();
             if (instance.villageDefImpl != null) instance.villageDefImpl.shutdown();
+            if (instance.achievementManager != null) instance.achievementManager.shutdown();
             if (instance.guiMgr != null) ((GUIManagerImpl) instance.guiMgr).closeAll();
             instance.events.unregisterAll();
             instance.tickManager.shutdown();
@@ -482,6 +488,20 @@ public final class SF implements SFApi {
             sf.info("[Gameplay] VillageDefense initialized");
         }
         return villageDef;
+    }
+
+    @Override
+    public AchievementManager achievements() {
+        if (achievementManager == null) {
+            SAchievement.init(plugin);
+            achievementManager = new AchievementManager();
+            regEvent(new AchievementListener(achievementManager), plugin);
+            achievementManager.generateDataPack();
+            regCommand("sfadv", new SFAchievementCommand(achievementManager));
+            SF sf = SF.sf();
+            sf.info("[Achievement] Advancement system initialized (/sfadv, " + achievementManager.all().size() + " achievements)");
+        }
+        return achievementManager;
     }
 
     @Override

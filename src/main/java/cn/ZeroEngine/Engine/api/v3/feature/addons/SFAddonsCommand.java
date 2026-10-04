@@ -13,6 +13,7 @@ import cn.ZeroEngine.Engine.api.v3.feature.item.ItemManager;
 import cn.ZeroEngine.Engine.api.v3.feature.item.MagicScepterItem;
 import cn.ZeroEngine.Engine.api.v3.feature.recipe.RecipeManager;
 import cn.ZeroEngine.Engine.api.v3.feature.screen.ScreenManager;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.AchievementManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -79,6 +80,9 @@ public class SFAddonsCommand implements CommandExecutor, TabCompleter {
         RecipeManager rm = sf.recipes();
         if (rm != null) { rm.unregisterAllTables(); rm.unregisterAll(); }
 
+        AchievementManager am = sf.achievements();
+        if (am != null) am.unregisterAll();
+
         
         ItemChestListener.setChanceScale(1.0);
         EnchantChestListener.setChanceScale(1.0);
@@ -108,6 +112,7 @@ public class SFAddonsCommand implements CommandExecutor, TabCompleter {
         s.sendMessage(ChatColor.YELLOW + "  作物: " + ChatColor.WHITE + (sf.crops() != null ? sf.crops().all().size() : 0));
         s.sendMessage(ChatColor.YELLOW + "  屏幕: " + ChatColor.WHITE + (sf.screens() != null ? sf.screens().all().size() : 0));
         s.sendMessage(ChatColor.YELLOW + "  掉率缩放: " + ChatColor.WHITE + String.format("%.0f%%", ItemChestListener.getChanceScale() * 100));
+        s.sendMessage(ChatColor.YELLOW + "  成就: " + ChatColor.WHITE + (sf.achievements() != null ? sf.achievements().all().size() : 0));
     }
 
     @Override

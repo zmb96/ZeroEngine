@@ -32,6 +32,7 @@
 - [🍽️ 物品食物方法](#️-物品食物方法)
 - [🧰 自定义箱子 GUI（SChestGUI）](#-自定义箱子-guischestgui)
 - [🔧 高级工作台](#-高级工作台)
+- [🏆 自定义成就系统](#-自定义成就系统)
 - [💎 物品获取来源](#-物品获取来源)
 - [📝 SFText 文本组件 API](#-sftext-文本组件-api)
 - [💬 聊天事件优先级 API](#-聊天事件优先级-api)
@@ -82,7 +83,8 @@
 - 🌾 **农作物注册系统**：继承 `SCrop` 自定义农作物（种子/方块/生长/收获），vanilla Ageable 方块 + chunk PDC 持久化，骨粉/随机刻生长
 - 🍽️ **物品食物方法**：`SItem` 新增 `isFood/foodNutrition/foodSaturation/canAlwaysEat/onEat` 5 个钩子，吃东西自定义营养值 + 给 buff
 - 🧰 **箱子 GUI 基类**：继承 `SChestGUI` 的 OOP 箱子界面，`command()` 返回命令名即可用 `/cd` 命令打开
-- 🔧 **高级工作台**：工作台 + 发射器多方块结构，右击工作台触发合成；`extends AdvancedCraftTable` 重写 `onRightChest()` 返回 `SChestGUI` 即可做成加工机器
+- 🔧 **加工机器系统**：基于 `AdvancedCraftTable` 基类，重写 `baseBlock()` 把任意原版方块（活塞/发射器/酿造台等）变成机器，下方放木桶组成「下桶上方」结构；注册时自动建立方块类型→机器映射，玩家直接摆放原版方块即可使用
+- 🏆 **成就系统**：基于 Minecraft 原版 Advancement API，继承 `SAchievement` 注册自定义成就，引擎自动生成 datapack JSON 到世界目录；使用 `minecraft:impossible` 触发器，仅能通过 API 手动授予；玩家按 F 键查看原版成就树，解锁时自动触发 `onGrant` 回调发放奖励
 - 💎 **物品获取来源**：`SItem.dropSources()` 声明方块破坏/实体死亡/钓鱼/宝箱 4 种掉落途径
 - 📝 **SFText 文本组件**：物品精灵图、玩家头颅、富文本交互（URL/命令/复制/hover）
 - 💬 **聊天优先级 API**：`ChatHandler` 按优先级消费聊天消息，插件可拦截玩家输入
@@ -437,6 +439,26 @@ lp group admin permission set sf.admin.* true
 | `/sfcrop info <id>` | 查看作物详情（方块/阶段/生长/食物） |
 | `/sfcrop look` | 看向已种植作物查询身份和阶段 |
 | `/sfcrop help` | 显示帮助 |
+
+### 成就系统命令
+
+**命令**：`/sfadv`（别名 `/sfachievement`） ｜ **权限**：`sf.admin`（grant/revoke/gen 子命令）
+
+| 命令 | 说明 |
+|------|------|
+| `/sfadv` | 列出所有已注册成就（含解锁状态） |
+| `/sfadv list [玩家]` | 列出所有成就及指定玩家的解锁状态 |
+| `/sfadv grant <玩家> <namespace:id>` | 授予玩家指定成就 |
+| `/sfadv revoke <玩家> <namespace:id>` | 撤销玩家指定成就 |
+| `/sfadv gen` | 重新生成 datapack（需重启服务器生效） |
+| `/sfadv help` | 显示帮助 |
+
+**示例：**
+```
+/sfadv grant Notch zerotech:first_uranium   # 授予 Notch "首块铀矿" 成就
+/sfadv revoke Notch zerotech:first_uranium  # 撤销该成就
+/sfadv gen                                    # 重新生成所有成就的 datapack JSON
+```
 
 ---
 
@@ -2903,47 +2925,466 @@ public class ItemListPage extends SChestGUI {
 
 ## 🔧 高级工作台
 
-多方块结构：工作台在上，发射器在下。玩家右击工作台时，检测下方发射器，对其 9 格按已注册 `SRecipe` 匹配——命中则消耗材料、产物放入空槽。
+`AdvancedCraftTable` 是 ZeroEngine 提供的**多方块机器抽象基类**。核心思想：**用原版方块 + 下方木桶组成机器结构**，无需自定义方块物品，玩家直接摆放原版方块即可使用。
 
-### 搭建与使用
+所有机器都遵循「**下方木桶 + 上方方块**」的两格结构：
 
 ```
-[w]  工作台
-[d]  发射器（放材料）
+[方块]   ← 上方原版方块（由 baseBlock() 决定，默认工作台）
+[木桶]   ← 下方木桶（由 bottomBlock() 决定，默认 BARREL）
 ```
 
-1. 在发射器内按配方 shape 摆放材料（与原版工作台一致的 3x3 网格）
+- 上方方块：决定这是什么机器（活塞=破碎机、发射器=电炉、工作台=合成台……）
+- 下方木桶：作为机器的内部容器（存放输入/输出物品）
+- 右键上方方块即可打开机器界面
+
+> 💡 下方方块必须是木桶（`BARREL`），引擎通过检测下方是否为木桶来判断是否为机器结构。
+
+### 一、高级合成工作台（默认配置）
+
+不重写 `baseBlock()` 时，默认为「工作台 + 木桶」结构，用于高级合成。
+
+```
+[w]  工作台（CRAFTING_TABLE）
+[b]  木桶（BARREL，放材料）
+```
+
+1. 在木桶内按配方 shape 摆放材料（与原版工作台一致的 3x3 网格）
 2. 右击上方工作台
-3. 发射器内材料被消耗，产物自动放入空槽，播放 `ANVIL_USE` 音效
+3. 木桶内材料被消耗，产物自动放入空槽，播放 `ANVIL_USE` 音效
 
 配方仍用 `sf.recipes().register(new MyRecipe())` 注册——同一配方即可在原版工作台和高级工作台生效。匹配逻辑由 `SRecipe.matchesGrid()` + `RecipeManager.craftAtInventory()` 完成，支持有序/无序、`Material` 与 `SItem` 混合材料。
 
 ---
 
-### 加工机器（AdvancedCraftTable 基类）
+### 二、加工机器（自定义方块类型）
 
-`AdvancedCraftTable` 是高级工作台的抽象基类，重写 `onRightChest()` 返回 `SChestGUI` 即可把工作台变成加工机器（带自定义 UI 的磨面机/烹饪台等）。引擎通过 chunk PDC 记录工作台位置→tableId 映射。
+重写 `baseBlock()` 即可把**任意原版方块**变成一台加工机器。这是 MoreMinerals、MoreMachine 等附属插件实现破碎机、电炉、造石机等机器的核心机制。
 
-| 方法 | 说明 | 默认 |
-|------|------|------|
-| `id()` | 唯一标识 | 必填 |
-| `onRightChest()` | 右键工作台返回的 GUI；返回 null 则打开发射器原版界面 | null |
-| `onOpenChest(Player, workbench, dispenser, inv)` | 打开时钩子 | 空 |
-| `onCraft(Player, workbench, dispenser, recipe)` | 合成时钩子 | 空 |
-| `allowDefaultCraft()` | 是否允许无 GUI 时走原 craftAtInventory | true |
+#### AdvancedCraftTable 可重写方法
+
+| 方法 | 说明 | 默认值 |
+|------|------|--------|
+| `id()` | 机器唯一标识 | 必填 |
+| `baseBlock()` | 上方方块类型（决定机器外观和识别） | `CRAFTING_TABLE` |
+| `bottomBlock()` | 下方方块类型 | `BARREL` |
+| `onRightChest()` | 右键上方方块返回的 GUI；返回 null 则打开木桶原版界面 | `null` |
+| `craftGUI(RecipeManager)` | 自定义合成 GUI 扩展点（供下游插件实现） | `null` |
+| `onOpenChest(player, top, bottom, inv)` | 打开时钩子 | 空 |
+| `onCraft(player, top, bottom, recipe)` | 合成时钩子 | 空 |
+| `allowDefaultCraft()` | 是否允许无 GUI 时走原合成逻辑 | `baseBlock() == CRAFTING_TABLE` |
+
+#### 注册与自动映射
 
 ```java
-public class MillMachine extends AdvancedCraftTable {
-    @Override public String id() { return "mill"; }
-    @Override public SChestGUI onRightChest() { return new MillGui(); }  // 打开磨面机 UI
+public class CrusherMachine extends AdvancedCraftTable {
+    @Override public String id() { return "crusher"; }
+    @Override public Material baseBlock() { return Material.PISTON; }  // 活塞 = 破碎机
+    @Override public SChestGUI onRightChest() { return new CrusherGUI(); }
 }
 
-// 注册并绑定到某个已放置的工作台方块
+// 注册（仅此一行，无需手动绑定到具体位置）
+sf.recipes().registerTableIfAbsent(new CrusherMachine());
+```
+
+注册时引擎会自动建立 **方块类型 → 机器** 的映射（`defaultByMaterial`）。之后玩家在游戏中放置「活塞 + 木桶」结构，右键活塞即可打开破碎机界面——**无需任何额外的物品或绑定操作**。
+
+#### 查询映射
+
+```java
+// 根据上方方块类型查找对应的机器
+AdvancedCraftTable table = sf.recipes().defaultTableFor(Material.PISTON);
+if (table != null) {
+    SChestGUI gui = table.onRightChest();
+    if (gui != null) gui.open(player);
+}
+```
+
+---
+
+### 三、自定义方块的监听器
+
+引擎内置的 `AdvancedCraftTableListener` 只监听 **工作台 / 砂轮 / 熔炉** 三种方块（用于高级合成场景）。如果你的机器使用了其他方块类型（如活塞、发射器、酿造台等），**需要在附属插件中自己写监听器**，调用 `defaultTableFor()` 查找并打开机器。
+
+模板代码：
+
+```java
+public class MachineListener implements Listener {
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onRightClickMachine(PlayerInteractEvent e) {
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block clicked = e.getClickedBlock();
+        if (clicked == null) return;
+
+        // 1. 查找该方块是否注册为机器
+        AdvancedCraftTable table = SF.sf().recipes().defaultTableFor(clicked.getType());
+        if (table == null) return;
+
+        // 2. 检查下方是否为木桶
+        Block below = clicked.getRelative(BlockFace.DOWN);
+        if (below.getType() != table.bottomBlock()) return;
+        if (!(below.getState() instanceof Barrel barrel)) return;
+
+        // 3. 打开机器 GUI
+        e.setCancelled(true);
+        Player p = e.getPlayer();
+        SChestGUI gui = table.onRightChest();
+        if (gui == null) gui = table.craftGUI(SF.sf().recipes());
+        table.onOpenChest(p, clicked, below, barrel.getInventory());
+        if (gui != null) {
+            gui.open(p);
+        } else {
+            p.openInventory(barrel.getInventory());
+        }
+    }
+}
+```
+
+> 💡 **核心 API**：`defaultTableFor(Material)` —— 注册机器时自动建立映射，监听器只需一行查询即可识别任意机器方块。
+
+---
+
+### 四、手动绑定（可选）
+
+除了按方块类型自动映射外，引擎还支持通过 chunk PDC 将某个**具体位置**的方块绑定到指定机器：
+
+```java
 sf.recipes().registerTableIfAbsent(new MillMachine());
 sf.recipes().bindTableAt(workbenchBlock, sf.recipes().getTable("mill"));
 ```
 
-右键该工作台 → 打开 `MillGui`（而非直接合成），玩家在 GUI 内放材料 + 点按钮调 `sf.recipes().craftAtInventory(dispenserInv)` 完成加工。未绑定的普通工作台仍走原直接合成逻辑。
+右键该工作台 → 打开 `MillGui`（而非直接合成）。未绑定的普通工作台仍走原直接合成逻辑。
+
+---
+
+### 五、完整示例：破碎机
+
+```java
+// 1. 定义机器类
+public class CrusherMachine extends AdvancedCraftTable {
+    @Override public String id() { return "crusher"; }
+    @Override public Material baseBlock() { return Material.PISTON; }
+    @Override public SChestGUI onRightChest() { return new CrusherGUI(); }
+}
+
+// 2. 在 onEnable 中注册
+sf.recipes().registerTableIfAbsent(new CrusherMachine());
+
+// 3. 注册自己的监听器（处理活塞右键）
+getServer().getPluginManager().registerEvents(new MachineListener(), this);
+```
+
+玩家在游戏中：
+1. 放置木桶
+2. 在木桶正上方放活塞
+3. 右键活塞 → 打开破碎机 GUI
+
+---
+
+## 🏆 自定义成就系统
+
+ZeroEngine 提供基于 **Minecraft 原版 Advancement API** 的成就系统。通过继承 `SAchievement` 注册自定义成就，引擎自动生成 datapack JSON 文件到世界目录，玩家按 **F 键** 即可在原版成就界面查看。
+
+### 核心特性
+
+- **原版集成**：使用 Minecraft 原生 advancement 系统，玩家无需安装额外模组，按 F 键查看成就树
+- **纯手动触发**：使用 `minecraft:impossible` 触发器，成就只能通过 API 手动授予，不会被游戏事件自动触发
+- **零数据库**：成就进度由原版 player data 自动持久化，重启服务器不丢失
+- **自动生成 datapack**：注册成就时引擎自动写入 JSON 文件到 `<世界>/datapacks/sf_advancements/`
+- **奖励回调**：成就解锁时自动调用 `onGrant(Player)`，可发放物品/金钱/执行命令
+- **命名空间隔离**：`namespace():id()` 复合 ID，避免多插件冲突
+
+### 工作原理
+
+```
+附属插件注册 SAchievement
+        ↓
+ZeroEngine 生成 datapack JSON
+（<世界>/datapacks/sf_advancements/data/<namespace>/advancement/<id>.json）
+        ↓
+服务器加载 datapack（启动时）
+        ↓
+附属插件调用 grant(player, "namespace:id")
+        ↓
+原版授予成就 + 触发 PlayerAdvancementDoneEvent
+        ↓
+ZeroEngine 调用 SAchievement.onGrant(player) 发放奖励
+```
+
+> ⚠️ **重要**：datapack 在服务器启动时加载，**首次安装或新增成就后需重启服务器**才能生效。
+
+---
+
+### 一、创建自定义成就
+
+继承 `SAchievement` 并重写核心方法：
+
+```java
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.SAchievement;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+
+public class FirstUraniumAchievement extends SAchievement {
+
+    @Override public String id() { return "first_uranium"; }
+
+    @Override public String title() { return "&6首块铀矿"; }
+
+    @Override public String description() { return "&7获得第一块铀矿石"; }
+
+    @Override public Material icon() { return Material.RAW_IRON; }
+
+    @Override public String namespace() { return "zerotech"; }
+
+    @Override public Frame frame() { return Frame.GOAL; }
+
+    @Override
+    public void onGrant(Player p) {
+        giveMoney(p, 500);
+        runCommand("say " + p.getName() + " 达成了【首块铀矿】成就！");
+    }
+}
+```
+
+### SAchievement 可重写方法
+
+| 方法 | 说明 | 默认值 |
+|------|------|--------|
+| `id()` | 成就唯一标识（必填，需符合 NamespacedKey 格式：小写字母+数字+下划线） | 必填 |
+| `title()` | 成就标题，支持 `&` 颜色码 | 必填 |
+| `description()` | 成就描述，支持 `&` 颜色码 | 必填 |
+| `icon()` | 成就图标（原版 Material） | 必填 |
+| `namespace()` | 命名空间，附属插件覆盖为自己的 id（如 `zerotech`、`moreminerals`） | `sf` |
+| `parent()` | 父成就 fullId（`namespace:id`），用于成就树层级 | `null` |
+| `frame()` | 成就边框样式：`TASK` / `GOAL` / `CHALLENGE` | `TASK` |
+| `hidden()` | 是否隐藏直到解锁 | `false` |
+| `showToast()` | 解锁时是否显示右上角弹窗 | `true` |
+| `announceToChat()` | 解锁时是否全服公告 | `true` |
+| `criteriaName()` | criteria 名称 | `trigger` |
+| `onGrant(Player)` | 解锁时的奖励回调 | 空 |
+
+### 工具方法（奖励发放）
+
+`SAchievement` 提供了三个便捷方法用于在 `onGrant` 中发放奖励：
+
+| 方法 | 说明 |
+|------|------|
+| `giveMoney(Player, double)` | 给予玩家金钱（通过 ZeroEngine 经济系统） |
+| `giveItem(Player, itemId, amount)` | 给予 ZeroEngine 自定义物品 |
+| `runCommand(String)` | 执行控制台命令 |
+
+---
+
+### 二、注册成就
+
+在附属插件的 `onEnable` 中调用 `registerIfAbsent`：
+
+```java
+SF.sf().achievements().registerIfAbsent(new FirstUraniumAchievement());
+```
+
+注册后引擎会：
+1. 将成就加入注册表
+2. 调用 `generateDataPack()` 生成 JSON 文件到世界目录
+3. 日志输出：`[Achievement] Registered: zerotech:first_uranium (首块铀矿)`
+
+> 💡 建议在 `onEnable` 末尾统一注册所有成就，确保 datapack 一次生成完毕。
+
+---
+
+### 三、授予 / 撤销成就
+
+通过 `AchievementManager` 的 API 手动触发：
+
+```java
+AchievementManager am = SF.sf().achievements();
+
+// 授予成就（返回 true 表示成功授予，false 表示已获得或不存在）
+boolean ok = am.grant(player, "zerotech:first_uranium");
+
+// 撤销成就
+am.revoke(player, "zerotech:first_uranium");
+
+// 检查是否已获得
+boolean unlocked = am.isGranted(player, "zerotech:first_uranium");
+
+// 获取所有已注册成就
+Collection<SAchievement> all = am.all();
+```
+
+**典型触发场景**：
+
+```java
+// 玩家获得铀矿石时
+@EventHandler
+public void onPickupUranium(PlayerPickupItemEvent e) {
+    if (e.getItem().getItemStack().getType() == Material.RAW_IRON) {
+        SF.sf().achievements().grant(e.getPlayer(), "zerotech:first_uranium");
+    }
+}
+
+// 玩家熔炼 100 个矿物时（渐进式，由业务逻辑计数后调用 grant）
+public void onSmeltComplete(Player p, int totalSmelted) {
+    if (totalSmelted >= 100) {
+        SF.sf().achievements().grant(p, "zerotech:smelt_100");
+    }
+}
+```
+
+> ⚠️ `grant()` 内部会检查成就是否已获得，已获得时返回 `false` 且不重复触发 `onGrant`，因此可以安全地在事件中频繁调用。
+
+---
+
+### 四、成就树（parent 层级）
+
+通过 `parent()` 方法定义父子关系，在原版成就界面中形成树状结构：
+
+```java
+public class SmeltMasterAchievement extends SAchievement {
+    @Override public String id() { return "smelt_master"; }
+    @Override public String namespace() { return "zerotech"; }
+    @Override public String title() { return "&6熔炼大师"; }
+    @Override public String description() { return "&7熔炼 1000 个矿物"; }
+    @Override public Material icon() { return Material.BLAST_FURNACE; }
+    @Override public String parent() { return "zerotech:smelt_100"; }  // 前置成就
+    @Override public Frame frame() { return Frame.CHALLENGE; }
+}
+```
+
+在原版成就界面中，`smelt_master` 会显示为 `smelt_100` 的子节点。
+
+---
+
+### 五、Frame 边框样式
+
+| Frame | 原版外观 | 建议用途 |
+|-------|---------|---------|
+| `TASK` | 普通方形图标 | 普通成就（默认） |
+| `GOAL` | 椭圆形图标 | 中期目标 |
+| `CHALLENGE` | 菱形图标 + 特殊解锁动画 | 高难度挑战 |
+
+---
+
+### 六、datapack 文件结构
+
+引擎自动生成的文件结构如下：
+
+```
+<世界目录>/
+└── datapacks/
+    └── sf_advancements/
+        ├── pack.mcmeta                          ← datapack 描述
+        └── data/
+            ├── sf/                              ← ZeroEngine 内置命名空间
+            │   └── advancement/
+            │       └── <id>.json
+            ├── zerotech/                        ← ZeroTech 附属命名空间
+            │   └── advancement/
+            │       ├── first_uranium.json
+            │       └── smelt_100.json
+            └── moreminerals/                    ← MoreMinerals 附属命名空间
+                └── advancement/
+                    └── ...
+```
+
+生成的 JSON 示例（`zerotech/first_uranium.json`）：
+
+```json
+{
+  "display": {
+    "icon": { "id": "raw_iron" },
+    "title": "§6首块铀矿",
+    "description": "§7获得第一块铀矿石",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
+```
+
+`minecraft:impossible` 触发器确保该成就**永远不会被游戏自动完成**，只能通过 `grant()` API 手动授予。
+
+---
+
+### 七、完整示例：铀矿加工成就链
+
+```java
+// 1. 首块铀矿（入门）
+public class FirstUraniumAchievement extends SAchievement {
+    @Override public String id() { return "first_uranium"; }
+    @Override public String namespace() { return "zerotech"; }
+    @Override public String title() { return "&6首块铀矿"; }
+    @Override public String description() { return "&7获得第一块铀矿石"; }
+    @Override public Material icon() { return Material.RAW_IRON; }
+    @Override public Frame frame() { return Frame.TASK; }
+    @Override public void onGrant(Player p) {
+        giveMoney(p, 100);
+    }
+}
+
+// 2. 炼金百炉（中期目标）
+public class Smelt100Achievement extends SAchievement {
+    @Override public String id() { return "smelt_100"; }
+    @Override public String namespace() { return "zerotech"; }
+    @Override public String title() { return "&6炼金百炉"; }
+    @Override public String description() { return "&7在熔炼机中熔炼 100 个矿物"; }
+    @Override public Material icon() { return Material.BLAST_FURNACE; }
+    @Override public String parent() { return "zerotech:first_uranium"; }
+    @Override public Frame frame() { return Frame.GOAL; }
+    @Override public void onGrant(Player p) {
+        giveMoney(p, 1000);
+        giveItem(p, "magic_scepter", 1);
+        runCommand("say " + p.getName() + " 达成了【炼金百炉】成就！");
+    }
+}
+
+// 3. 核电大师（终极挑战）
+public class NuclearMasterAchievement extends SAchievement {
+    @Override public String id() { return "nuclear_master"; }
+    @Override public String namespace() { return "zerotech"; }
+    @Override public String title() { return "&c核电大师"; }
+    @Override public String description() { return "&7建造完整的核电链并成功发电"; }
+    @Override public Material icon() { return Material.NETHERITE_INGOT; }
+    @Override public String parent() { return "zerotech:smelt_100"; }
+    @Override public Frame frame() { return Frame.CHALLENGE; }
+    @Override public void onGrant(Player p) {
+        giveMoney(p, 10000);
+        runCommand("say §c§l" + p.getName() + " 成为了核电大师！");
+    }
+}
+```
+
+注册与触发：
+
+```java
+// onEnable 中注册
+SF.sf().achievements().registerIfAbsent(new FirstUraniumAchievement());
+SF.sf().achievements().registerIfAbsent(new Smelt100Achievement());
+SF.sf().achievements().registerIfAbsent(new NuclearMasterAchievement());
+
+// 业务逻辑中触发
+SF.sf().achievements().grant(player, "zerotech:first_uranium");
+```
+
+---
+
+### 八、注意事项
+
+| 事项 | 说明 |
+|------|------|
+| **需重启生效** | 首次安装或新增成就后，必须重启服务器才能加载 datapack |
+| **ID 格式** | `id()` 必须符合 NamespacedKey 格式：小写字母、数字、下划线，不能有中文或空格 |
+| **命名空间** | 附属插件务必覆盖 `namespace()` 返回自己的 id，避免与其他插件冲突 |
+| **热重载** | `/sfaddons unload` 会清空所有成就注册，但 datapack 文件不会删除，已获得的成就仍保留 |
+| **撤销限制** | `revoke()` 只能撤销在线玩家的成就，离线玩家需通过原版数据修改 |
+| **颜色码** | `title()` 和 `description()` 中的 `&` 颜色码会被正确写入 JSON |
 
 ---
 
@@ -4499,6 +4940,27 @@ item.count(player, "my_item");
 item.consume(player, "my_item");
 item.consume(player, "my_item", 3);
 item.find(player, "my_item");           // 查找玩家背包中的物品数量
+```
+
+**AchievementManager - 成就系统**
+
+```java
+AchievementManager achievements = ((SF) api).achievements();
+
+// 注册成就
+achievements.registerIfAbsent(new MyAchievement());
+
+// 查询
+achievements.get("namespace:id");        // 按 fullId 查找
+achievements.all();                       // 所有已注册成就
+
+// 授予/撤销
+achievements.grant(player, "namespace:id");    // 授予成就
+achievements.revoke(player, "namespace:id");   // 撤销成就
+achievements.isGranted(player, "namespace:id"); // 检查是否已获得
+
+// 重新生成 datapack（新增成就后调用，需重启生效）
+achievements.generateDataPack();
 ```
 
 #### 异常处理

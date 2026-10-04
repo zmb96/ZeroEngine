@@ -17,6 +17,7 @@ import cn.ZeroEngine.Engine.api.v3.feature.engine.ResourcePackManager;
 import cn.ZeroEngine.Engine.api.v3.feature.engine.SpawnControl;
 import cn.ZeroEngine.Engine.api.v3.feature.gui.GUIManager;
 import cn.ZeroEngine.Engine.api.v3.feature.enchant.SFAttr;
+import cn.ZeroEngine.Engine.api.v3.feature.achievement.AchievementManager;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.bedwars.Bedwars;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.horde.Horde;
 import cn.ZeroEngine.Engine.api.v3.feature.gameplay.pvp.PvPArena;
@@ -79,6 +80,8 @@ public interface SFApi {
     Horde horde();
 
     VillageDefense villageDefense();
+
+    AchievementManager achievements();
 
     boolean isPluginListenerChat(Player player);
 
