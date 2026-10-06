@@ -1,0 +1,86 @@
+server:
+  sf:
+    model:
+      api:
+        v1:
+          JoQMess:
+            jm: "&7[&a+&7]&r &aSF-Game&7：&a玩家&b{player}&a加入了游戏！"
+            qm: "&7[&c-&7]&r &cSF-Game&7：&c玩家&b{player}&c退出了游戏！"
+            NewPlayerJoin: "&a&l欢迎&6&l新玩家&c&l{player}&e&l加入了服务器！！！"
+          PlayerChat:
+            message: "&7[ &a{id}&7 ]&r &a&l{player}&7：&b{message}"
+            opsuuid: "f4eb175e-7a1f-3322-a61f-017f3fe51cf3"
+            tags:
+
+        v2:
+
+# 数据库配置
+database:
+  # 是否启用 MySQL（false 则使用 SQLite）
+  mysql:
+    enabled: false
+    host: localhost
+    port: 3306
+    database: minecraft
+    user: root
+    password: ""
+    prefix: "sf_"
+  # SQLite 配置（mysql.enabled=false 时使用）
+  sqlite:
+    file: data.db
+
+# 传送系统配置
+teleport:
+  # 冷却时间（秒），0 表示无冷却
+  cooldown:
+    spawn: 5
+    home: 5
+    warp: 5
+    back: 10
+    tpa: 10
+    tpahere: 10
+    tp: 0
+    tphere: 0
+  # 延迟传送（秒），0 表示立即传送
+  delay:
+    spawn: 3
+    home: 3
+    warp: 3
+    back: 3
+    tpa: 3
+    tpahere: 3
+  # TPA 请求超时（秒）
+  tpa:
+    timeout: 60
+
+# 性能优化系统配置
+performance:
+  # 内存监控
+  memory:
+    enabled: true
+    warn-threshold: 0.85
+    gc-threshold: 0.90
+  # 区块管理
+  chunk:
+    enabled: true
+    idle-ticks: 6000
+    max-unload-per-cycle: 50
+  # 实体清理
+  entity:
+    enabled: true
+    item-expire-ticks: 1200
+    projectile-expire-ticks: 200
+    max-per-chunk: 50
+  # TPS 自适应
+  throttle:
+    enabled: true
+    tps-warn: 18.0
+    tps-critical: 15.0
+    min-view-distance: 4
+    max-view-distance: 32
+    min-simulation-distance: 3
+    max-simulation-distance: 32
+  # 监控间隔（SF tick，100tick=1秒）
+  monitor-interval: 200
+  # 清理间隔（SF tick）
+  cleanup-interval: 600

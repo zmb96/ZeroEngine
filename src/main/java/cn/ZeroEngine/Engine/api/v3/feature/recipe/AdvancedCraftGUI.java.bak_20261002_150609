@@ -1,0 +1,183 @@
+package cn.ZeroEngine.Engine.api.v3.feature.recipe;
+
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import cn.ZeroEngine.Engine.api.v3.feature.gui.ChestGUI;
+import cn.ZeroEngine.Engine.api.v3.feature.gui.SChestGUI;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class AdvancedCraftGUI extends SChestGUI {
+    private static final int SIZE = 27;
+    private static final int[] CRAFT_SLOTS = {0, 1, 2, 9, 10, 11, 18, 19, 20};
+    private static final int ARROW_SLOT = 13;
+    private static final int RESULT_SLOT = 16;
+    private static final int INFO_SLOT = 5;
+    private static final int CLOSE_SLOT = 26;
+
+    private final RecipeManager manager;
+
+    public AdvancedCraftGUI(RecipeManager manager) {
+        this.manager = manager;
+    }
+
+    @Override public String id() { return "advanced_craft_gui"; }
+    @Override public String title() { return "§a高级工作台"; }
+    @Override public int size() { return SIZE; }
+    @Override public boolean readonly() { return true; }
+
+    @Override
+    public void build(Builder b) {
+        b.fill(named(Material.LIME_STAINED_GLASS_PANE, " "));
+        for (int s : CRAFT_SLOTS) b.clear(s);
+
+        b.item(INFO_SLOT, named(Material.BOOK, "§a§l高级工作台",
+                "§7在左侧 §e3×3 §7合成格放材料",
+                "§7点击 §e→ §7箭头合成",
+                "§7右侧 §e产物§7 格显示结果"));
+
+        b.item(ARROW_SLOT, named(Material.ARROW, "§e→ §a点击合成",
+                "§7匹配 SRecipe 配方",
+                "§7点击此处刷新产物预览"));
+
+        b.item(RESULT_SLOT, named(Material.LIME_STAINED_GLASS_PANE, "§7产物格",
+                "§7放完配方后显示产物"));
+
+        b.item(CLOSE_SLOT, named(Material.BARRIER, "§c§l关闭", "§7退出高级工作台"),
+                ctx -> ctx.gui().close(ctx.player()));
+    }
+
+    @Override
+    public void onClick(ChestGUI.ClickContext ctx) {
+        int slot = ctx.slot();
+        if (slot == CLOSE_SLOT) return;
+        if (slot == ARROW_SLOT) { refreshResult(ctx.gui(), ctx.player()); return; }
+        if (slot == RESULT_SLOT) { takeResult(ctx); return; }
+        boolean isCraftSlot = false;
+        for (int s : CRAFT_SLOTS) if (s == slot) { isCraftSlot = true; break; }
+        if (!isCraftSlot) { ctx.cancelled(true); return; }
+        swapSlot(ctx, slot);
+        refreshResult(ctx.gui(), ctx.player());
+    }
+
+    private void swapSlot(ChestGUI.ClickContext ctx, int slot) {
+        ItemStack cursor = ctx.cursor();
+        ItemStack current = ctx.current();
+        boolean curEmpty = cursor == null || cursor.getType() == Material.AIR;
+        boolean slotEmpty = current == null || current.getType() == Material.AIR || isPlaceholder(current);
+        if (curEmpty && slotEmpty) { ctx.cancelled(true); return; }
+
+        if (curEmpty) {
+            ItemStack taken = current.clone();
+            ctx.gui().item(slot, null);
+            ctx.cursor(taken);
+            ctx.gui().refresh(ctx.player());
+            return;
+        }
+        if (slotEmpty) {
+            ItemStack placed = cursor.clone();
+            ctx.gui().item(slot, placed);
+            ctx.cursor(null);
+            ctx.gui().refresh(ctx.player());
+            return;
+        }
+        if (current.isSimilar(cursor) && current.getAmount() + cursor.getAmount() <= cursor.getMaxStackSize()) {
+            current.setAmount(current.getAmount() + cursor.getAmount());
+            ctx.gui().item(slot, current);
+            ctx.cursor(null);
+            ctx.gui().refresh(ctx.player());
+            return;
+        }
+        ItemStack curClone = cursor.clone();
+        ctx.gui().item(slot, curClone);
+        ctx.cursor(current);
+        ctx.gui().refresh(ctx.player());
+    }
+
+    private void refreshResult(ChestGUI gui, Player p) {
+        ItemStack[] grid = collectGrid(gui);
+        SRecipe.MatchResult mr = manager.tryCraftAtGrid(grid);
+        if (mr.matched && mr.result != null) {
+            gui.item(RESULT_SLOT, mr.result.clone());
+        } else {
+            gui.item(RESULT_SLOT, named(Material.LIME_STAINED_GLASS_PANE, "§7产物格",
+                    "§7放完配方后显示产物"));
+        }
+        gui.refresh(p);
+    }
+
+    private void takeResult(ChestGUI.ClickContext ctx) {
+        ItemStack current = ctx.current();
+        ItemStack cursor = ctx.cursor();
+        if (current == null || current.getType() == Material.AIR || isPlaceholder(current)) {
+            ctx.cancelled(true); return;
+        }
+        if (cursor != null && cursor.getType() != Material.AIR) {
+            ctx.cancelled(true); return;
+        }
+        ItemStack[] grid = collectGrid(ctx.gui());
+        SRecipe.MatchResult mr = manager.tryCraftAtGrid(grid);
+        if (!mr.matched || mr.result == null) { ctx.cancelled(true); return; }
+        if (!mr.result.isSimilar(current)) { ctx.cancelled(true); return; }
+
+        for (int idx : mr.consumeSlots) {
+            int slot = CRAFT_SLOTS[idx];
+            ItemStack s = ctx.gui().contents()[slot];
+            if (s == null || s.getType() == Material.AIR) continue;
+            if (s.getAmount() <= 1) {
+                ctx.gui().item(slot, null);
+            } else {
+                ItemStack copy = s.clone();
+                copy.setAmount(copy.getAmount() - 1);
+                ctx.gui().item(slot, copy);
+            }
+        }
+
+        ctx.cursor(mr.result.clone());
+        ctx.gui().item(RESULT_SLOT, named(Material.LIME_STAINED_GLASS_PANE, "§7产物格",
+                "§7放完配方后显示产物"));
+        ctx.gui().refresh(ctx.player());
+
+        Player p = ctx.player();
+        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.4f);
+        p.sendMessage("§a合成成功 §7→ §f" + (mr.recipe != null ? mr.recipe.id() : "未知"));
+
+        refreshResult(ctx.gui(), ctx.player());
+    }
+
+    private ItemStack[] collectGrid(ChestGUI gui) {
+        ItemStack[] grid = new ItemStack[9];
+        ItemStack[] contents = gui.contents();
+        for (int i = 0; i < 9; i++) {
+            ItemStack s = contents[CRAFT_SLOTS[i]];
+            grid[i] = (s == null || s.getType() == Material.AIR || isPlaceholder(s)) ? null : s.clone();
+        }
+        return grid;
+    }
+
+    private boolean isPlaceholder(ItemStack is) {
+        if (is == null) return false;
+        return is.getType() == Material.LIME_STAINED_GLASS_PANE;
+    }
+
+    private static ItemStack named(Material mat, String name, String... lore) {
+        ItemStack s = new ItemStack(mat);
+        ItemMeta meta = s.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+            if (lore != null && lore.length > 0) {
+                List<String> ls = new ArrayList<>();
+                for (String l : lore) ls.add(ChatColor.translateAlternateColorCodes('&', l));
+                meta.setLore(ls);
+            }
+            s.setItemMeta(meta);
+        }
+        return s;
+    }
+}
