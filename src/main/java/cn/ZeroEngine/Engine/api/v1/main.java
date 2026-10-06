@@ -83,7 +83,12 @@ public final class main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        SF sf = SF.sf();
+        SF sf = null;
+        try { sf = SF.sf(); } catch (IllegalStateException ignored) {}
+        if (sf == null) {
+            getLogger().warning("SF not initialized, skip clean shutdown (onEnable failed earlier)");
+            return;
+        }
         sf.info("Unload cn.ZeroEngine.Engine.api.v1.main");
         DatabaseManager.shutdown();
         SF.shutdown();
