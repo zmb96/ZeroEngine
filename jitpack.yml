@@ -1,3 +1,4 @@
 install:
   - rm -rf ~/.m2/wrapper/dists/*
   - ./mvnw clean install -DskipTests
+  - ./mvnw clean install -DskipTests
