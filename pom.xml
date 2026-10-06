@@ -6,7 +6,7 @@
 
     <groupId>io.github.zmb96</groupId>
     <artifactId>ZeroEngine</artifactId>
-    <version>3.5.2</version>
+    <version>3.5.3</version>
     <packaging>jar</packaging>
 
     <name>ZeroEngine</name>
@@ -175,6 +175,22 @@
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>apache-mirror</id>
+            <name>Apache Repository Mirror (bypass repo.maven.apache.org 429)</name>
+            <url>https://repository.apache.org/content/groups/public/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <dependency>
