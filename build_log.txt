@@ -1,0 +1,145 @@
+﻿mvnw.cmd : WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+At line:16 char:1
++ & .\mvnw.cmd clean package -DskipTests *> build_log.txt
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A term...has been called:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/C
+:/Users/69401/.m2/wrapper/dists/apache-maven-3.9.11/4f0e183c191a2b23ef4fb3e21f47fb4dfb288b14a2a90a846bd28e12986b5ace/li
+b/guice-5.1.0-classes.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< io.github.zmb96:ZeroEngine >---------------------
+[INFO] Building ZeroEngine 3.5.3
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ ZeroEngine ---
+[INFO] Deleting D:\�ز�\mods\ZeroCkate_SFServerPlugin\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ ZeroEngine ---
+[INFO] Copying 7 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ ZeroEngine ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 211 source files with javac [debug target 21] to target\classes
+[WARNING] δ�� -source 21 һ������ϵͳģ���λ��
+  ������ϵͳģ���λ�ÿ��ܻᵼ�����ļ��޷��� JDK 21 ������
+    ����ʹ�� --release 21 ������ -source 21 -target 21����Ϊ�����Զ�����ϵͳģ���λ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/EnchantAttributeListener.java:[113,25] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/EnchantAttributeListener.java:[114,34] ����: [removal] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+                inst.addModifier(new AttributeModifier(modId,
+                                 ^
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/EnchantAttributeListener.java:[129,43] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/ItemListener.java:[104,25] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/ItemListener.java:[105,34] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/ItemListener.java:[121,64] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[60,46] org.bukkit.GameRule �е� DO_DAYLIGHT_CYCLE �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[64,46] org.bukkit.GameRule �е� DO_DAYLIGHT_CYCLE �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[92,15] org.bukkit.WorldBorder �е� setSize(double,long) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[105,46] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[109,46] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[121,59] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[122,59] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[135,46] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldManager.java:[136,46] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[78,42] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[80,26] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[88,42] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[90,26] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[98,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[106,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[115,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/main/ReachManager.java:[124,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/SFAttr.java:[122,43] org.bukkit.attribute.Attribute �е� values() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/SFAttr.java:[123,54] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/SEnchantment.java:[64,103] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/SItem.java:[34,83] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/SItem.java:[89,49] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/item/SItem.java:[152,53] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/EnchantAnvilListener.java:[66,43] org.bukkit.inventory.AnvilInventory �е� getRepairCost() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/enchant/EnchantAnvilListener.java:[66,16] org.bukkit.inventory.AnvilInventory �е� setRepairCost(int) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/engine/impl/MonsterAttributeImpl.java:[72,40] org.bukkit.attribute.Attribute �е� values() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/engine/impl/MonsterAttributeImpl.java:[117,30] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldCommand.java:[163,55] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldCommand.java:[171,55] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldCommand.java:[216,88] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/feature/world/WorldCommand.java:[217,88] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/main/SFCommandOps.java:[61,54] org.bukkit.plugin �е� org.bukkit.plugin.SimplePluginManager �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/main/SFCommandOps.java:[62,51] org.bukkit.plugin �е� org.bukkit.plugin.SimplePluginManager �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAttributeListener.java:[113,25] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAttributeListener.java:[114,34] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAttributeListener.java:[129,43] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/ItemListener.java:[219,25] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/ItemListener.java:[220,34] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/ItemListener.java:[236,64] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[60,46] org.bukkit.GameRule �е� DO_DAYLIGHT_CYCLE �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[64,46] org.bukkit.GameRule �е� DO_DAYLIGHT_CYCLE �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[92,15] org.bukkit.WorldBorder �е� setSize(double,long) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[105,46] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[109,46] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[121,59] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[122,59] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[135,46] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldManager.java:[136,46] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[78,42] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[80,26] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[88,42] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[90,26] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[98,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[106,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[115,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/main/ReachManager.java:[124,35] org.bukkit.attribute.AttributeInstance �е� getModifier(@org.jetbrains.annotations.NotNull java.util.UUID) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/SFAttr.java:[139,47] org.bukkit.attribute.Attribute �е� values() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/SFAttr.java:[155,29] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/SEnchantment.java:[64,103] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/SItem.java:[47,83] org.bukkit.util.OldEnum �е� name() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/SItem.java:[114,49] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/item/SItem.java:[242,53] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation,@org.jetbrains.annotations.Nullable org.bukkit.inventory.EquipmentSlot) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/recipe/SRecipe.java:[59,20] org.bukkit.inventory.RecipeChoice.ExactChoice �е� ExactChoice(java.util.List<org.bukkit.inventory.ItemStack>) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAnvilListener.java:[107,51] org.bukkit.inventory.AnvilInventory �е� getRepairCost() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAnvilListener.java:[107,24] org.bukkit.inventory.AnvilInventory �е� setRepairCost(int) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAnvilListener.java:[111,57] org.bukkit.inventory.AnvilInventory �е� getRepairCost() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/enchant/EnchantAnvilListener.java:[111,30] org.bukkit.inventory.AnvilInventory �е� setRepairCost(int) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/engine/impl/MonsterAttributeImpl.java:[72,40] org.bukkit.attribute.Attribute �е� values() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/engine/impl/MonsterAttributeImpl.java:[117,30] org.bukkit.attribute.AttributeModifier �е� AttributeModifier(@org.jetbrains.annotations.NotNull java.util.UUID,@org.jetbrains.annotations.NotNull java.lang.String,double,@org.jetbrains.annotations.NotNull org.bukkit.attribute.AttributeModifier.Operation) �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldCommand.java:[163,55] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldCommand.java:[171,55] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldCommand.java:[216,88] org.bukkit.GameRule �е� DO_MOB_SPAWNING �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v3/feature/world/WorldCommand.java:[217,88] org.bukkit.GameRule �е� DO_FIRE_TICK �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/main/SFServerOps.java: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+[INFO] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/main/SFServerOps.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+[INFO] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/event/SFEvents.java: ĳЩ�����ļ�ʹ����δ�����򲻰�ȫ�Ĳ�����
+[INFO] /D:/�ز�/mods/ZeroCkate_SFServerPlugin/src/main/java/cn/ZeroEngine/Engine/api/v2/event/SFEvents.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:unchecked ���±��롣
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ZeroEngine ---
+[INFO] skip non existing resourceDirectory D:\�ز�\mods\ZeroCkate_SFServerPlugin\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ ZeroEngine ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ ZeroEngine ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ ZeroEngine ---
+[INFO] Building jar: D:\�ز�\mods\ZeroCkate_SFServerPlugin\target\ZeroEngine-3.5.3.jar
+[INFO] 
+[INFO] --- shade:3.5.3:shade (default) @ ZeroEngine ---
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing D:\�ز�\mods\ZeroCkate_SFServerPlugin\target\ZeroEngine-3.5.3.jar with D:\�ز�\mods\ZeroCkate_SFServerPlugin\target\ZeroEngine-3.5.3-shaded.jar
+[INFO] 
+[INFO] --- source:3.2.1:jar-no-fork (attach-sources) @ ZeroEngine ---
+[INFO] Building jar: D:\�ز�\mods\ZeroCkate_SFServerPlugin\target\ZeroEngine-3.5.3-sources.jar
+[INFO] 
+[INFO] --- javadoc:3.6.3:jar (attach-javadocs) @ ZeroEngine ---
+[INFO] No previous run data found, generating javadoc.
+[INFO] Building jar: D:\�ز�\mods\ZeroCkate_SFServerPlugin\target\ZeroEngine-3.5.3-javadoc.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  38.406 s
+[INFO] Finished at: 2026-10-06T16:28:57+08:00
+[INFO] ------------------------------------------------------------------------
